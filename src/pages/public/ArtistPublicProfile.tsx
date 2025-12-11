@@ -34,7 +34,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function ArtistPublicProfile() {
   const { id } = useParams();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, token } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
@@ -85,13 +85,46 @@ export default function ArtistPublicProfile() {
   const canSeePrices = isAuthenticated && allowedRolesForBooking.includes(user?.role ?? '');
   const canBook = canSeePrices;
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setBookingDialogOpen(false);
-    toast({
-      title: 'Solicitud enviada',
-      description: `Tu solicitud para ${artist.nickName || artist.name} ha sido enviada correctamente.`,
-    });
+
+    if (!isAuthenticated || !token) {
+      toast({ title: 'Debes iniciar sesión', description: 'Inicia sesión como Local o Promotor para enviar solicitudes', variant: 'destructive' });
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget);
+    const date = formData.get('date') as string;
+    const budget = Number(formData.get('budget'));
+    const location = (formData.get('location') as string) || '';
+    const eventType = (formData.get('eventType') as string) || '';
+    const message = (formData.get('message') as string) || undefined;
+
+    if (!id) return;
+
+    try {
+      await apiFetch('/requests', {
+        method: 'POST',
+        token,
+        body: {
+          artistId: Number(id),
+          eventDate: new Date(date).toISOString(),
+          eventLocation: location,
+          eventType,
+          offeredPrice: budget,
+          message,
+        },
+      });
+
+      setBookingDialogOpen(false);
+      toast({
+        title: 'Solicitud enviada',
+        description: `Tu solicitud para ${artist.nickName || artist.name} ha sido enviada correctamente.`,
+      });
+    } catch (err: any) {
+      const messageErr = err?.message || 'No se pudo enviar la solicitud';
+      toast({ title: 'Error', description: messageErr, variant: 'destructive' });
+    }
   };
 
   return (
@@ -180,25 +213,26 @@ export default function ArtistPublicProfile() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="date">Fecha del evento</Label>
-                          <Input id="date" type="date" required />
+                          <Input id="date" name="date" type="date" required />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="budget">Presupuesto (€)</Label>
-                          <Input id="budget" type="number" placeholder="2500" required />
+                          <Input id="budget" name="budget" type="number" placeholder="2500" required />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="location">Ubicación del evento</Label>
-                        <Input id="location" placeholder="Nombre del local, ciudad" required />
+                        <Input id="location" name="location" placeholder="Nombre del local, ciudad" required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="eventType">Tipo de evento</Label>
-                        <Input id="eventType" placeholder="Festival, Club Night, Concierto..." required />
+                        <Input id="eventType" name="eventType" placeholder="Festival, Club Night, Concierto..." required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="message">Mensaje (opcional)</Label>
                         <Textarea
                           id="message"
+                          name="message"
                           placeholder="Describe tu evento y lo que esperas del artista..."
                           rows={3}
                         />

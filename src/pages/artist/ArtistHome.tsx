@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,10 @@ import { RequestCard } from '@/components/booking/RequestCard';
 import { mockCalendarDates } from '@/data/mockData';
 import { useUpdateRequestStatus, useArtistRequests } from '@/lib/requests';
 import { useAuth } from '@/contexts/AuthContext';
+import { API_BASE_URL } from '@/config';
+import { useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
+import { io, Socket } from 'socket.io-client';
 import {
   Calendar,
   MessageSquare,
@@ -21,11 +25,13 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export default function ArtistHome() {
-  const { user: artist } = useAuth();
+  const { user: artist, token } = useAuth();
   const { data: requests = [], isLoading } = useArtistRequests();
   const upcomingDates = mockCalendarDates.filter(d => !d.available && d.note);
 
   const updateStatusMutation = useUpdateRequestStatus();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const pendingRequests = useMemo(() => requests.filter(r => r.status === 'Pending'), [requests]);
 
@@ -44,6 +50,39 @@ export default function ArtistHome() {
       // error already handled by mutation
     }
   }, [updateStatusMutation]);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const socket: Socket = io(API_BASE_URL.replace('/api', ''), {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 500,
+      reconnectionAttempts: 10,
+      auth: { token },
+      extraHeaders: { Authorization: `Bearer ${token}` },
+    });
+
+    socket.on('connect', () => {
+      // Optional: visual feedback when socket connects
+    });
+
+    socket.on('request.created', (payload: any) => {
+      toast({
+        title: 'Nueva solicitud',
+        description: `${payload.eventType} - ${payload.eventLocation}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
+    });
+
+    socket.on('connect_error', () => {
+      toast({ title: 'Socket desconectado', description: 'Reintentando notificaciones', variant: 'destructive' });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [token, queryClient, toast]);
 
   const stats = [
     {
