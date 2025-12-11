@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
-import { mockArtists } from '@/data/mockData';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Edit,
   Save,
@@ -25,13 +25,13 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ArtistProfile() {
-  const [artist, setArtist] = useState(mockArtists[0]);
+  const { user: artist } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(artist);
   const { toast } = useToast();
 
   const handleSave = () => {
-    setArtist(editData);
+    // setArtist(editData);
     setIsEditing(false);
     toast({
       title: 'Perfil actualizado',

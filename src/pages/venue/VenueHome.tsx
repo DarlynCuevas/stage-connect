@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 import { RequestCard } from '@/components/booking/RequestCard';
-import { mockArtists } from '@/data/mockData';
+import { useArtists } from '@/lib/users';
 import {
   Search,
   MessageSquare,
@@ -16,7 +16,8 @@ import {
 } from 'lucide-react';
 
 export default function VenueHome() {
-  const featuredArtists = mockArtists.slice(0, 3);
+  const { data: featuredArtists = [], isLoading } = useArtists();
+  const topArtists = (featuredArtists || []).slice(0, 3);
 
   const stats = [
     {
@@ -105,7 +106,7 @@ export default function VenueHome() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {featuredArtists.map((artist) => (
+              {topArtists.map((artist) => (
                 <ArtistCard key={artist.id} artist={artist} showPrice />
               ))}
             </div>

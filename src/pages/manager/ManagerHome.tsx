@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { mockArtists, mockManagers } from '@/data/mockData';
+import { useArtists } from '@/lib/users';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Users,
   MessageSquare,
@@ -17,8 +18,12 @@ import {
 } from 'lucide-react';
 
 export default function ManagerHome() {
-  const manager = mockManagers[0];
-  const managedArtists = mockArtists.filter(a => manager.artists.includes(a.id));
+  const { user } = useAuth();
+  const { data: artists = [] } = useArtists();
+  const manager = user;
+  const managedArtists = (artists || []).filter((a: any) => {
+    return a.managerId && String(a.managerId) === String(user?.id);
+  });
 
   const stats = [
     {
@@ -61,7 +66,7 @@ export default function ManagerHome() {
               Panel de Manager
             </h1>
             <p className="text-muted-foreground">
-              Bienvenido, {manager.name} • {manager.company}
+              Bienvenido, {manager?.name || 'Manager'}{manager?.company ? ` • ${manager.company}` : ''}
             </p>
           </div>
           <div className="flex gap-3">

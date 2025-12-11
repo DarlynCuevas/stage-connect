@@ -2,14 +2,16 @@ import { useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ArtistSearch } from '@/components/artists/ArtistSearch';
 import { ArtistCard } from '@/components/artists/ArtistCard';
-import { mockArtists } from '@/data/mockData';
+import { useArtists } from '@/lib/users';
 import { SearchFilters } from '@/types';
 
 export default function VenueSearch() {
   const [filters, setFilters] = useState<SearchFilters>({});
 
+  const { data: artists = [] } = useArtists();
+
   const filteredArtists = useMemo(() => {
-    return mockArtists.filter((artist) => {
+    return (artists || []).filter((artist: any) => {
       if (filters.query) {
         const query = filters.query.toLowerCase();
         if (
@@ -34,11 +36,11 @@ export default function VenueSearch() {
         return false;
       }
 
-      if (filters.priceMin && artist.basePrice < filters.priceMin) {
+        if (filters.priceMin && (artist.basePrice ?? 0) < filters.priceMin) {
         return false;
       }
 
-      if (filters.priceMax && artist.basePrice > filters.priceMax) {
+      if (filters.priceMax && (artist.basePrice ?? 0) > filters.priceMax) {
         return false;
       }
 

@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArtistCard } from '@/components/artists/ArtistCard';
-import { mockArtists, mockPromoters } from '@/data/mockData';
+import { useArtists } from '@/lib/users';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Search,
   MessageSquare,
@@ -16,13 +17,14 @@ import {
 } from 'lucide-react';
 
 export default function PromoterHome() {
-  const promoter = mockPromoters[0];
-  const featuredArtists = mockArtists.slice(0, 3);
+  const { user } = useAuth();
+  const { data: featuredArtists = [] } = useArtists();
+  const promoter = user ?? { name: 'Promotor', company: '' };
 
   const stats = [
     {
       label: 'Eventos organizados',
-      value: promoter.eventsOrganized,
+      value: (promoter as any).eventsOrganized ?? 0,
       icon: Calendar,
       color: 'text-role-promoter',
       bgColor: 'bg-role-promoter/10',
@@ -165,7 +167,7 @@ export default function PromoterHome() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {featuredArtists.slice(0, 2).map((artist) => (
+                {(featuredArtists || []).slice(0, 2).map((artist: any) => (
                   <ArtistCard key={artist.id} artist={artist} showPrice />
                 ))}
               </div>

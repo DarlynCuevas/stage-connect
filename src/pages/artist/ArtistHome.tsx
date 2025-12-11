@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RequestCard } from '@/components/booking/RequestCard';
-import { mockArtists, mockCalendarDates } from '@/data/mockData';
+import { mockCalendarDates } from '@/data/mockData';
 import { useUpdateRequestStatus, useArtistRequests } from '@/lib/requests';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Calendar,
   MessageSquare,
@@ -20,7 +21,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export default function ArtistHome() {
-  const artist = mockArtists[0]; // Current logged in artist
+  const { user: artist } = useAuth();
   const { data: requests = [], isLoading } = useArtistRequests();
   const upcomingDates = mockCalendarDates.filter(d => !d.available && d.note);
 
@@ -61,14 +62,14 @@ export default function ArtistHome() {
     },
     {
       label: 'Caché base',
-      value: `€${artist.basePrice.toLocaleString()}`,
+      value: `€${(artist as any)?.basePrice?.toLocaleString?.() ?? '0'}`,
       icon: DollarSign,
       color: 'text-emerald-400',
       bgColor: 'bg-emerald-500/10',
     },
     {
       label: 'Shows totales',
-      value: artist.totalShows,
+      value: (artist as any)?.totalShows ?? 0,
       icon: TrendingUp,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
@@ -148,7 +149,7 @@ export default function ArtistHome() {
                     isReceiver
                     onAccept={() => handleAccept(request.id)}
                     onReject={() => handleReject(request.id)}
-                    isProcessing={processingIds.includes(request.id)}
+                    isProcessing={updateStatusMutation.isPending}
                   />
                 ))
               ) : (
