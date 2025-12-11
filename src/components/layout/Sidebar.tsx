@@ -26,6 +26,7 @@ const roleConfig = {
   artist: {
     color: 'text-role-artist',
     bgColor: 'bg-role-artist/10',
+    hoverBg: 'hover:bg-role-artist/10',
     icon: Music,
     links: [
       { to: '/artist', icon: Home, label: 'Inicio' },
@@ -38,6 +39,7 @@ const roleConfig = {
   manager: {
     color: 'text-role-manager',
     bgColor: 'bg-role-manager/10',
+    hoverBg: 'hover:bg-role-manager/10',
     icon: Users,
     links: [
       { to: '/manager', icon: Home, label: 'Inicio' },
@@ -49,6 +51,7 @@ const roleConfig = {
   venue: {
     color: 'text-role-venue',
     bgColor: 'bg-role-venue/10',
+    hoverBg: 'hover:bg-role-venue/10',
     icon: Building2,
     links: [
       { to: '/venue', icon: Home, label: 'Inicio' },
@@ -61,6 +64,7 @@ const roleConfig = {
   promoter: {
     color: 'text-role-promoter',
     bgColor: 'bg-role-promoter/10',
+    hoverBg: 'hover:bg-role-promoter/10',
     icon: Megaphone,
     links: [
       { to: '/promoter', icon: Home, label: 'Inicio' },
@@ -88,11 +92,11 @@ export function Sidebar() {
       {/* Mobile toggle */}
       <Button
         variant="ghost"
-        size="icon"
-        className="fixed top-4 left-4 z-50 lg:hidden"
+        size="icon-sm"
+        className="fixed top-3 left-3 z-50 lg:hidden bg-card/80 backdrop-blur-sm border border-border/50"
         onClick={() => setMobileOpen(!mobileOpen)}
       >
-        {mobileOpen ? <X /> : <Menu />}
+        {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
       </Button>
 
       {/* Overlay */}
@@ -107,46 +111,46 @@ export function Sidebar() {
       <aside
         className={cn(
           "fixed left-0 top-0 z-40 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 flex flex-col",
-          collapsed ? "w-20" : "w-64",
+          collapsed ? "w-[4.5rem]" : "w-60",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         {/* Header */}
         <div className={cn(
-          "flex items-center gap-3 p-4 border-b border-sidebar-border",
-          collapsed && "justify-center"
+          "flex items-center gap-3 px-4 py-4 border-b border-sidebar-border",
+          collapsed && "justify-center px-3"
         )}>
           <div className={cn(
-            "flex items-center justify-center w-10 h-10 rounded-xl",
+            "flex items-center justify-center w-9 h-9 rounded-lg shrink-0",
             config.bgColor
           )}>
-            <RoleIcon className={cn("w-5 h-5", config.color)} />
+            <RoleIcon className={cn("w-4.5 h-4.5", config.color)} />
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <h2 className="font-display font-bold text-foreground truncate">
+              <h2 className="font-display font-bold text-foreground text-sm tracking-tight truncate">
                 STAGEBOOK
               </h2>
-              <p className={cn("text-xs capitalize", config.color)}>
+              <p className={cn("text-2xs capitalize", config.color)}>
                 {user.role}
               </p>
             </div>
           )}
           <Button
             variant="ghost"
-            size="icon"
-            className="hidden lg:flex ml-auto"
+            size="icon-sm"
+            className="hidden lg:flex shrink-0"
             onClick={() => setCollapsed(!collapsed)}
           >
             <ChevronLeft className={cn(
-              "h-4 w-4 transition-transform",
+              "h-4 w-4 transition-transform duration-200",
               collapsed && "rotate-180"
             )} />
           </Button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
           {config.links.map((link) => {
             const isActive = location.pathname === link.to;
             return (
@@ -155,15 +159,20 @@ export function Sidebar() {
                 to={link.to}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
-                  collapsed && "justify-center",
+                  "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group",
+                  collapsed && "justify-center px-2",
                   isActive
                     ? `${config.bgColor} ${config.color}`
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    : `text-sidebar-foreground ${config.hoverBg} hover:text-foreground`
                 )}
               >
-                <link.icon className="w-5 h-5 flex-shrink-0" />
-                {!collapsed && <span className="font-medium">{link.label}</span>}
+                <link.icon className={cn(
+                  "w-[18px] h-[18px] shrink-0 transition-colors",
+                  isActive && config.color
+                )} />
+                {!collapsed && (
+                  <span className="text-sm font-medium truncate">{link.label}</span>
+                )}
               </Link>
             );
           })}
@@ -171,16 +180,16 @@ export function Sidebar() {
 
         {/* User section */}
         <div className={cn(
-          "p-4 border-t border-sidebar-border",
+          "px-3 py-3 border-t border-sidebar-border",
           collapsed && "flex flex-col items-center"
         )}>
           <div className={cn(
-            "flex items-center gap-3 mb-3",
+            "flex items-center gap-3 mb-2",
             collapsed && "flex-col"
           )}>
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-9 w-9 border-2 border-sidebar-border shrink-0">
               <AvatarImage src={user.avatar} />
-              <AvatarFallback className={config.bgColor}>
+              <AvatarFallback className={cn(config.bgColor, "text-sm")}>
                 {user.name.charAt(0)}
               </AvatarFallback>
             </Avatar>
@@ -189,7 +198,7 @@ export function Sidebar() {
                 <p className="text-sm font-medium text-foreground truncate">
                   {user.name}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-2xs text-muted-foreground truncate">
                   {user.email}
                 </p>
               </div>
@@ -197,15 +206,15 @@ export function Sidebar() {
           </div>
           <Button
             variant="ghost"
-            size={collapsed ? "icon" : "default"}
+            size={collapsed ? "icon-sm" : "sm"}
             onClick={logout}
             className={cn(
-              "text-muted-foreground hover:text-destructive",
+              "text-muted-foreground hover:text-destructive hover:bg-destructive/10",
               !collapsed && "w-full justify-start"
             )}
           >
             <LogOut className="w-4 h-4" />
-            {!collapsed && <span className="ml-2">Cerrar sesión</span>}
+            {!collapsed && <span className="ml-2 text-sm">Cerrar sesión</span>}
           </Button>
         </div>
       </aside>

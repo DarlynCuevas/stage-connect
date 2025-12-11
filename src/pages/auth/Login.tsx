@@ -27,7 +27,6 @@ export default function Login() {
           title: '¡Bienvenido de vuelta!',
           description: 'Has iniciado sesión correctamente.',
         });
-        // Redirect based on role will be handled by the routing
         navigate('/');
       } else {
         toast({
@@ -47,45 +46,45 @@ export default function Login() {
     }
   };
 
-  // Demo accounts
   const demoAccounts = [
-    { email: 'carlos@example.com', role: 'Artista', color: 'text-role-artist' },
-    { email: 'maria@example.com', role: 'Manager', color: 'text-role-manager' },
-    { email: 'club@example.com', role: 'Local', color: 'text-role-venue' },
-    { email: 'pedro@example.com', role: 'Promotor', color: 'text-role-promoter' },
+    { email: 'carlos@example.com', role: 'Artista', variant: 'artist' as const },
+    { email: 'maria@example.com', role: 'Manager', variant: 'manager' as const },
+    { email: 'club@example.com', role: 'Local', variant: 'venue' as const },
+    { email: 'pedro@example.com', role: 'Promotor', variant: 'promoter' as const },
   ];
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       {/* Background effects */}
       <div className="fixed inset-0 bg-gradient-hero" />
-      <div className="fixed top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[128px]" />
-      <div className="fixed bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-[128px]" />
+      <div className="fixed inset-0 mesh-gradient opacity-40" />
+      <div className="fixed top-1/4 left-1/4 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px]" />
+      <div className="fixed bottom-1/4 right-1/4 w-[300px] h-[300px] bg-accent/10 rounded-full blur-[80px]" />
 
-      <div className="w-full max-w-md relative">
+      <div className="w-full max-w-sm relative z-10">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver al inicio
         </Link>
 
-        <Card variant="glass" className="border-border/50">
-          <CardHeader className="text-center">
-            <div className="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center mx-auto mb-4">
-              <Music className="w-7 h-7 text-primary-foreground" />
+        <Card variant="glass" className="shadow-elevated">
+          <CardHeader className="text-center pb-2">
+            <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center mx-auto mb-3 shadow-glow">
+              <Music className="w-6 h-6 text-primary-foreground" />
             </div>
-            <CardTitle className="text-2xl font-display">Iniciar Sesión</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl">Iniciar Sesión</CardTitle>
+            <CardDescription className="text-sm">
               Accede a tu cuenta de Stagebook
             </CardDescription>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="pt-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-sm">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -97,7 +96,7 @@ export default function Login() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
+                <Label htmlFor="password" className="text-sm">Contraseña</Label>
                 <Input
                   id="password"
                   type="password"
@@ -127,8 +126,8 @@ export default function Login() {
             </form>
 
             <div className="mt-6">
-              <p className="text-sm text-muted-foreground text-center mb-3">
-                Cuentas de demostración:
+              <p className="text-xs text-muted-foreground text-center mb-3">
+                Cuentas de demostración
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {demoAccounts.map((account) => (
@@ -136,10 +135,10 @@ export default function Login() {
                     key={account.email}
                     variant="outline"
                     size="sm"
-                    className="text-xs"
+                    className="text-xs h-8"
                     onClick={() => setEmail(account.email)}
                   >
-                    <span className={account.color}>{account.role}</span>
+                    <span className={`text-role-${account.variant}`}>{account.role}</span>
                   </Button>
                 ))}
               </div>
@@ -147,7 +146,7 @@ export default function Login() {
 
             <p className="text-sm text-muted-foreground text-center mt-6">
               ¿No tienes cuenta?{' '}
-              <Link to="/register" className="text-primary hover:underline">
+              <Link to="/register" className="text-primary hover:text-primary/80 font-medium transition-colors">
                 Regístrate
               </Link>
             </p>
