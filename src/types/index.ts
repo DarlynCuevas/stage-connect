@@ -85,17 +85,15 @@ export interface CalendarDate {
 }
 
 export interface BookingRequest {
-  id: string;
-  artistId: string;
-  requesterId: string;
-  requesterType: 'venue' | 'promoter';
-  status: 'pending' | 'accepted' | 'rejected' | 'negotiating' | 'confirmed';
+  id: number | string;
+  artist?: User;
+  requester?: User;
+  status: 'Pending' | 'Accepted' | 'Rejected';
   eventDate: string;
   eventLocation: string;
   eventType: string;
   offeredPrice: number;
   message?: string;
-  negotiations: Negotiation[];
   createdAt: Date;
   updatedAt: Date;
 }

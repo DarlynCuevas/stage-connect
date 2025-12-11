@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 import { RequestCard } from '@/components/booking/RequestCard';
-import { mockArtists, mockBookingRequests } from '@/data/mockData';
+import { mockArtists } from '@/data/mockData';
 import {
   Search,
   MessageSquare,
@@ -16,13 +16,12 @@ import {
 } from 'lucide-react';
 
 export default function VenueHome() {
-  const sentRequests = mockBookingRequests.slice(0, 2);
   const featuredArtists = mockArtists.slice(0, 3);
 
   const stats = [
     {
       label: 'Solicitudes enviadas',
-      value: sentRequests.length,
+      value: 0,
       icon: MessageSquare,
       color: 'text-role-venue',
       bgColor: 'bg-role-venue/10',
@@ -109,36 +108,6 @@ export default function VenueHome() {
               {featuredArtists.map((artist) => (
                 <ArtistCard key={artist.id} artist={artist} showPrice />
               ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent requests */}
-        <Card variant="gradient">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-role-venue" />
-              Mis Solicitudes Recientes
-            </CardTitle>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/venue/requests">
-                Ver todas
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {sentRequests.map((request) => {
-                const artist = mockArtists.find(a => a.id === request.artistId);
-                return (
-                  <RequestCard
-                    key={request.id}
-                    request={request}
-                    artist={artist}
-                  />
-                );
-              })}
             </div>
           </CardContent>
         </Card>

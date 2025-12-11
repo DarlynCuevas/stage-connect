@@ -84,7 +84,17 @@ export function Sidebar() {
 
   if (!user) return null;
 
-  const config = roleConfig[user.role];
+  // Normalizar rol (acepta 'Artista'|'Artist'|'artist' etc.) hacia las claves de `roleConfig`
+  const roleKey = (() => {
+    const r = String(user.role || '').toLowerCase();
+    if (r.includes('art')) return 'artist';
+    if (r.includes('manager')) return 'manager';
+    if (r.includes('local') || r.includes('venue')) return 'venue';
+    if (r.includes('promot')) return 'promoter';
+    return 'artist';
+  })() as keyof typeof roleConfig;
+
+  const config = roleConfig[roleKey];
   const RoleIcon = config.icon;
 
   return (

@@ -48,7 +48,8 @@ export default function Register() {
           title: '¡Cuenta creada!',
           description: 'Bienvenido a Stagebook.',
         });
-        navigate('/');
+        // Redirigir al login después del registro
+        navigate('/login');
       }
     } catch (error) {
       toast({

@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
+import { useCallback, useMemo } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RequestCard } from '@/components/booking/RequestCard';
-import { mockBookingRequests, mockArtists, mockCalendarDates } from '@/data/mockData';
+import { mockArtists, mockCalendarDates } from '@/data/mockData';
+import { useUpdateRequestStatus, useArtistRequests } from '@/lib/requests';
 import {
   Calendar,
   MessageSquare,
@@ -19,8 +21,28 @@ import { es } from 'date-fns/locale';
 
 export default function ArtistHome() {
   const artist = mockArtists[0]; // Current logged in artist
-  const pendingRequests = mockBookingRequests.filter(r => r.status === 'pending');
+  const { data: requests = [], isLoading } = useArtistRequests();
   const upcomingDates = mockCalendarDates.filter(d => !d.available && d.note);
+
+  const updateStatusMutation = useUpdateRequestStatus();
+
+  const pendingRequests = useMemo(() => requests.filter(r => r.status === 'Pending'), [requests]);
+
+  const handleAccept = useCallback(async (id: string) => {
+    try {
+      await updateStatusMutation.mutateAsync({ id, status: 'Accepted' });
+    } catch (err) {
+      // error already handled by mutation
+    }
+  }, [updateStatusMutation]);
+
+  const handleReject = useCallback(async (id: string) => {
+    try {
+      await updateStatusMutation.mutateAsync({ id, status: 'Rejected' });
+    } catch (err) {
+      // error already handled by mutation
+    }
+  }, [updateStatusMutation]);
 
   const stats = [
     {
@@ -124,6 +146,9 @@ export default function ArtistHome() {
                     request={request}
                     artist={artist}
                     isReceiver
+                    onAccept={() => handleAccept(request.id)}
+                    onReject={() => handleReject(request.id)}
+                    isProcessing={processingIds.includes(request.id)}
                   />
                 ))
               ) : (

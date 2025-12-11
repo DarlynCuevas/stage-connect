@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Public pages
 import Landing from "./pages/Landing";
@@ -41,13 +42,13 @@ function RoleBasedRedirect() {
   }
 
   switch (user?.role) {
-    case 'artist':
+    case 'Artista':
       return <Navigate to="/artist" replace />;
-    case 'manager':
+    case 'Manager':
       return <Navigate to="/manager" replace />;
-    case 'venue':
+    case 'Local':
       return <Navigate to="/venue" replace />;
-    case 'promoter':
+    case 'Promotor':
       return <Navigate to="/promoter" replace />;
     default:
       return <Landing />;
@@ -103,7 +104,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AppRoutes />
+          <ErrorBoundary>
+            <AppRoutes />
+          </ErrorBoundary>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

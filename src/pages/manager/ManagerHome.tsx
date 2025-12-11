@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { mockArtists, mockManagers, mockBookingRequests } from '@/data/mockData';
+import { mockArtists, mockManagers } from '@/data/mockData';
 import {
   Users,
   MessageSquare,
@@ -19,10 +19,6 @@ import {
 export default function ManagerHome() {
   const manager = mockManagers[0];
   const managedArtists = mockArtists.filter(a => manager.artists.includes(a.id));
-  const allRequests = mockBookingRequests.filter(r =>
-    managedArtists.some(a => a.id === r.artistId)
-  );
-  const pendingRequests = allRequests.filter(r => r.status === 'pending');
 
   const stats = [
     {
@@ -34,7 +30,7 @@ export default function ManagerHome() {
     },
     {
       label: 'Solicitudes pendientes',
-      value: pendingRequests.length,
+      value: 0,
       icon: MessageSquare,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
@@ -120,8 +116,6 @@ export default function ManagerHome() {
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {managedArtists.map((artist) => {
-                const artistRequests = allRequests.filter(r => r.artistId === artist.id);
-                const pendingCount = artistRequests.filter(r => r.status === 'pending').length;
 
                 return (
                   <div
@@ -156,11 +150,6 @@ export default function ManagerHome() {
                     </div>
 
                     <div className="text-right">
-                      {pendingCount > 0 && (
-                        <Badge variant="warning" className="mb-2">
-                          {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''}
-                        </Badge>
-                      )}
                       <Button variant="outline" size="sm" asChild>
                         <Link to={`/manager/artists/${artist.id}`}>
                           Gestionar
@@ -189,43 +178,10 @@ export default function ManagerHome() {
             </Button>
           </CardHeader>
           <CardContent>
-            {pendingRequests.length > 0 ? (
-              <div className="space-y-3">
-                {pendingRequests.slice(0, 3).map((request) => {
-                  const artist = managedArtists.find(a => a.id === request.artistId);
-                  return (
-                    <div
-                      key={request.id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={artist?.avatar} />
-                          <AvatarFallback>{artist?.stageName.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{artist?.stageName}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {request.eventType} • {request.eventLocation}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-primary">
-                          €{request.offeredPrice.toLocaleString()}
-                        </p>
-                        <Badge variant="warning">Pendiente</Badge>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>No hay solicitudes pendientes</p>
-              </div>
-            )}
+            <div className="text-center py-8 text-muted-foreground">
+              <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>No hay solicitudes pendientes</p>
+            </div>
           </CardContent>
         </Card>
       </div>

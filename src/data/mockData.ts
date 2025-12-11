@@ -1,4 +1,4 @@
-import { Artist, Manager, Venue, Promoter, BookingRequest, CalendarDate, User } from '@/types';
+import { Artist, Manager, Venue, Promoter, CalendarDate, User } from '@/types';
 
 export const mockUsers: User[] = [
   { id: 'u1', name: 'Darlyn Cuevas', email: 'carlos@example.com', role: 'artist', createdAt: new Date() },
@@ -186,70 +186,6 @@ export const mockCalendarDates: CalendarDate[] = [
   { date: '2025-01-20', available: false, note: 'Club Pacha' },
   { date: '2025-01-25', available: true },
   { date: '2025-01-26', available: true },
-];
-
-export const mockBookingRequests: BookingRequest[] = [
-  {
-    id: 'br1',
-    artistId: 'a1',
-    requesterId: 'v1',
-    requesterType: 'venue',
-    status: 'pending',
-    eventDate: '2025-02-14',
-    eventLocation: 'Club Nocturno, Barcelona',
-    eventType: 'Club Night',
-    offeredPrice: 2800,
-    message: 'Nos encantaría contar contigo para nuestra noche especial de San Valentín.',
-    negotiations: [],
-    createdAt: new Date('2025-01-05'),
-    updatedAt: new Date('2025-01-05'),
-  },
-  {
-    id: 'br2',
-    artistId: 'a1',
-    requesterId: 'p1',
-    requesterType: 'promoter',
-    status: 'negotiating',
-    eventDate: '2025-03-20',
-    eventLocation: 'Wizink Center, Madrid',
-    eventType: 'Festival',
-    offeredPrice: 6000,
-    message: 'Queremos que seas parte del lineup de nuestro festival de primavera.',
-    negotiations: [
-      {
-        id: 'n1',
-        senderId: 'u1',
-        senderRole: 'artist',
-        message: 'Gracias por la propuesta. Mi caché para festivales es de 8000€. ¿Podemos negociar?',
-        proposedPrice: 8000,
-        createdAt: new Date('2025-01-06'),
-      },
-      {
-        id: 'n2',
-        senderId: 'u4',
-        senderRole: 'promoter',
-        message: 'Entendemos tu posición. Podemos ofrecerte 7000€ + gastos de viaje.',
-        proposedPrice: 7000,
-        createdAt: new Date('2025-01-07'),
-      },
-    ],
-    createdAt: new Date('2025-01-04'),
-    updatedAt: new Date('2025-01-07'),
-  },
-  {
-    id: 'br3',
-    artistId: 'a1',
-    requesterId: 'v1',
-    requesterType: 'venue',
-    status: 'confirmed',
-    eventDate: '2025-01-20',
-    eventLocation: 'Club Nocturno, Barcelona',
-    eventType: 'Club Night',
-    offeredPrice: 2500,
-    negotiations: [],
-    createdAt: new Date('2024-12-15'),
-    updatedAt: new Date('2024-12-20'),
-  },
 ];
 
 export const genres = [

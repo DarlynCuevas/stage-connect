@@ -1,50 +1,44 @@
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { RequestCard } from '@/components/booking/RequestCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockBookingRequests, mockArtists } from '@/data/mockData';
+import { mockArtists } from '@/data/mockData';
 import { BookingRequest } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { useArtistRequests, useUpdateRequestStatus } from '@/lib/requests';
 import { MessageSquare, Clock, Check, X } from 'lucide-react';
 
 export default function ArtistRequests() {
-  const [requests, setRequests] = useState<BookingRequest[]>(mockBookingRequests);
+  const { data: requests = [], isLoading } = useArtistRequests();
   const artist = mockArtists[0];
   const { toast } = useToast();
+  const updateStatusMutation = useUpdateRequestStatus();
 
-  const handleAccept = (requestId: string) => {
-    setRequests(requests.map(r =>
-      r.id === requestId ? { ...r, status: 'accepted' as const } : r
-    ));
-    toast({
-      title: 'Solicitud aceptada',
-      description: 'El contratante será notificado.',
-    });
-  };
+  const handleAccept = useCallback(async (requestId: string) => {
+    try {
+      await updateStatusMutation.mutateAsync({ id: requestId, status: 'Accepted' });
+    } catch (err) {
+      // error already handled by mutation
+    }
+  }, [updateStatusMutation]);
 
-  const handleReject = (requestId: string) => {
-    setRequests(requests.map(r =>
-      r.id === requestId ? { ...r, status: 'rejected' as const } : r
-    ));
-    toast({
-      title: 'Solicitud rechazada',
-      description: 'El contratante será notificado.',
-    });
-  };
+  const handleReject = useCallback(async (requestId: string) => {
+    try {
+      await updateStatusMutation.mutateAsync({ id: requestId, status: 'Rejected' });
+    } catch (err) {
+      // error already handled by mutation
+    }
+  }, [updateStatusMutation]);
 
   const handleNegotiate = (requestId: string) => {
-    setRequests(requests.map(r =>
-      r.id === requestId ? { ...r, status: 'negotiating' as const } : r
-    ));
     toast({
       title: 'Modo negociación',
       description: 'Ahora puedes enviar una contraoferta.',
     });
   };
 
-  const pendingRequests = requests.filter(r => r.status === 'pending');
-  const negotiatingRequests = requests.filter(r => r.status === 'negotiating');
-  const completedRequests = requests.filter(r => ['accepted', 'rejected', 'confirmed'].includes(r.status));
+  const pendingRequests = requests.filter(r => r.status === 'Pending');
+  const completedRequests = requests.filter(r => ['Accepted', 'Rejected'].includes(r.status));
 
   return (
     <DashboardLayout>
@@ -63,10 +57,6 @@ export default function ArtistRequests() {
             <TabsTrigger value="pending" className="gap-2">
               <Clock className="w-4 h-4" />
               Pendientes ({pendingRequests.length})
-            </TabsTrigger>
-            <TabsTrigger value="negotiating" className="gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Negociando ({negotiatingRequests.length})
             </TabsTrigger>
             <TabsTrigger value="completed" className="gap-2">
               <Check className="w-4 h-4" />
@@ -92,26 +82,6 @@ export default function ArtistRequests() {
                 <div className="col-span-2 text-center py-12 text-muted-foreground">
                   <Clock className="w-16 h-16 mx-auto mb-4 opacity-50" />
                   <p className="text-lg">No tienes solicitudes pendientes</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="negotiating">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {negotiatingRequests.length > 0 ? (
-                negotiatingRequests.map((request) => (
-                  <RequestCard
-                    key={request.id}
-                    request={request}
-                    artist={artist}
-                    isReceiver
-                  />
-                ))
-              ) : (
-                <div className="col-span-2 text-center py-12 text-muted-foreground">
-                  <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">No hay negociaciones en curso</p>
                 </div>
               )}
             </div>

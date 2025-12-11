@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArtistCard } from '@/components/artists/ArtistCard';
-import { mockArtists, mockBookingRequests, mockPromoters } from '@/data/mockData';
+import { mockArtists, mockPromoters } from '@/data/mockData';
 import {
   Search,
   MessageSquare,
@@ -17,7 +17,6 @@ import {
 
 export default function PromoterHome() {
   const promoter = mockPromoters[0];
-  const sentRequests = mockBookingRequests.slice(0, 2);
   const featuredArtists = mockArtists.slice(0, 3);
 
   const stats = [
@@ -30,7 +29,7 @@ export default function PromoterHome() {
     },
     {
       label: 'Solicitudes activas',
-      value: sentRequests.length,
+      value: 0,
       icon: MessageSquare,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
@@ -189,58 +188,10 @@ export default function PromoterHome() {
             </Button>
           </CardHeader>
           <CardContent>
-            {sentRequests.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {sentRequests.map((request) => {
-                  const artist = mockArtists.find(a => a.id === request.artistId);
-                  return (
-                    <div
-                      key={request.id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={artist?.avatar}
-                          alt={artist?.stageName}
-                          className="w-12 h-12 rounded-lg object-cover"
-                        />
-                        <div>
-                          <p className="font-medium">{artist?.stageName}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {request.eventType}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-primary">
-                          €{request.offeredPrice.toLocaleString()}
-                        </p>
-                        <Badge
-                          variant={
-                            request.status === 'pending'
-                              ? 'warning'
-                              : request.status === 'negotiating'
-                              ? 'artist'
-                              : 'success'
-                          }
-                        >
-                          {request.status === 'pending'
-                            ? 'Pendiente'
-                            : request.status === 'negotiating'
-                            ? 'Negociando'
-                            : 'Confirmado'}
-                        </Badge>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>No tienes solicitudes recientes</p>
-              </div>
-            )}
+            <div className="text-center py-8 text-muted-foreground">
+              <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>No tienes solicitudes recientes</p>
+            </div>
           </CardContent>
         </Card>
       </div>

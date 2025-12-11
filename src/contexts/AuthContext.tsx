@@ -3,25 +3,27 @@ import { User, UserRole } from '@/types';
 import { API_BASE_URL } from '../config';
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<string | null>;
   register: (name: string, email: string, password: string, role: UserRole) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
+  token?: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState<string | null>(() => {
+    return localStorage.getItem('book_token');
+  });
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('currentUser');
     return saved ? JSON.parse(saved) : null;
   });
 
- const login = async (email: string, password: string): Promise<boolean> => {
-    
-    // El Backend ya maneja el retraso y la verificación de la contraseña.
+const login = async (email: string, password: string): Promise<string | null> => {
     const credentials = { email, password };
-
     try {
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
@@ -34,26 +36,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await response.json();
 
         if (response.ok) {
-            // El Backend retorna { access_token: '...', role: 'Artista', user_id: 1 }
-            
-            // 🔑 Guardar el token y el rol
+          // El Backend retorna { access_token: '...', role: 'Artista', user_id: 1 }
+
+          // Guardar el token y el rol
             localStorage.setItem('book_token', data.access_token);
             localStorage.setItem('book_role', data.role);
-            // Si necesitas el objeto de usuario completo, el Backend debería enviarlo
-            // Por ahora, solo guardamos lo esencial.
-            
-            // Si el login es exitoso, devolvemos 'true'
-            return true;
+            setToken(data.access_token);
+
+          // Construir y guardar un objeto `user` mínimo para el frontend
+          const currentUser: User = {
+            id: String(data.user_id ?? data.id ?? ''),
+            name: data.name ?? '',
+            email,
+            role: data.role,
+            createdAt: new Date(),
+          };
+
+          setUser(currentUser);
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+          // Marcar autenticado
+          setIsAuthenticated(true);
+
+          // Devolver el rol para compatibilidad con la UI de login
+          return data.role;
         } else {
             // Error de credenciales (el backend falló la verificación)
-            // Ya tienes el toast de "Email o contraseña incorrectos" en handleSubmit
-            return false;
+            return null;
         }
 
     } catch (error) {
         // Error de conexión/CORS. El 'catch' de handleSubmit lo capturará
         console.error('Error al contactar con el Backend:', error);
-        throw error;
+        // Lanzamos el error para que handleSubmit lo maneje.
+        throw error; 
     }
 };
 
@@ -95,7 +111,11 @@ const register = async (name: string, email: string, password: string, role: Use
 
   const logout = () => {
     setUser(null);
+    setIsAuthenticated(false);
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('book_token');
+    localStorage.removeItem('book_role');
+    setToken(null);
   };
 
   return (
@@ -104,7 +124,8 @@ const register = async (name: string, email: string, password: string, role: Use
       login,
       register,
       logout,
-      isAuthenticated: !!user,
+      isAuthenticated,
+      token,
     }}>
       {children}
     </AuthContext.Provider>

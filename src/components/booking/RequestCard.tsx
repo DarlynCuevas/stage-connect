@@ -15,13 +15,18 @@ interface RequestCardProps {
   onReject?: () => void;
   onNegotiate?: () => void;
   onViewDetails?: () => void;
+  isProcessing?: boolean;
 }
 
-const statusConfig = {
+const statusConfig: Record<string, { label: string; variant: 'warning' | 'artist' | 'success' | 'destructive' }> = {
+  'Pending': { label: 'Pendiente', variant: 'warning' as const },
+  'Accepted': { label: 'Aceptada', variant: 'success' as const },
+  'Rejected': { label: 'Rechazada', variant: 'destructive' as const },
+  // Legacy/fallback mappings
   pending: { label: 'Pendiente', variant: 'warning' as const },
-  negotiating: { label: 'Negociando', variant: 'artist' as const },
   accepted: { label: 'Aceptada', variant: 'success' as const },
   rejected: { label: 'Rechazada', variant: 'destructive' as const },
+  negotiating: { label: 'Negociando', variant: 'artist' as const },
   confirmed: { label: 'Confirmada', variant: 'success' as const },
 };
 
@@ -33,6 +38,7 @@ export function RequestCard({
   onReject,
   onNegotiate,
   onViewDetails,
+  isProcessing = false,
 }: RequestCardProps) {
   const status = statusConfig[request.status];
 
@@ -84,34 +90,20 @@ export function RequestCard({
           </div>
         )}
 
-        {request.negotiations.length > 0 && (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock className="w-3.5 h-3.5" />
-            <span>{request.negotiations.length} mensaje(s) en negociación</span>
-          </div>
-        )}
-
         <div className="flex gap-2 pt-1">
-          {isReceiver && request.status === 'pending' && (
+          {isReceiver && request.status === 'Pending' && (
             <>
-              <Button size="sm" variant="gradient" className="flex-1 h-8" onClick={onAccept}>
+              <Button size="sm" variant="gradient" className="flex-1 h-8" onClick={onAccept} disabled={isProcessing}>
                 <Check className="w-3.5 h-3.5 mr-1" />
                 Aceptar
               </Button>
               <Button size="sm" variant="outline" className="h-8" onClick={onNegotiate}>
                 <MessageSquare className="w-3.5 h-3.5" />
               </Button>
-              <Button size="sm" variant="ghost" className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={onReject}>
+              <Button size="sm" variant="ghost" className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={onReject} disabled={isProcessing}>
                 <X className="w-3.5 h-3.5" />
               </Button>
             </>
-          )}
-
-          {isReceiver && request.status === 'negotiating' && (
-            <Button size="sm" variant="gradient" className="flex-1 h-8" onClick={onViewDetails}>
-              Ver conversación
-              <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </Button>
           )}
 
           {!isReceiver && (

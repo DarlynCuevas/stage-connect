@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 import { Music, ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { log } from 'console';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -21,13 +22,31 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const success = await login(email, password);
-      if (success) {
-        toast({
-          title: '¡Bienvenido de vuelta!',
-          description: 'Has iniciado sesión correctamente.',
-        });
-        navigate('/');
+      const userRole = await login(email, password);
+      console.debug('Login returned role:', userRole);
+      if (userRole) { 
+            toast({
+                title: '¡Bienvenido de vuelta!',
+                description: 'Has iniciado sesión correctamente.',
+            });
+            
+            // === LÓGICA DE REDIRECCIÓN CONDICIONAL CORREGIDA ===
+            switch (userRole) {
+                case 'Artista':
+                    navigate('/artist'); // Usar /artist según tu configuración
+                    break;
+                case 'Manager':
+                    navigate('/manager'); // Usar /manager según tu configuración
+                    break;
+                case 'Local':
+                    navigate('/venue');
+                    break; // Usar /venue según tu configuración
+                case 'Promotor':
+                    navigate('/promoter'); // Usar /promoter según tu configuración
+                    break;
+                default:
+                    navigate('/'); 
+            }
       } else {
         toast({
           title: 'Error de autenticación',
@@ -46,12 +65,12 @@ export default function Login() {
     }
   };
 
-  const demoAccounts = [
+ /*  const demoAccounts = [
     { email: 'carlos@example.com', role: 'Artista', variant: 'artist' as const },
     { email: 'maria@example.com', role: 'Manager', variant: 'manager' as const },
     { email: 'club@example.com', role: 'Local', variant: 'venue' as const },
     { email: 'pedro@example.com', role: 'Promotor', variant: 'promoter' as const },
-  ];
+  ]; */
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -129,20 +148,8 @@ export default function Login() {
               <p className="text-xs text-muted-foreground text-center mb-3">
                 Cuentas de demostración
               </p>
-              <div className="grid grid-cols-2 gap-2">
-                {demoAccounts.map((account) => (
-                  <Button
-                    key={account.email}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8"
-                    onClick={() => setEmail(account.email)}
-                  >
-                    <span className={`text-role-${account.variant}`}>{account.role}</span>
-                  </Button>
-                ))}
               </div>
-            </div>
+            
 
             <p className="text-sm text-muted-foreground text-center mt-6">
               ¿No tienes cuenta?{' '}
