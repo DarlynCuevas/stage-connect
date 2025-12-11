@@ -13,6 +13,8 @@ import {
   Calendar,
   ArrowRight,
   TrendingUp,
+  MapPin,
+  Sparkles,
 } from 'lucide-react';
 
 export default function VenueHome() {
@@ -26,6 +28,7 @@ export default function VenueHome() {
       icon: MessageSquare,
       color: 'text-role-venue',
       bgColor: 'bg-role-venue/10',
+      borderColor: 'border-role-venue/20',
     },
     {
       label: 'Artistas favoritos',
@@ -33,6 +36,7 @@ export default function VenueHome() {
       icon: Heart,
       color: 'text-destructive',
       bgColor: 'bg-destructive/10',
+      borderColor: 'border-destructive/20',
     },
     {
       label: 'Eventos programados',
@@ -40,49 +44,71 @@ export default function VenueHome() {
       icon: Calendar,
       color: 'text-accent',
       bgColor: 'bg-accent/10',
+      borderColor: 'border-accent/20',
     },
     {
       label: 'Contrataciones este mes',
       value: 2,
       icon: TrendingUp,
-      color: 'text-emerald-400',
-      bgColor: 'bg-emerald-500/10',
+      color: 'text-success',
+      bgColor: 'bg-success/10',
+      borderColor: 'border-success/20',
     },
   ];
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        {/* Welcome header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-display font-bold mb-2">
-              ¡Bienvenido, Club Nocturno!
-            </h1>
-            <p className="text-muted-foreground">
-              Encuentra el artista perfecto para tu próximo evento
-            </p>
+        {/* Welcome header with gradient background */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-role-venue/10 via-card to-primary/5 border border-border/50 p-6 lg:p-8">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-role-venue/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+          
+          <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-gradient-to-br from-role-venue to-role-venue/70 flex items-center justify-center shadow-lg">
+                  <MapPin className="w-8 h-8 lg:w-10 lg:h-10 text-foreground" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-success rounded-full border-2 border-background flex items-center justify-center">
+                  <Sparkles className="w-3 h-3 text-success-foreground" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-2xl lg:text-3xl font-display font-bold mb-1">
+                  ¡Bienvenido, Club Nocturno!
+                </h1>
+                <p className="text-muted-foreground">
+                  Encuentra el artista perfecto para tu próximo evento
+                </p>
+              </div>
+            </div>
+            
+            <Button variant="hero" asChild size="lg" className="shadow-lg shadow-primary/25">
+              <Link to="/venue/search">
+                <Search className="w-5 h-5 mr-2" />
+                Buscar Artistas
+              </Link>
+            </Button>
           </div>
-          <Button variant="hero" asChild size="lg">
-            <Link to="/venue/search">
-              <Search className="w-5 h-5 mr-2" />
-              Buscar Artistas
-            </Link>
-          </Button>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <Card key={stat.label} variant="gradient">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
+          {stats.map((stat, index) => (
+            <Card 
+              key={stat.label} 
+              className={`group relative overflow-hidden border-2 ${stat.borderColor} bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5`}
+            >
+              <div className={`absolute inset-0 ${stat.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+              <CardContent className="relative p-4 lg:p-5">
+                <div className="flex items-start gap-3">
+                  <div className={`w-11 h-11 rounded-xl ${stat.bgColor} flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110`}>
                     <stat.icon className={`w-5 h-5 ${stat.color}`} />
                   </div>
-                  <div>
-                    <p className="text-2xl font-display font-bold">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  <div className="min-w-0">
+                    <p className="text-2xl lg:text-3xl font-display font-bold tracking-tight">{stat.value}</p>
+                    <p className="text-xs lg:text-sm text-muted-foreground truncate">{stat.label}</p>
                   </div>
                 </div>
               </CardContent>
@@ -91,13 +117,15 @@ export default function VenueHome() {
         </div>
 
         {/* Featured artists */}
-        <Card variant="gradient">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle className="flex items-center gap-2.5 text-lg">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-primary" />
+              </div>
               Artistas Destacados
             </CardTitle>
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
               <Link to="/venue/search">
                 Ver todos
                 <ArrowRight className="w-4 h-4 ml-1" />
@@ -105,7 +133,7 @@ export default function VenueHome() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {featuredArtists.map((artist) => (
                 <ArtistCard key={artist.id} artist={artist} showPrice />
               ))}
@@ -114,13 +142,15 @@ export default function VenueHome() {
         </Card>
 
         {/* Recent requests */}
-        <Card variant="gradient">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-role-venue" />
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle className="flex items-center gap-2.5 text-lg">
+              <div className="w-8 h-8 rounded-lg bg-role-venue/10 flex items-center justify-center">
+                <MessageSquare className="w-4 h-4 text-role-venue" />
+              </div>
               Mis Solicitudes Recientes
             </CardTitle>
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
               <Link to="/venue/requests">
                 Ver todas
                 <ArrowRight className="w-4 h-4 ml-1" />
