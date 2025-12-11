@@ -11,10 +11,10 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const roles: { value: UserRole; label: string; icon: any; color: string; bgColor: string }[] = [
-  { value: 'Artista', label: 'Artista', icon: Music, color: 'text-role-artist', bgColor: 'bg-role-artist/10' },
-  { value: 'Manager', label: 'Manager', icon: Users, color: 'text-role-manager', bgColor: 'bg-role-manager/10' },
-  { value: 'Local', label: 'Local', icon: Building2, color: 'text-role-venue', bgColor: 'bg-role-venue/10' },
-  { value: 'Promotor', label: 'Promotor', icon: Megaphone, color: 'text-role-promoter', bgColor: 'bg-role-promoter/10' },
+  { value: 'artist', label: 'Artista', icon: Music, color: 'text-role-artist', bgColor: 'bg-role-artist/10' },
+  { value: 'manager', label: 'Manager', icon: Users, color: 'text-role-manager', bgColor: 'bg-role-manager/10' },
+  { value: 'venue', label: 'Local', icon: Building2, color: 'text-role-venue', bgColor: 'bg-role-venue/10' },
+  { value: 'promoter', label: 'Promotor', icon: Megaphone, color: 'text-role-promoter', bgColor: 'bg-role-promoter/10' },
 ];
 
 export default function Register() {

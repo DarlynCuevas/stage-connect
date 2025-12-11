@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -10,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Search, X, SlidersHorizontal } from 'lucide-react';
+import { Search, X, SlidersHorizontal, MapPin, Music, DollarSign } from 'lucide-react';
 import { genres, countries, cities } from '@/data/mockData';
 import { SearchFilters } from '@/types';
 import { cn } from '@/lib/utils';
@@ -67,24 +68,27 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
       {/* Search bar */}
       <div className="flex gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
             placeholder="Buscar artistas por nombre..."
             value={filters.query || ''}
             onChange={(e) => handleQueryChange(e.target.value)}
-            className="pl-10 h-12"
+            className="pl-12 h-13 text-base bg-card/50 border-border/50 focus:border-primary/50"
           />
         </div>
         <Button
           variant={showFilters ? "default" : "outline"}
           size="lg"
           onClick={() => setShowFilters(!showFilters)}
-          className="relative"
+          className="relative h-13 px-5"
         >
           <SlidersHorizontal className="w-5 h-5 mr-2" />
           Filtros
           {activeFiltersCount > 0 && (
-            <Badge variant="default" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center">
+            <Badge 
+              variant="default" 
+              className="absolute -top-2 -right-2 h-5 min-w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground"
+            >
               {activeFiltersCount}
             </Badge>
           )}
@@ -97,10 +101,11 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
         showFilters ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
       )}>
         <div className="min-h-0">
-          <div className="p-6 rounded-xl bg-card border border-border space-y-6">
+          <Card className="p-6 bg-card/50 border-border/50 backdrop-blur-sm space-y-6">
             {/* Genres */}
             <div>
-              <label className="text-sm font-medium text-foreground mb-3 block">
+              <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
+                <Music className="w-4 h-4 text-primary" />
                 Géneros musicales
               </label>
               <div className="flex flex-wrap gap-2">
@@ -108,7 +113,12 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
                   <Badge
                     key={genre}
                     variant={filters.genre?.includes(genre) ? "default" : "outline"}
-                    className="cursor-pointer hover:bg-primary/80 transition-colors"
+                    className={cn(
+                      "cursor-pointer transition-all duration-200",
+                      filters.genre?.includes(genre) 
+                        ? "bg-primary hover:bg-primary/90" 
+                        : "hover:bg-primary/10 hover:border-primary/50"
+                    )}
                     onClick={() => handleGenreToggle(genre)}
                   >
                     {genre}
@@ -120,14 +130,15 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
             {/* Location */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
+                <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-2">
+                  <MapPin className="w-4 h-4 text-role-venue" />
                   País
                 </label>
                 <Select
                   value={filters.country || ''}
                   onValueChange={handleCountryChange}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-secondary/30 border-border/50">
                     <SelectValue placeholder="Seleccionar país" />
                   </SelectTrigger>
                   <SelectContent>
@@ -140,7 +151,8 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
+                <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-2">
+                  <MapPin className="w-4 h-4 text-role-venue" />
                   Ciudad
                 </label>
                 <Select
@@ -148,7 +160,7 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
                   onValueChange={handleCityChange}
                   disabled={!filters.country}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-secondary/30 border-border/50">
                     <SelectValue placeholder="Seleccionar ciudad" />
                   </SelectTrigger>
                   <SelectContent>
@@ -164,7 +176,8 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
 
             {/* Price range */}
             <div>
-              <label className="text-sm font-medium text-foreground mb-4 block">
+              <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-4">
+                <DollarSign className="w-4 h-4 text-success" />
                 Rango de precio (caché)
               </label>
               <div className="px-2">
@@ -174,23 +187,29 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
                   min={0}
                   max={50000}
                   step={500}
-                  className="mb-2"
+                  className="mb-3"
                 />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>€{priceRange[0].toLocaleString()}</span>
-                  <span>€{priceRange[1].toLocaleString()}</span>
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium text-foreground">€{priceRange[0].toLocaleString()}</span>
+                  <span className="font-medium text-foreground">€{priceRange[1].toLocaleString()}</span>
                 </div>
               </div>
             </div>
 
             {/* Clear filters */}
             {activeFiltersCount > 0 && (
-              <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground">
-                <X className="w-4 h-4 mr-2" />
-                Limpiar filtros
-              </Button>
+              <div className="pt-2 border-t border-border/30">
+                <Button 
+                  variant="ghost" 
+                  onClick={clearFilters} 
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Limpiar todos los filtros
+                </Button>
+              </div>
             )}
-          </div>
+          </Card>
         </div>
       </div>
     </div>
