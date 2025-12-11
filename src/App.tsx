@@ -30,13 +30,18 @@ import ArtistManagerRequests from "./pages/artist/ArtistManagerRequests";
 import ManagerHome from "./pages/manager/ManagerHome";
 import ManagerRequests from "./pages/manager/ManagerRequests";
 import ManagerArtists from "./pages/manager/ManagerArtists";
+import ManagerProfile from "./pages/manager/ManagerProfile";
 
 // Venue pages
 import VenueHome from "./pages/venue/VenueHome";
 import VenueSearch from "./pages/venue/VenueSearch";
+import VenueRequests from "./pages/venue/VenueRequests";
+import VenueProfile from "./pages/venue/VenueProfile";
 
 // Promoter pages
 import PromoterHome from "./pages/promoter/PromoterHome";
+import PromoterRequests from "./pages/promoter/PromoterRequests";
+import PromoterProfile from "./pages/promoter/PromoterProfile";
 
 // Common pages
 import Settings from "./pages/Settings";
@@ -90,6 +95,7 @@ function RealtimeToasts() {
         toast({
           title: 'Solicitud actualizada',
           description: `Estado: ${status}`,
+          duration: 4000,
         });
         invalidateManagerRelations();
       } catch (err: any) {
@@ -97,6 +103,7 @@ function RealtimeToasts() {
           title: 'Error',
           description: err?.message || 'No se pudo actualizar la solicitud',
           variant: 'destructive',
+          duration: 4000,
         });
       }
     };
@@ -112,6 +119,7 @@ function RealtimeToasts() {
             )}
           </div>
         ),
+        duration: 4000,
       });
       invalidateBookings();
     });
@@ -120,6 +128,7 @@ function RealtimeToasts() {
       toast({
         title: 'Solicitud actualizada',
         description: `Estado: ${payload?.status || 'Actualizada'}`,
+        duration: 4000,
       });
       invalidateBookings();
     });
@@ -152,6 +161,7 @@ function RealtimeToasts() {
             </div>
           </div>
         ),
+        duration: 4000,
       });
       invalidateManagerRelations();
     });
@@ -160,6 +170,7 @@ function RealtimeToasts() {
       toast({
         title: 'Solicitud actualizada',
         description: `Estado: ${payload?.status || 'Actualizada'}`,
+        duration: 4000,
       });
       invalidateManagerRelations();
     });
@@ -168,6 +179,7 @@ function RealtimeToasts() {
       toast({
         title: 'Relación finalizada',
         description: 'Se ha eliminado la relación manager-artista.',
+        duration: 4000,
       });
       invalidateManagerRelations();
     });
@@ -220,22 +232,25 @@ function AppRoutes() {
 
       {/* Manager routes */}
       <Route path="/manager" element={<ManagerHome />} />
+      <Route path="/manager/profile" element={<ManagerProfile />} />
       <Route path="/manager/artists" element={<ManagerArtists />} />
       <Route path="/manager/requests" element={<ManagerRequests />} />
       <Route path="/manager/settings" element={<Settings />} />
 
       {/* Venue routes */}
       <Route path="/venue" element={<VenueHome />} />
+      <Route path="/venue/profile" element={<VenueProfile />} />
       <Route path="/venue/search" element={<VenueSearch />} />
-      <Route path="/venue/requests" element={<VenueHome />} />
+      <Route path="/venue/requests" element={<VenueRequests />} />
       <Route path="/venue/favorites" element={<VenueHome />} />
       <Route path="/venue/settings" element={<Settings />} />
 
       {/* Promoter routes */}
       <Route path="/promoter" element={<PromoterHome />} />
+      <Route path="/promoter/profile" element={<PromoterProfile />} />
       <Route path="/promoter/search" element={<VenueSearch />} />
       <Route path="/promoter/events" element={<PromoterHome />} />
-      <Route path="/promoter/requests" element={<PromoterHome />} />
+      <Route path="/promoter/requests" element={<PromoterRequests />} />
       <Route path="/promoter/settings" element={<Settings />} />
 
       {/* Catch all */}

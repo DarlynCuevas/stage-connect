@@ -4,6 +4,9 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { useArtistRequests, useSentRequests, useManagerRequests } from '@/lib/requests';
+import { useReceivedManagerRequests } from '@/lib/manager-requests';
 import {
   Home,
   User,
@@ -45,6 +48,7 @@ const roleConfig = {
     icon: Users,
     links: [
       { to: '/manager', icon: Home, label: 'Inicio' },
+      { to: '/manager/profile', icon: User, label: 'Mi Perfil' },
       { to: '/manager/artists', icon: Music, label: 'Mis Artistas' },
       { to: '/manager/requests', icon: MessageSquare, label: 'Solicitudes' },
       { to: '/manager/settings', icon: Settings, label: 'Ajustes' },
@@ -57,6 +61,7 @@ const roleConfig = {
     icon: Building2,
     links: [
       { to: '/venue', icon: Home, label: 'Inicio' },
+      { to: '/venue/profile', icon: User, label: 'Mi Perfil' },
       { to: '/venue/search', icon: Search, label: 'Buscar Artistas' },
       { to: '/venue/requests', icon: MessageSquare, label: 'Mis Solicitudes' },
       { to: '/venue/favorites', icon: Heart, label: 'Favoritos' },
@@ -70,6 +75,7 @@ const roleConfig = {
     icon: Megaphone,
     links: [
       { to: '/promoter', icon: Home, label: 'Inicio' },
+      { to: '/promoter/profile', icon: User, label: 'Mi Perfil' },
       { to: '/promoter/search', icon: Search, label: 'Buscar Artistas' },
       { to: '/promoter/events', icon: Calendar, label: 'Mis Eventos' },
       { to: '/promoter/requests', icon: MessageSquare, label: 'Mis Solicitudes' },
@@ -83,6 +89,12 @@ export function Sidebar() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Obtener datos para badges según el rol
+  const { data: artistRequests = [] } = useArtistRequests();
+  const { data: sentRequests = [] } = useSentRequests();
+  const { data: managerRequests = [] } = useManagerRequests();
+  const { data: receivedManagerRequests = [] } = useReceivedManagerRequests();
 
   if (!user) return null;
 
@@ -98,6 +110,29 @@ export function Sidebar() {
 
   const config = roleConfig[roleKey];
   const RoleIcon = config.icon;
+
+  // Función para obtener el contador de un link específico
+  const getBadgeCount = (linkTo: string): number => {
+    if (roleKey === 'artist') {
+      if (linkTo === '/artist/requests') {
+        return artistRequests.filter(r => r.status === 'Pending').length;
+      }
+      if (linkTo === '/artist/manager-requests') {
+        return receivedManagerRequests.filter(r => r.status === 'Pending').length;
+      }
+    }
+    if (roleKey === 'manager') {
+      if (linkTo === '/manager/requests') {
+        return managerRequests.filter((r: any) => r.status === 'Pending').length;
+      }
+    }
+    if (roleKey === 'venue' || roleKey === 'promoter') {
+      if (linkTo.includes('/requests')) {
+        return sentRequests.filter(r => r.status === 'Pending').length;
+      }
+    }
+    return 0;
+  };
 
   return (
     <>
@@ -165,13 +200,14 @@ export function Sidebar() {
         <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
           {config.links.map((link) => {
             const isActive = location.pathname === link.to;
+            const badgeCount = getBadgeCount(link.to);
             return (
               <Link
                 key={link.to}
                 to={link.to}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group",
+                  "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group relative",
                   collapsed && "justify-center px-2",
                   isActive
                     ? `${config.bgColor} ${config.color}`
@@ -183,7 +219,20 @@ export function Sidebar() {
                   isActive && config.color
                 )} />
                 {!collapsed && (
-                  <span className="text-sm font-medium truncate">{link.label}</span>
+                  <>
+                    <span className="text-sm font-medium truncate flex-1">{link.label}</span>
+                    {badgeCount > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className="h-5 min-w-5 px-1.5 text-xs font-semibold flex items-center justify-center"
+                      >
+                        {badgeCount > 99 ? '99+' : badgeCount}
+                      </Badge>
+                    )}
+                  </>
+                )}
+                {collapsed && badgeCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full ring-2 ring-sidebar" />
                 )}
               </Link>
             );

@@ -35,6 +35,7 @@ export default function Register() {
         title: 'Selecciona un rol',
         description: 'Debes elegir qué tipo de usuario eres.',
         variant: 'destructive',
+        duration: 4000,
       });
       return;
     }
@@ -47,6 +48,7 @@ export default function Register() {
         toast({
           title: '¡Cuenta creada!',
           description: 'Bienvenido a Stagebook.',
+          duration: 4000,
         });
         // Redirigir al login después del registro
         navigate('/login');
@@ -56,6 +58,7 @@ export default function Register() {
         title: 'Error',
         description: 'No se pudo crear la cuenta. Inténtalo de nuevo.',
         variant: 'destructive',
+        duration: 4000,
       });
     } finally {
       setIsLoading(false);

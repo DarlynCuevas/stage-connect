@@ -64,6 +64,7 @@ export default function ArtistCalendar() {
           toast({
             title: 'Fecha desbloqueada',
             description: `Fecha ${format(date, 'dd/MM/yyyy')} ahora está disponible.`,
+            duration: 4000,
           });
         },
       });
@@ -74,6 +75,7 @@ export default function ArtistCalendar() {
           toast({
             title: 'Fecha bloqueada',
             description: `Fecha ${format(date, 'dd/MM/yyyy')} bloqueada.`,
+            duration: 4000,
           });
         },
       });

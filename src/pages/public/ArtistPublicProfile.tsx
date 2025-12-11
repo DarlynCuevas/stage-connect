@@ -113,7 +113,7 @@ export default function ArtistPublicProfile() {
     e.preventDefault();
 
     if (!isAuthenticated || !token) {
-      toast({ title: 'Debes iniciar sesión', description: 'Inicia sesión como Local o Promotor para enviar solicitudes', variant: 'destructive' });
+      toast({ title: 'Debes iniciar sesión', description: 'Inicia sesión como Local o Promotor para enviar solicitudes', variant: 'destructive', duration: 4000 });
       return;
     }
 
@@ -147,10 +147,11 @@ export default function ArtistPublicProfile() {
       toast({
         title: 'Solicitud enviada',
         description: `Tu solicitud para ${artist.nickName || artist.name} ha sido enviada correctamente.`,
+        duration: 4000,
       });
     } catch (err: any) {
       const messageErr = err?.message || 'No se pudo enviar la solicitud';
-      toast({ title: 'Error', description: messageErr, variant: 'destructive' });
+      toast({ title: 'Error', description: messageErr, variant: 'destructive', duration: 4000 });
     }
   };
 

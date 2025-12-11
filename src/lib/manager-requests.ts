@@ -100,6 +100,7 @@ export function useCreateManagerRequest() {
       toast({
         title: 'Solicitud enviada',
         description: 'La solicitud ha sido enviada correctamente.',
+        duration: 4000,
       });
     },
     onError: (error: any) => {
@@ -107,6 +108,7 @@ export function useCreateManagerRequest() {
         title: 'Error',
         description: error?.message || 'No se pudo enviar la solicitud.',
         variant: 'destructive',
+        duration: 4000,
       });
     },
   });
@@ -127,6 +129,7 @@ export function useUpdateManagerRequestStatus() {
       toast({
         title: 'Solicitud actualizada',
         description: 'La solicitud ha sido actualizada correctamente.',
+        duration: 4000,
       });
     },
     onError: (error: any) => {
@@ -134,6 +137,7 @@ export function useUpdateManagerRequestStatus() {
         title: 'Error',
         description: error?.message || 'No se pudo actualizar la solicitud.',
         variant: 'destructive',
+        duration: 4000,
       });
     },
   });
@@ -151,6 +155,7 @@ export function useDeleteSentManagerRequest() {
       toast({
         title: 'Solicitud eliminada',
         description: 'La solicitud fue eliminada exitosamente.',
+        duration: 4000,
       });
     },
     onError: (error: any) => {
@@ -158,6 +163,7 @@ export function useDeleteSentManagerRequest() {
         title: 'Error',
         description: error?.message || 'No se pudo eliminar la solicitud.',
         variant: 'destructive',
+        duration: 4000,
       });
     },
   });
@@ -176,6 +182,7 @@ export function useDeleteAllSentManagerRequests() {
       toast({
         title: 'Solicitudes eliminadas',
         description: count > 0 ? `${count} solicitud(es) eliminadas.` : 'No había solicitudes pendientes para eliminar.',
+        duration: 4000,
       });
     },
     onError: (error: any) => {
@@ -183,6 +190,7 @@ export function useDeleteAllSentManagerRequests() {
         title: 'Error',
         description: error?.message || 'No se pudieron eliminar las solicitudes.',
         variant: 'destructive',
+        duration: 4000,
       });
     },
   });
@@ -201,6 +209,7 @@ export function useRemoveManagerRelation() {
       toast({
         title: 'Relación eliminada',
         description: 'La relación con el manager ha sido eliminada.',
+        duration: 4000,
       });
     },
     onError: (error: any) => {
@@ -208,6 +217,7 @@ export function useRemoveManagerRelation() {
         title: 'Error',
         description: error?.message || 'No se pudo eliminar la relación.',
         variant: 'destructive',
+        duration: 4000,
       });
     },
   });
@@ -234,6 +244,8 @@ export function useManagerRequestsRealtime() {
       queryClient.invalidateQueries({ queryKey: ['managerRequests'] });
       queryClient.invalidateQueries({ queryKey: ['artists'] });
       queryClient.invalidateQueries({ queryKey: ['artist'] });
+      queryClient.invalidateQueries({ queryKey: ['managerStats'] });
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
     };
 
     socket.on('manager-request.created', (payload: any) => {
@@ -242,6 +254,7 @@ export function useManagerRequestsRealtime() {
       toast({
         title: 'Nueva solicitud manager-artista',
         description: senderName,
+        duration: 4000,
       });
     });
 
@@ -256,6 +269,17 @@ export function useManagerRequestsRealtime() {
     socket.on('manager-relation.removed', () => {
       queryClient.invalidateQueries({ queryKey: ['artists'] });
       queryClient.invalidateQueries({ queryKey: ['artist'] });
+    });
+
+    // Listen to booking requests events (for managed artists)
+    socket.on('request.created', () => {
+      queryClient.invalidateQueries({ queryKey: ['managerStats'] });
+      queryClient.invalidateQueries({ queryKey: ['managerRequests'] });
+    });
+
+    socket.on('request.updated', () => {
+      queryClient.invalidateQueries({ queryKey: ['managerStats'] });
+      queryClient.invalidateQueries({ queryKey: ['managerRequests'] });
     });
 
     return () => {

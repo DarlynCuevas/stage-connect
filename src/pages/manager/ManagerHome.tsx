@@ -76,9 +76,6 @@ export default function ManagerHome() {
             <p className="text-muted-foreground">
               Bienvenido, {manager?.name || 'Manager'}
             </p>
-            <p className="text-xs text-muted-foreground">
-              Género: {manager?.gender || 'No especificado'}
-            </p>
           </div>
           <div className="flex gap-3">
             <Button variant="outline" asChild>

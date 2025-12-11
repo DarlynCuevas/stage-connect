@@ -21,6 +21,7 @@ export default function Settings() {
     toast({
       title: 'Perfil actualizado',
       description: 'Los cambios se han guardado correctamente.',
+      duration: 4000,
     });
   };
 
@@ -28,6 +29,7 @@ export default function Settings() {
     toast({
       title: 'Contraseña actualizada',
       description: 'Tu contraseña ha sido cambiada correctamente.',
+      duration: 4000,
     });
   };
 
@@ -39,11 +41,11 @@ export default function Settings() {
       setDeleting(true);
       // Assuming token is managed within apiFetch via context; if not, inject from useAuth
       await deleteUser(user.id as number, token as string);
-      toast({ title: 'Cuenta eliminada', description: 'Tu cuenta ha sido eliminada correctamente.' });
+      toast({ title: 'Cuenta eliminada', description: 'Tu cuenta ha sido eliminada correctamente.', duration: 4000 });
       // Logout and redirect to landing
       logout();
     } catch (err: any) {
-      toast({ title: 'Error al eliminar', description: err?.message || 'No se pudo eliminar la cuenta.', variant: 'destructive' });
+      toast({ title: 'Error al eliminar', description: err?.message || 'No se pudo eliminar la cuenta.', variant: 'destructive', duration: 4000 });
     } finally {
       setDeleting(false);
     }

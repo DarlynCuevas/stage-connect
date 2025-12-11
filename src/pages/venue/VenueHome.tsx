@@ -2,11 +2,10 @@ import { Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ArtistCard } from '@/components/artists/ArtistCard';
-import { RequestCard } from '@/components/booking/RequestCard';
 import { useArtists } from '@/lib/users';
 import { useSentRequests } from '@/lib/requests';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Search,
   MessageSquare,
@@ -17,6 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function VenueHome() {
+  const { user } = useAuth();
   const { data: featuredArtists = [], isLoading } = useArtists();
   const { data: sentRequests = [] } = useSentRequests();
   const topArtists = (featuredArtists || []).slice(0, 3);
@@ -31,21 +31,21 @@ export default function VenueHome() {
     },
     {
       label: 'Artistas favoritos',
-      value: 5,
+      value: 0,
       icon: Heart,
       color: 'text-destructive',
       bgColor: 'bg-destructive/10',
     },
     {
       label: 'Eventos programados',
-      value: 3,
+      value: 0,
       icon: Calendar,
       color: 'text-accent',
       bgColor: 'bg-accent/10',
     },
     {
       label: 'Contrataciones este mes',
-      value: 2,
+      value: 0,
       icon: TrendingUp,
       color: 'text-emerald-400',
       bgColor: 'bg-emerald-500/10',
@@ -59,10 +59,10 @@ export default function VenueHome() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-display font-bold mb-2">
-              ¡Bienvenido, Club Nocturno!
+              Panel de Local
             </h1>
             <p className="text-muted-foreground">
-              Encuentra el artista perfecto para tu próximo evento
+              Bienvenido, {user?.name || 'Local'}
             </p>
           </div>
           <Button variant="hero" asChild size="lg">

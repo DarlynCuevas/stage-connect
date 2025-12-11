@@ -45,20 +45,30 @@ export function RequestCard({
 }: RequestCardProps) {
   const status = statusConfig[request.status];
 
+  // If sender (venue/promoter), show the artist info from request
+  // If receiver (artist), show the requester info
+  const displayPerson = isReceiver 
+    ? request.requester 
+    : request.artist || artist;
+  
+  const displayName = isReceiver
+    ? request.requester?.name
+    : (request.artist?.nickName || request.artist?.name || artist?.nickName || artist?.name);
+
   return (
     <Card variant="gradient" className="hover:shadow-md transition-all duration-300">
       <CardHeader className="pb-2 px-4 pt-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            {artist && (
+            {displayPerson && (
               <Avatar className="h-10 w-10 border-2 border-border shrink-0">
-                <AvatarImage src={artist.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
-                <AvatarFallback className="text-sm">{artist.nickName?.charAt(0) || artist.name?.charAt(0) || 'A'}</AvatarFallback>
+                <AvatarImage src={displayPerson.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
+                <AvatarFallback className="text-sm">{displayName?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
             )}
             <div className="min-w-0">
               <CardTitle className="text-base truncate">
-                {artist?.nickName || artist?.name || 'Artista'}
+                {displayName || 'Usuario'}
               </CardTitle>
               <p className="text-xs text-muted-foreground truncate">{request.eventType}</p>
             </div>

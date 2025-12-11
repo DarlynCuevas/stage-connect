@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RequestCard } from '@/components/booking/RequestCard';
 import { useUpdateRequestStatus, useArtistRequests, useConfirmedRequests } from '@/lib/requests';
+import { useReceivedManagerRequests, useUpdateManagerRequestStatus } from '@/lib/manager-requests';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE_URL } from '@/config';
 import { useQueryClient } from '@tanstack/react-query';
@@ -19,7 +20,10 @@ import {
   ArrowRight,
   User,
   Music,
+  Check,
+  X,
 } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { format, isThisYear, isFuture, parseISO, isThisMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -27,12 +31,15 @@ export default function ArtistHome() {
   const { user: artist, token } = useAuth();
   const { data: requests = [], isLoading } = useArtistRequests();
   const { data: confirmedRequests = [] } = useConfirmedRequests(artist?.id ? Number(artist.id) : undefined);
+  const { data: managerRequests = [] } = useReceivedManagerRequests();
 
   const updateStatusMutation = useUpdateRequestStatus();
+  const updateManagerStatusMutation = useUpdateManagerRequestStatus();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const pendingRequests = useMemo(() => requests.filter(r => r.status === 'Pending'), [requests]);
+  const pendingManagerRequests = useMemo(() => managerRequests.filter(r => r.status === 'Pending'), [managerRequests]);
 
   // Shows totales: all confirmed requests regardless of year
   const showsThisYear = useMemo(() => {
@@ -84,6 +91,22 @@ export default function ArtistHome() {
     }
   }, [updateStatusMutation]);
 
+  const handleAcceptManager = useCallback(async (requestId: number) => {
+    try {
+      await updateManagerStatusMutation.mutateAsync({ requestId, status: 'Accepted' });
+    } catch (err) {
+      // error already handled by mutation
+    }
+  }, [updateManagerStatusMutation]);
+
+  const handleRejectManager = useCallback(async (requestId: number) => {
+    try {
+      await updateManagerStatusMutation.mutateAsync({ requestId, status: 'Rejected' });
+    } catch (err) {
+      // error already handled by mutation
+    }
+  }, [updateManagerStatusMutation]);
+
   useEffect(() => {
     if (!token) return;
 
@@ -100,8 +123,24 @@ export default function ArtistHome() {
       toast({
         title: 'Nueva solicitud',
         description: `${payload.eventType} - ${payload.eventLocation}`,
+        duration: 4000,
       });
       queryClient.invalidateQueries({ queryKey: ['requests'] });
+    });
+
+    socket.on('managerRequest.created', (payload: any) => {
+      toast({
+        title: 'Nueva solicitud de manager',
+        description: `${payload.sender?.name || 'Un manager'} quiere ser tu representante`,
+        duration: 4000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['managerRequests'] });
+    });
+
+    socket.on('managerRequest.statusUpdated', (payload: any) => {
+      queryClient.invalidateQueries({ queryKey: ['managerRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['artist'] });
+      queryClient.invalidateQueries({ queryKey: ['artists'] });
     });
 
     return () => {
@@ -112,7 +151,7 @@ export default function ArtistHome() {
   const stats = [
     {
       label: 'Solicitudes pendientes',
-      value: pendingRequests.length,
+      value: pendingRequests.length + pendingManagerRequests.length,
       icon: MessageSquare,
       color: 'text-role-artist',
       bgColor: 'bg-role-artist/10',
@@ -164,10 +203,10 @@ export default function ArtistHome() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-display font-bold mb-2">
-              ¡Hola, {artist.nickName || artist.name}!
+              Panel de Artista
             </h1>
             <p className="text-muted-foreground">
-              Aquí está el resumen de tu actividad
+              Bienvenido, {artist.nickName || artist.name}
             </p>
           </div>
           <div className="flex gap-3">
@@ -223,17 +262,66 @@ export default function ArtistHome() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              {pendingRequests.length > 0 ? (
-                pendingRequests.slice(0, 2).map((request) => (
-                  <RequestCard
-                    key={request.id}
-                    request={request}
-                    artist={artist ?? undefined}
-                    isReceiver
-                    onAccept={() => handleAccept(String(request.id))}
-                    onReject={() => handleReject(String(request.id))}
-                  />
-                ))
+              {pendingRequests.length > 0 || pendingManagerRequests.length > 0 ? (
+                <>
+                  {/* Manager requests first */}
+                  {pendingManagerRequests.slice(0, 2).map((managerRequest) => (
+                    <Card key={`manager-${managerRequest.id}`} variant="gradient" className="hover:shadow-md transition-all duration-300 border-l-4 border-l-blue-500">
+                      <CardHeader className="pb-2 px-4 pt-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3 flex-1">
+                            <Avatar className="h-12 w-12">
+                              <AvatarImage src={managerRequest.sender?.avatar} />
+                              <AvatarFallback>{managerRequest.sender?.name?.[0]}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <CardTitle className="text-base font-semibold">{managerRequest.sender?.name}</CardTitle>
+                              <Badge variant="artist" className="mt-1">Solicitud de Manager</Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="px-4 pb-4">
+                        {managerRequest.message && (
+                          <p className="text-sm text-muted-foreground mb-4">{managerRequest.message}</p>
+                        )}
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => handleAcceptManager(managerRequest.id)}
+                            disabled={updateManagerStatusMutation.isPending}
+                            className="flex-1"
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Aceptar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleRejectManager(managerRequest.id)}
+                            disabled={updateManagerStatusMutation.isPending}
+                            className="flex-1"
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Rechazar
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {/* Booking requests after manager requests */}
+                  {pendingRequests.slice(0, 2 - pendingManagerRequests.slice(0, 2).length).map((request) => (
+                    <RequestCard
+                      key={request.id}
+                      request={request}
+                      artist={artist ?? undefined}
+                      isReceiver
+                      onAccept={() => handleAccept(String(request.id))}
+                      onReject={() => handleReject(String(request.id))}
+                    />
+                  ))}
+                </>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />

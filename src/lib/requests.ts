@@ -89,7 +89,7 @@ export function useUpdateRequestStatus() {
   async function mutateAsync(variables: { id: string; status: FrontendStatus }) {
     try {
       const res = await updateRequestStatusApi(variables.id, variables.status, token ?? null);
-      toast({ title: 'Request updated', description: `Request ${variables.status} successfully.` });
+      toast({ title: 'Request updated', description: `Request ${variables.status} successfully.`, duration: 4000 });
       queryClient.invalidateQueries({ queryKey: ['requests'] });
       queryClient.invalidateQueries({ queryKey: ['managerRequests'] });
       queryClient.invalidateQueries({ queryKey: ['managerStats'] });
@@ -99,7 +99,7 @@ export function useUpdateRequestStatus() {
       return res;
     } catch (err: any) {
       const message = err?.message || 'Could not update request';
-      toast({ title: 'Error', description: message, variant: 'destructive' });
+      toast({ title: 'Error', description: message, variant: 'destructive', duration: 4000 });
       throw err;
     }
   }

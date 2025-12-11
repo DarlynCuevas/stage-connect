@@ -28,6 +28,7 @@ export default function Login() {
             toast({
                 title: '¡Bienvenido de vuelta!',
                 description: 'Has iniciado sesión correctamente.',
+                duration: 4000,
             });
             
             // === LÓGICA DE REDIRECCIÓN CONDICIONAL CORREGIDA ===
@@ -52,6 +53,7 @@ export default function Login() {
           title: 'Error de autenticación',
           description: 'Email o contraseña incorrectos.',
           variant: 'destructive',
+          duration: 4000,
         });
       }
     } catch (error) {
@@ -59,6 +61,7 @@ export default function Login() {
         title: 'Error',
         description: 'Algo salió mal. Inténtalo de nuevo.',
         variant: 'destructive',
+        duration: 4000,
       });
     } finally {
       setIsLoading(false);

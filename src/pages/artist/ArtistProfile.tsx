@@ -98,6 +98,7 @@ export default function ArtistProfile() {
         title: 'Error',
         description: 'No estás autenticado',
         variant: 'destructive',
+        duration: 4000,
       });
       return;
     }
@@ -123,12 +124,14 @@ export default function ArtistProfile() {
       toast({
         title: 'Perfil actualizado',
         description: 'Los cambios se han guardado correctamente en la base de datos.',
+        duration: 4000,
       });
     } catch (error: any) {
       toast({
         title: 'Error',
         description: error.message || 'No se pudo actualizar el perfil',
         variant: 'destructive',
+        duration: 4000,
       });
     }
   };

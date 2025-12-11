@@ -1,55 +1,24 @@
-import { useCallback } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { RequestCard } from '@/components/booking/RequestCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockArtists } from '@/data/mockData';
-import { BookingRequest } from '@/types';
-import { useToast } from '@/hooks/use-toast';
-import { useArtistRequests, useUpdateRequestStatus } from '@/lib/requests';
-import { MessageSquare, Clock, Check, X } from 'lucide-react';
+import { useSentRequests } from '@/lib/requests';
+import { Clock, Check } from 'lucide-react';
 
-export default function ArtistRequests() {
-  const { data: requests = [], isLoading } = useArtistRequests();
-  const artist = mockArtists[0];
-  const { toast } = useToast();
-  const updateStatusMutation = useUpdateRequestStatus();
-
-  const handleAccept = useCallback(async (requestId: string) => {
-    try {
-      await updateStatusMutation.mutateAsync({ id: requestId, status: 'Accepted' });
-    } catch (err) {
-      // error already handled by mutation
-    }
-  }, [updateStatusMutation]);
-
-  const handleReject = useCallback(async (requestId: string) => {
-    try {
-      await updateStatusMutation.mutateAsync({ id: requestId, status: 'Rejected' });
-    } catch (err) {
-      // error already handled by mutation
-    }
-  }, [updateStatusMutation]);
-
-  const handleNegotiate = (requestId: string) => {
-    toast({
-      title: 'Modo negociación',
-      description: 'Ahora puedes enviar una contraoferta.',
-      duration: 4000,
-    });
-  };
+export default function VenueRequests() {
+  const { data: requests = [], isLoading } = useSentRequests();
 
   const pendingRequests = requests.filter(r => r.status === 'Pending');
-  const completedRequests = requests.filter(r => ['Accepted', 'Rejected'].includes(r.status));
+  const acceptedRequests = requests.filter(r => r.status === 'Accepted');
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-display font-bold mb-2">
-            Solicitudes de Contratación
+            Mis Solicitudes
           </h1>
           <p className="text-muted-foreground">
-            Gestiona las propuestas que recibes de locales y promotores.
+            Revisa el estado de las solicitudes que has enviado a artistas.
           </p>
         </div>
 
@@ -59,9 +28,9 @@ export default function ArtistRequests() {
               <Clock className="w-4 h-4" />
               Pendientes ({pendingRequests.length})
             </TabsTrigger>
-            <TabsTrigger value="completed" className="gap-2">
+            <TabsTrigger value="accepted" className="gap-2">
               <Check className="w-4 h-4" />
-              Completadas ({completedRequests.length})
+              Aceptadas ({acceptedRequests.length})
             </TabsTrigger>
           </TabsList>
 
@@ -72,11 +41,7 @@ export default function ArtistRequests() {
                   <RequestCard
                     key={request.id}
                     request={request}
-                    artist={artist}
-                    isReceiver
-                    onAccept={() => handleAccept(request.id)}
-                    onReject={() => handleReject(request.id)}
-                    onNegotiate={() => handleNegotiate(request.id)}
+                    isReceiver={false}
                   />
                 ))
               ) : (
@@ -88,20 +53,20 @@ export default function ArtistRequests() {
             </div>
           </TabsContent>
 
-          <TabsContent value="completed">
+          <TabsContent value="accepted">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {completedRequests.length > 0 ? (
-                completedRequests.map((request) => (
+              {acceptedRequests.length > 0 ? (
+                acceptedRequests.map((request) => (
                   <RequestCard
                     key={request.id}
                     request={request}
-                    artist={artist}
+                    isReceiver={false}
                   />
                 ))
               ) : (
                 <div className="col-span-2 text-center py-12 text-muted-foreground">
                   <Check className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">No hay solicitudes completadas</p>
+                  <p className="text-lg">No hay solicitudes aceptadas</p>
                 </div>
               )}
             </div>
