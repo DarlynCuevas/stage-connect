@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useArtists } from '@/lib/users';
 import { useAuth } from '@/contexts/AuthContext';
+import { useManagerStats, useManagerRequests } from '@/lib/requests';
+import { useManagerRequestsRealtime } from '@/lib/manager-requests';
 import {
   Users,
   MessageSquare,
@@ -18,14 +20,20 @@ import {
 } from 'lucide-react';
 
 export default function ManagerHome() {
+  useManagerRequestsRealtime();
   const { user } = useAuth();
   const { data: artists = [] } = useArtists();
+  const { data: stats } = useManagerStats();
+  const { data: requests = [] } = useManagerRequests();
+  
   const manager = user;
   const managedArtists = (artists || []).filter((a: any) => {
     return a.managerId && String(a.managerId) === String(user?.id);
   });
 
-  const stats = [
+  const recentRequests = requests.slice(0, 5);
+
+  const statsCards = [
     {
       label: 'Artistas gestionados',
       value: managedArtists.length,
@@ -35,21 +43,21 @@ export default function ManagerHome() {
     },
     {
       label: 'Solicitudes pendientes',
-      value: 0,
+      value: stats?.pendingRequests ?? 0,
       icon: MessageSquare,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
     },
     {
       label: 'Eventos este mes',
-      value: 4,
+      value: stats?.eventsThisMonth ?? 0,
       icon: Calendar,
       color: 'text-accent',
       bgColor: 'bg-accent/10',
     },
     {
       label: 'Ingresos generados',
-      value: '€45K',
+      value: `€${(stats?.totalRevenue ?? 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}`,
       icon: TrendingUp,
       color: 'text-emerald-400',
       bgColor: 'bg-emerald-500/10',
@@ -67,6 +75,9 @@ export default function ManagerHome() {
             </h1>
             <p className="text-muted-foreground">
               Bienvenido, {manager?.name || 'Manager'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Género: {manager?.gender || 'No especificado'}
             </p>
           </div>
           <div className="flex gap-3">
@@ -87,7 +98,7 @@ export default function ManagerHome() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat) => (
+          {statsCards.map((stat) => (
             <Card key={stat.label} variant="gradient">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -128,7 +139,7 @@ export default function ManagerHome() {
                     className="flex items-center gap-4 p-4 rounded-xl bg-secondary/30 border border-border/50 hover:border-primary/30 transition-all duration-300"
                   >
                     <Avatar className="h-16 w-16 border-2 border-border">
-                      <AvatarImage src={artist.avatar} />
+                      <AvatarImage src={artist.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
                       <AvatarFallback>{artist.nickName?.charAt(0) || artist.name?.charAt(0) || 'A'}</AvatarFallback>
                     </Avatar>
 
@@ -183,10 +194,37 @@ export default function ManagerHome() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>No hay solicitudes pendientes</p>
-            </div>
+            {recentRequests.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>No hay solicitudes pendientes</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentRequests.map((request: any) => (
+                  <div
+                    key={request.id}
+                    className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={request.requester?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=requester'} />
+                        <AvatarFallback>{request.requester?.name?.charAt(0) || 'R'}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{request.requester?.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {request.eventType} • {new Date(request.eventDate).toLocaleDateString('es-ES')}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant={request.status === 'Pending' ? 'default' : request.status === 'Accepted' ? 'success' : 'destructive'}>
+                      {request.status === 'Pending' ? 'Pendiente' : request.status === 'Accepted' ? 'Aceptada' : 'Rechazada'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

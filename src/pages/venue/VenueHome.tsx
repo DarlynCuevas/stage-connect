@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 import { RequestCard } from '@/components/booking/RequestCard';
 import { useArtists } from '@/lib/users';
+import { useSentRequests } from '@/lib/requests';
 import {
   Search,
   MessageSquare,
@@ -17,12 +18,13 @@ import {
 
 export default function VenueHome() {
   const { data: featuredArtists = [], isLoading } = useArtists();
+  const { data: sentRequests = [] } = useSentRequests();
   const topArtists = (featuredArtists || []).slice(0, 3);
 
   const stats = [
     {
       label: 'Solicitudes enviadas',
-      value: 0,
+      value: sentRequests.length,
       icon: MessageSquare,
       color: 'text-role-venue',
       bgColor: 'bg-role-venue/10',

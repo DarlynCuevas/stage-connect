@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 import { useArtists } from '@/lib/users';
+import { useSentRequests } from '@/lib/requests';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Search,
@@ -19,6 +20,7 @@ import {
 export default function PromoterHome() {
   const { user } = useAuth();
   const { data: featuredArtists = [] } = useArtists();
+  const { data: sentRequests = [] } = useSentRequests();
   const promoter = user ?? { name: 'Promotor', company: '' };
 
   const stats = [
@@ -31,7 +33,7 @@ export default function PromoterHome() {
     },
     {
       label: 'Solicitudes activas',
-      value: 0,
+      value: sentRequests.length,
       icon: MessageSquare,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
@@ -69,6 +71,9 @@ export default function PromoterHome() {
             </h1>
             <p className="text-muted-foreground">
               Bienvenido, {promoter.name}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Género: {(promoter as any).gender || 'No especificado'}
             </p>
           </div>
           <div className="flex gap-3">

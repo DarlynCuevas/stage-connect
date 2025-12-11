@@ -7,15 +7,16 @@ import { CalendarDate } from '@/types';
 import { format, isSameDay, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { Check, X, Calendar as CalendarIcon } from 'lucide-react';
+import { Lock, Unlock, Calendar as CalendarIcon, Check, X } from 'lucide-react';
 
 interface ArtistCalendarProps {
   dates: CalendarDate[];
   editable?: boolean;
   onDateToggle?: (date: Date) => void;
+  onDateSelect?: (date: Date) => void;
 }
 
-export function ArtistCalendar({ dates, editable = false, onDateToggle }: ArtistCalendarProps) {
+export function ArtistCalendar({ dates, editable = false, onDateToggle, onDateSelect }: ArtistCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   const getDateStatus = (date: Date) => {
@@ -26,8 +27,15 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle }: Artist
   const handleDateClick = (date: Date | undefined) => {
     if (!date) return;
     setSelectedDate(date);
-    if (editable && onDateToggle) {
-      onDateToggle(date);
+
+    // If not editable (public/promoter/venue view) and date is unavailable, block selection
+    const status = getDateStatus(date);
+    if (!editable && status && !status.available) {
+      return;
+    }
+
+    if (!editable && onDateSelect) {
+      onDateSelect(date);
     }
   };
 
@@ -48,7 +56,11 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle }: Artist
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-full bg-destructive" />
-              <span className="text-muted-foreground">No disponible</span>
+              <span className="text-muted-foreground">Reservado</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(38, 92%, 50%)' }} />
+              <span className="text-muted-foreground">Bloqueado</span>
             </div>
           </div>
         </div>
@@ -63,18 +75,31 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle }: Artist
             className="rounded-lg border border-border p-3"
             modifiers={{
               available: dates.filter(d => d.available).map(d => parseISO(d.date)),
-              unavailable: dates.filter(d => !d.available).map(d => parseISO(d.date)),
+              unavailable: dates.filter(d => !d.available && (d as any).confirmed).map(d => parseISO(d.date)),
+              blocked: dates.filter(d => (d as any).blocked).map(d => parseISO(d.date)),
+              selected: selectedDate ? [selectedDate] : [],
             }}
             modifiersStyles={{
               available: {
-                backgroundColor: 'hsl(var(--primary) / 0.2)',
-                color: 'hsl(var(--primary))',
-                fontWeight: 600,
+                backgroundColor: 'transparent',
+                color: 'inherit',
               },
               unavailable: {
-                backgroundColor: 'hsl(var(--destructive) / 0.2)',
+                backgroundColor: 'hsl(var(--destructive) / 0.3)',
                 color: 'hsl(var(--destructive))',
                 fontWeight: 600,
+                borderRadius: '50%',
+              },
+              blocked: {
+                backgroundColor: 'hsl(38, 92%, 50%)',
+                color: 'white',
+                fontWeight: 600,
+                borderRadius: '50%',
+              },
+              selected: {
+                backgroundColor: 'hsl(var(--accent))',
+                color: 'inherit',
+                borderRadius: '50%',
               },
             }}
           />
@@ -95,10 +120,15 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle }: Artist
                           <Check className="w-3 h-3 mr-1" />
                           Disponible
                         </Badge>
-                      ) : (
+                      ) : (selectedDateInfo as any).confirmed ? (
                         <Badge variant="destructive">
                           <X className="w-3 h-3 mr-1" />
-                          No disponible
+                          Reserva confirmada
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive">
+                          <Lock className="w-3 h-3 mr-1" />
+                          Día bloqueado
                         </Badge>
                       )}
                     </div>
@@ -109,20 +139,31 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle }: Artist
                       </p>
                     )}
 
-                    {editable && (
+                    {editable && !(selectedDateInfo as any).confirmed && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => onDateToggle?.(selectedDate)}
+                        className={selectedDateInfo.available ? '' : 'border-destructive text-destructive hover:bg-destructive/10'}
                       >
-                        {selectedDateInfo.available ? 'Marcar como no disponible' : 'Marcar como disponible'}
+                        {selectedDateInfo.available ? (
+                          <>
+                            <Lock className="w-4 h-4 mr-2" />
+                            Bloquear día
+                          </>
+                        ) : (
+                          <>
+                            <Unlock className="w-4 h-4 mr-2" />
+                            Desbloquear día
+                          </>
+                        )}
                       </Button>
                     )}
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground">
-                      Sin información para esta fecha
+                      Disponible
                     </p>
                     {editable && (
                       <Button
@@ -130,7 +171,8 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle }: Artist
                         size="sm"
                         onClick={() => onDateToggle?.(selectedDate)}
                       >
-                        Marcar disponibilidad
+                        <Lock className="w-4 h-4 mr-2" />
+                        Bloquear día
                       </Button>
                     )}
                   </div>

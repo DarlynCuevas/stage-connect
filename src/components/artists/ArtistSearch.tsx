@@ -37,6 +37,7 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
   };
 
   const handleCountryChange = (country: string) => {
+    // Reset city when country changes
     onFiltersChange({ ...filters, country, city: undefined });
   };
 
@@ -45,8 +46,12 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
   };
 
   const handlePriceChange = (value: number[]) => {
-    setPriceRange(value);
-    onFiltersChange({ ...filters, priceMin: value[0], priceMax: value[1] });
+    // Ensure priceMin is not greater than priceMax
+    const [min, max] = value;
+    const validMin = Math.min(min, max);
+    const validMax = Math.max(min, max);
+    setPriceRange([validMin, validMax]);
+    onFiltersChange({ ...filters, priceMin: validMin, priceMax: validMax });
   };
 
   const clearFilters = () => {
@@ -55,12 +60,12 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
   };
 
   const activeFiltersCount = [
-    filters.query,
-    filters.genre?.length,
-    filters.country,
-    filters.city,
-    filters.priceMin || filters.priceMax,
-  ].filter(Boolean).length;
+    filters.query ? 1 : 0,
+    filters.genre?.length ?? 0,
+    filters.country ? 1 : 0,
+    filters.city ? 1 : 0,
+    (filters.priceMin && filters.priceMin > 0) || (filters.priceMax && filters.priceMax < 50000) ? 1 : 0,
+  ].reduce((a, b) => a + b, 0);
 
   return (
     <div className="space-y-4">

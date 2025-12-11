@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Search,
   Users,
+    UserPlus,
   Settings,
   LogOut,
   Menu,
@@ -33,6 +34,7 @@ const roleConfig = {
       { to: '/artist/profile', icon: User, label: 'Mi Perfil' },
       { to: '/artist/calendar', icon: Calendar, label: 'Calendario' },
       { to: '/artist/requests', icon: MessageSquare, label: 'Solicitudes' },
+        { to: '/artist/manager-requests', icon: UserPlus, label: 'Mi Manager' },
       { to: '/artist/settings', icon: Settings, label: 'Ajustes' },
     ],
   },
@@ -198,7 +200,7 @@ export function Sidebar() {
             collapsed && "flex-col"
           )}>
             <Avatar className="h-9 w-9 border-2 border-sidebar-border shrink-0">
-              <AvatarImage src={user.avatar} />
+              <AvatarImage src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
               <AvatarFallback className={cn(config.bgColor, "text-sm")}>
                 {user.name.charAt(0)}
               </AvatarFallback>

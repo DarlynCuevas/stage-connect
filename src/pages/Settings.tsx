@@ -8,12 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { User, Mail, Lock, LogOut, Trash2 } from 'lucide-react';
+import { deleteUser } from '@/lib/users';
 
 export default function Settings() {
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
   const { toast } = useToast();
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
+  const [deleting, setDeleting] = useState(false);
 
   const handleSaveProfile = () => {
     toast({
@@ -27,6 +29,24 @@ export default function Settings() {
       title: 'Contraseña actualizada',
       description: 'Tu contraseña ha sido cambiada correctamente.',
     });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    const confirm = window.confirm('¿Seguro que quieres eliminar tu cuenta? Esta acción es irreversible.');
+    if (!confirm) return;
+    try {
+      setDeleting(true);
+      // Assuming token is managed within apiFetch via context; if not, inject from useAuth
+      await deleteUser(user.id as number, token as string);
+      toast({ title: 'Cuenta eliminada', description: 'Tu cuenta ha sido eliminada correctamente.' });
+      // Logout and redirect to landing
+      logout();
+    } catch (err: any) {
+      toast({ title: 'Error al eliminar', description: err?.message || 'No se pudo eliminar la cuenta.', variant: 'destructive' });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -133,9 +153,9 @@ export default function Settings() {
                   Eliminar permanentemente tu cuenta y todos tus datos.
                 </p>
               </div>
-              <Button variant="destructive">
+              <Button variant="destructive" onClick={handleDeleteAccount} disabled={deleting}>
                 <Trash2 className="w-4 h-4 mr-2" />
-                Eliminar
+                {deleting ? 'Eliminando…' : 'Eliminar'}
               </Button>
             </div>
           </CardContent>

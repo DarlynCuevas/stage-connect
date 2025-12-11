@@ -52,7 +52,7 @@ export function RequestCard({
           <div className="flex items-center gap-3 min-w-0">
             {artist && (
               <Avatar className="h-10 w-10 border-2 border-border shrink-0">
-                <AvatarImage src={artist.avatar} />
+                <AvatarImage src={artist.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
                 <AvatarFallback className="text-sm">{artist.nickName?.charAt(0) || artist.name?.charAt(0) || 'A'}</AvatarFallback>
               </Avatar>
             )}

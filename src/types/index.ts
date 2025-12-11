@@ -17,6 +17,7 @@ export interface User {
   rating?: number;
   totalShows?: number;
   verified?: boolean;
+  gender?: string;
   managerId?: string | number;
   socialLinks?: SocialLinks;
   gallery?: string[];
@@ -43,6 +44,7 @@ export interface Artist {
   rating: number;
   totalShows: number;
   verified: boolean;
+  gender?: string;
 }
 
 export interface PriceVariant {
@@ -96,6 +98,8 @@ export interface CalendarDate {
   available: boolean;
   eventId?: string;
   note?: string;
+  confirmed?: boolean; // true cuando es una reserva aceptada
+  blocked?: boolean; // true cuando el artista bloquea el día
 }
 
 export interface BookingRequest {

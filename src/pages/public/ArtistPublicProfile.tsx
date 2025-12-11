@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockCalendarDates } from '@/data/mockData';
+import { useConfirmedRequests } from '@/lib/requests';
+import { useBlockedDatesCalendar } from '@/lib/blocked-days';
 import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,18 +31,40 @@ import {
   Calendar,
   Send,
   DollarSign,
+  Globe,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 export default function ArtistPublicProfile() {
   const { id } = useParams();
   const { user, isAuthenticated, token } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>('');
   const [artist, setArtist] = useState<any | null>(null);
   const [loadingArtist, setLoadingArtist] = useState(false);
   const [artistError, setArtistError] = useState<string | null>(null);
+  
+  const { data: confirmedRequests = [] } = useConfirmedRequests(id ? Number(id) : undefined);
+  const blockedDates = useBlockedDatesCalendar(id ? Number(id) : undefined);
+  const toDateStr = (value: string | Date) =>
+    typeof value === 'string' ? value.slice(0, 10) : format(value, 'yyyy-MM-dd');
+
+  // Convert confirmed requests to calendar dates
+  const calendarDates = useMemo(() => {
+    const confirmed = confirmedRequests.map(req => ({
+      date: toDateStr(req.eventDate),
+      available: false,
+      note: `${req.eventType} - ${req.eventLocation}`,
+      confirmed: true,
+    }));
+    
+    // Combine confirmed and blocked dates
+    return [...confirmed, ...blockedDates];
+  }, [confirmedRequests, blockedDates]);
 
   useEffect(() => {
     if (!id) return;
@@ -115,7 +139,10 @@ export default function ArtistPublicProfile() {
           message,
         },
       });
+// Invalidate sent requests query to update the counter
+      queryClient.invalidateQueries({ queryKey: ['sent-requests'] });
 
+      
       setBookingDialogOpen(false);
       toast({
         title: 'Solicitud enviada',
@@ -139,7 +166,11 @@ export default function ArtistPublicProfile() {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent/30" />
+            <img
+              src={`https://picsum.photos/1200/400?random=${Math.random()}`}
+              alt="Banner"
+              className="w-full h-full object-cover"
+            />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
         </div>
@@ -160,7 +191,7 @@ export default function ArtistPublicProfile() {
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
               <div className="flex items-end gap-4">
                 <Avatar className="h-28 w-28 border-4 border-background shadow-lg">
-                  <AvatarImage src={artist.avatar} />
+                  <AvatarImage src={artist.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
                   <AvatarFallback className="text-3xl bg-primary text-primary-foreground">
                     {artist.nickName?.charAt(0) || artist.name?.charAt(0) || 'A'}
                   </AvatarFallback>
@@ -213,7 +244,14 @@ export default function ArtistPublicProfile() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="date">Fecha del evento</Label>
-                          <Input id="date" name="date" type="date" required />
+                          <Input 
+                            id="date" 
+                            name="date" 
+                            type="date" 
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            required 
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="budget">Presupuesto (€)</Label>
@@ -299,7 +337,7 @@ export default function ArtistPublicProfile() {
                       >
                         <img
                           src={image}
-                          alt={`Gallery ${index + 1}`}
+                     calt={`Gallery ${index + 1}`}
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                         />
                       </div>
@@ -310,7 +348,16 @@ export default function ArtistPublicProfile() {
             )}
 
             {/* Calendar */}
-            <ArtistCalendar dates={mockCalendarDates} editable={false} />
+            <ArtistCalendar 
+              dates={calendarDates} 
+              editable={false}
+              onDateSelect={(date) => {
+                setSelectedDate(format(date, 'yyyy-MM-dd'));
+                if (canBook) {
+                  setBookingDialogOpen(true);
+                }
+              }}
+            />
           </div>
 
           {/* Sidebar */}
@@ -374,27 +421,49 @@ export default function ArtistPublicProfile() {
               <CardContent className="space-y-3">
                 {artist.socialLinks?.instagram && (
                   <a
-                    href={`https://instagram.com/${artist.socialLinks.instagram}`}
+                    href={`https://instagram.com/${artist.socialLinks.instagram.replace('@', '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
                   >
                     <Instagram className="w-5 h-5 text-pink-500" />
-                    <span>@{artist.socialLinks.instagram}</span>
+                    <span>{artist.socialLinks.instagram.replace('@', '')}</span>
                   </a>
                 )}
                 {artist.socialLinks?.youtube && (
                   <a
-                    href={`https://youtube.com/${artist.socialLinks.youtube}`}
+                    href={`https://youtube.com/${artist.socialLinks.youtube.replace('@', '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
                   >
                     <Youtube className="w-5 h-5 text-red-500" />
-                    <span>{artist.socialLinks.youtube}</span>
+                    <span>@{artist.socialLinks.youtube.replace('@', '')}</span>
                   </a>
                 )}
-                {!artist.socialLinks?.instagram && !artist.socialLinks?.youtube && (
+                {artist.socialLinks?.spotify && (
+                  <a
+                    href={`https://open.spotify.com/artist/${artist.socialLinks.spotify}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
+                  >
+                    <Music className="w-5 h-5 text-green-500" />
+                    <span>Spotify</span>
+                  </a>
+                )}
+                {artist.socialLinks?.website && (
+                  <a
+                    href={artist.socialLinks.website.startsWith('http') ? artist.socialLinks.website : `https://${artist.socialLinks.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
+                  >
+                    <Globe className="w-5 h-5 text-blue-500" />
+                    <span>{artist.socialLinks.website}</span>
+                  </a>
+                )}
+                {!artist.socialLinks?.instagram && !artist.socialLinks?.youtube && !artist.socialLinks?.spotify && !artist.socialLinks?.website && (
                   <p className="text-muted-foreground text-sm">Sin redes sociales configuradas</p>
                 )}
               </CardContent>

@@ -16,9 +16,9 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
   return (
     <Card 
       variant="gradient" 
-      className="group overflow-hidden hover:shadow-lg hover-lift transition-all duration-300"
+      className="group hover:shadow-lg hover-lift transition-all duration-300 !overflow-visible relative"
     >
-      <div className="relative h-28 overflow-hidden">
+      <div className="relative h-28 overflow-hidden rounded-t-xl">
         {artist.banner ? (
           <img
             src={artist.banner}
@@ -26,24 +26,28 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10" />
+          <img
+            src={`https://picsum.photos/400/200?random=${Math.random()}`}
+            alt={artist.nickName || artist.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
-        
-        <Avatar className="absolute -bottom-5 left-4 h-14 w-14 border-[3px] border-card shadow-lg">
-          <AvatarImage src={artist.avatar} alt={artist.nickName || artist.name} />
-          <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-            {artist.nickName?.charAt(0) || artist.name?.charAt(0) || 'A'}
-          </AvatarFallback>
-        </Avatar>
-
-        {artist.verified && (
-          <Badge variant="default" className="absolute top-2.5 right-2.5 gap-1 text-2xs px-2 py-0.5">
-            <CheckCircle className="w-3 h-3" />
-            Verificado
-          </Badge>
-        )}
       </div>
+      
+      <Avatar className="absolute top-[84px] left-4 h-14 w-14 border-[3px] border-card shadow-lg z-10">
+        <AvatarImage src={artist.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} alt={artist.nickName || artist.name} />
+        <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+          {artist.nickName?.charAt(0) || artist.name?.charAt(0) || 'A'}
+        </AvatarFallback>
+      </Avatar>
+
+      {artist.verified && (
+        <Badge variant="default" className="absolute top-2.5 right-2.5 gap-1 text-2xs px-2 py-0.5 z-10">
+          <CheckCircle className="w-3 h-3" />
+          Verificado
+        </Badge>
+      )}
 
       <CardContent className="pt-7 pb-4 px-4">
         <div className="flex items-start justify-between mb-1.5">

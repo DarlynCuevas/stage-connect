@@ -8,7 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUpdateProfile, useArtist } from '@/lib/users';
+import { useUpdateProfile, useArtist, useUser } from '@/lib/users';
+import { useConfirmedRequests } from '@/lib/requests';
+import { useCreateManagerRequest, useRemoveManagerRelation, useReceivedManagerRequests } from '@/lib/manager-requests';
+import { Link } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { genres } from '@/data/mockData';
 import {
@@ -23,6 +26,10 @@ import {
   Plus,
   Trash2,
   CheckCircle,
+  Globe,
+  User,
+  UserPlus,
+  UserMinus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -35,9 +42,21 @@ export default function ArtistProfile() {
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
   const { data: freshArtist } = useArtist(artist?.id);
+  const { data: confirmedRequests = [] } = useConfirmedRequests(artist?.id ? Number(artist.id) : undefined);
+  const createManagerRequestMutation = useCreateManagerRequest();
+  const removeManagerRelationMutation = useRemoveManagerRelation();
+  const { data: receivedRequests = [] } = useReceivedManagerRequests();
+  const [showManagerDialog, setShowManagerDialog] = useState(false);
+  const [managerIdToAdd, setManagerIdToAdd] = useState('');
 
   // prefer server data when available
   const currentArtist = freshArtist || artist;
+  
+  // Fetch manager data if exists
+  const { data: managerData } = useUser(
+    currentArtist?.managerId ? Number(currentArtist.managerId) : undefined,
+    token as string
+  );
 
   useEffect(() => {
     if (currentArtist) {
@@ -84,8 +103,14 @@ export default function ArtistProfile() {
     }
 
     try {
+      // Asegurar que basePrice es un número válido
+      const dataToSend = {
+        ...editData,
+        basePrice: editData?.basePrice ? Number(editData.basePrice) : 0,
+      };
+
       const updatedUser = await updateProfileMutation.mutateAsync({ 
-        profileData: editData, 
+        profileData: dataToSend, 
         token 
       });
       
@@ -126,7 +151,11 @@ export default function ArtistProfile() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent/30" />
+              <img
+                src={`https://picsum.photos/1200/400?random=${Math.random()}`}
+                alt="Banner"
+                className="w-full h-full object-cover"
+              />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
           </div>
@@ -135,7 +164,7 @@ export default function ArtistProfile() {
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
               <div className="flex items-end gap-4">
                 <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                  <AvatarImage src={currentArtist?.avatar} />
+                  <AvatarImage src={currentArtist?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
                   <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
                     {currentArtist?.nickName?.charAt(0) || currentArtist?.name?.charAt(0) || 'A'}
                   </AvatarFallback>
@@ -157,14 +186,49 @@ export default function ArtistProfile() {
                     )}
                   </div>
                   <p className="text-muted-foreground">{currentArtist?.name}</p>
-                  <div className="flex items-center gap-3 mt-2">
-                    {(currentArtist?.city || currentArtist?.country) && (
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <MapPin className="w-4 h-4" />
+                  <div className="flex items-center gap-3 mt-2 flex-wrap">
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <MapPin className="w-4 h-4" />
+                      {isEditing ? (
+                        <div className="flex gap-2">
+                          <Input
+                            value={editData?.city || ''}
+                            onChange={(e) => setEditData({ ...editData, city: e.target.value })}
+                            placeholder="Ciudad"
+                            className="h-6 text-sm"
+                          />
+                          <Input
+                            value={editData?.country || ''}
+                            onChange={(e) => setEditData({ ...editData, country: e.target.value })}
+                            placeholder="País"
+                            className="h-6 text-sm"
+                          />
+                        </div>
+                      ) : (
                         <span>{currentArtist?.city || 'Ciudad'}, {currentArtist?.country || 'País'}</span>
-                      </div>
-                    )}
-                    {currentArtist?.rating && (
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <User className="w-4 h-4" />
+                      {isEditing ? (
+                        <Select
+                          value={editData?.gender || ''}
+                          onValueChange={(value) => setEditData({ ...editData, gender: value })}
+                        >
+                          <SelectTrigger className="h-8 min-w-[140px]">
+                            <SelectValue placeholder="Selecciona género" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Hombre">Hombre</SelectItem>
+                            <SelectItem value="Mujer">Mujer</SelectItem>
+                            <SelectItem value="Otro">Otro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span>{currentArtist?.gender || 'No especificado'}</span>
+                      )}
+                    </div>
+                    {currentArtist?.rating && currentArtist.rating > 0 && (
                       <div className="flex items-center gap-1 text-accent">
                         <Star className="w-4 h-4 fill-current" />
                         <span className="font-medium">{currentArtist.rating}</span>
@@ -297,6 +361,83 @@ export default function ArtistProfile() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Manager Section */}
+            <Card variant="gradient">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5 text-role-manager" />
+                  Manager
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {currentArtist?.managerId && managerData ? (
+                  <div className="space-y-3">
+                    <Link
+                      to={`/manager/${managerData.id}`}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                    >
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={managerData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=manager${managerData.id}`} />
+                        <AvatarFallback>{managerData.name?.charAt(0) || 'M'}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-medium">{managerData.name}</p>
+                        <p className="text-sm text-muted-foreground">{managerData.email}</p>
+                        <Badge variant="secondary" className="text-xs mt-1">Manager</Badge>
+                      </div>
+                    </Link>
+                    {isEditing && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="w-full"
+                        onClick={async () => {
+                          if (window.confirm('¿Estás seguro de que quieres eliminar esta relación con tu manager? Se enviará una notificación.')) {
+                            await removeManagerRelationMutation.mutateAsync(currentArtist.id as number);
+                          }
+                        }}
+                      >
+                        <UserMinus className="w-4 h-4 mr-2" />
+                        Eliminar Manager
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No tienes un manager asignado
+                    </p>
+                    {isEditing && (
+                      <div className="space-y-2">
+                        <Input
+                          type="number"
+                          placeholder="ID del Manager"
+                          value={managerIdToAdd}
+                          onChange={(e) => setManagerIdToAdd(e.target.value)}
+                        />
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={async () => {
+                            if (managerIdToAdd) {
+                              await createManagerRequestMutation.mutateAsync({
+                                receiverId: Number(managerIdToAdd),
+                                message: 'Me gustaría que fueras mi manager',
+                              });
+                              setManagerIdToAdd('');
+                            }
+                          }}
+                        >
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Enviar Solicitud
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Pricing (private) */}
             <Card variant="gradient">
               <CardHeader>
@@ -311,8 +452,10 @@ export default function ArtistProfile() {
                   {isEditing ? (
                     <Input
                       type="number"
-                      value={editData?.basePrice ?? currentArtist?.basePrice ?? 0}
-                      onChange={(e) => setEditData({ ...editData, basePrice: Number(e.target.value) })}
+                      min="0"
+                      step="1"
+                      value={editData?.basePrice ?? 0}
+                      onChange={(e) => setEditData({ ...editData, basePrice: e.target.value ? Number(e.target.value) : 0 })}
                     />
                   ) : (
                     <p className="text-2xl font-bold text-primary">
@@ -359,11 +502,18 @@ export default function ArtistProfile() {
                           ...editData,
                           socialLinks: { ...editData?.socialLinks, instagram: e.target.value }
                         })}
-                        placeholder="@usuario"
+                        placeholder="usuario (sin @)"
                       />
-                    ) : (
-                      <span>@{currentArtist?.socialLinks?.instagram}</span>
-                    )}
+                    ) : currentArtist?.socialLinks?.instagram ? (
+                      <a
+                        href={`https://instagram.com/${currentArtist.socialLinks.instagram.replace('@', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-pink-500 hover:underline"
+                      >
+                        {currentArtist.socialLinks.instagram.replace('@', '')}
+                      </a>
+                    ) : null}
                   </div>
                 )}
                 {(isEditing || currentArtist?.socialLinks?.youtube) && (
@@ -379,11 +529,18 @@ export default function ArtistProfile() {
                           ...editData,
                           socialLinks: { ...editData?.socialLinks, youtube: e.target.value }
                         })}
-                        placeholder="Canal de YouTube"
+                        placeholder="usuario o @canal"
                       />
-                    ) : (
-                      <span>{currentArtist?.socialLinks?.youtube}</span>
-                    )}
+                    ) : currentArtist?.socialLinks?.youtube ? (
+                      <a
+                        href={`https://youtube.com/${currentArtist.socialLinks.youtube.replace('@', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-red-500 hover:underline"
+                      >
+                        {currentArtist.socialLinks.youtube.replace('@', '')}
+                      </a>
+                    ) : null}
                   </div>
                 )}
                 {(isEditing || currentArtist?.socialLinks?.spotify) && (
@@ -399,11 +556,45 @@ export default function ArtistProfile() {
                           ...editData,
                           socialLinks: { ...editData?.socialLinks, spotify: e.target.value }
                         })}
-                        placeholder="Artista en Spotify"
+                        placeholder="ID de artista o nombre"
                       />
-                    ) : (
-                      <span>{currentArtist?.socialLinks?.spotify}</span>
-                    )}
+                    ) : currentArtist?.socialLinks?.spotify ? (
+                      <a
+                        href={`https://open.spotify.com/artist/${currentArtist.socialLinks.spotify}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-500 hover:underline"
+                      >
+                        {currentArtist.socialLinks.spotify}
+                      </a>
+                    ) : null}
+                  </div>
+                )}
+                {(isEditing || currentArtist?.socialLinks?.website) && (
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Globe className="w-5 h-5 text-blue-500" />
+                      Sitio Web
+                    </Label>
+                    {isEditing ? (
+                      <Input
+                        value={editData?.socialLinks?.website || ''}
+                        onChange={(e) => setEditData({
+                          ...editData,
+                          socialLinks: { ...editData?.socialLinks, website: e.target.value }
+                        })}
+                        placeholder="https://tudominio.com"
+                      />
+                    ) : currentArtist?.socialLinks?.website ? (
+                      <a
+                        href={currentArtist.socialLinks.website.startsWith('http') ? currentArtist.socialLinks.website : `https://${currentArtist.socialLinks.website}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline"
+                      >
+                        {currentArtist.socialLinks.website}
+                      </a>
+                    ) : null}
                   </div>
                 )}
               </CardContent>
@@ -417,7 +608,7 @@ export default function ArtistProfile() {
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Shows totales</span>
-                  <span className="font-bold">{currentArtist?.totalShows ?? 0}</span>
+                  <span className="font-bold">{confirmedRequests.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Valoración</span>
