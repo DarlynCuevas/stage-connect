@@ -65,60 +65,61 @@ export default function Register() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       {/* Background effects */}
       <div className="fixed inset-0 bg-gradient-hero" />
-      <div className="fixed top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[128px]" />
-      <div className="fixed bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-[128px]" />
+      <div className="fixed inset-0 mesh-gradient opacity-40" />
+      <div className="fixed top-1/4 left-1/4 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px]" />
+      <div className="fixed bottom-1/4 right-1/4 w-[300px] h-[300px] bg-accent/10 rounded-full blur-[80px]" />
 
-      <div className="w-full max-w-lg relative">
+      <div className="w-full max-w-md relative z-10">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver al inicio
         </Link>
 
-        <Card variant="glass" className="border-border/50">
-          <CardHeader className="text-center">
-            <div className="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center mx-auto mb-4">
-              <Music className="w-7 h-7 text-primary-foreground" />
+        <Card variant="glass" className="shadow-elevated">
+          <CardHeader className="text-center pb-2">
+            <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center mx-auto mb-3 shadow-glow">
+              <Music className="w-6 h-6 text-primary-foreground" />
             </div>
-            <CardTitle className="text-2xl font-display">Crear Cuenta</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl">Crear Cuenta</CardTitle>
+            <CardDescription className="text-sm">
               Únete a la comunidad de Stagebook
             </CardDescription>
           </CardHeader>
 
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <CardContent className="pt-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {/* Role selection */}
-              <div className="space-y-3">
-                <Label>¿Qué tipo de usuario eres?</Label>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2.5">
+                <Label className="text-sm">¿Qué tipo de usuario eres?</Label>
+                <div className="grid grid-cols-2 gap-2.5">
                   {roles.map((role) => (
                     <button
                       key={role.value}
                       type="button"
                       onClick={() => setSelectedRole(role.value)}
                       className={cn(
-                        "relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200",
+                        "relative flex flex-col items-center gap-2 p-3.5 rounded-xl border-2 transition-all duration-200",
                         selectedRole === role.value
-                          ? `border-primary ${role.bgColor}`
-                          : "border-border hover:border-border/80 hover:bg-secondary/50"
+                          ? `border-primary/60 ${role.bgColor} shadow-sm`
+                          : "border-border/60 hover:border-border hover:bg-secondary/50"
                       )}
                     >
                       {selectedRole === role.value && (
                         <div className="absolute top-2 right-2">
-                          <Check className="w-4 h-4 text-primary" />
+                          <Check className="w-3.5 h-3.5 text-primary" />
                         </div>
                       )}
                       <div className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center",
+                        "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
                         role.bgColor
                       )}>
-                        <role.icon className={cn("w-6 h-6", role.color)} />
+                        <role.icon className={cn("w-5 h-5", role.color)} />
                       </div>
                       <span className={cn(
-                        "font-medium",
+                        "text-sm font-medium",
                         selectedRole === role.value ? role.color : "text-foreground"
                       )}>
                         {role.label}
@@ -129,7 +130,7 @@ export default function Register() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="name">Nombre completo</Label>
+                <Label htmlFor="name" className="text-sm">Nombre completo</Label>
                 <Input
                   id="name"
                   type="text"
@@ -141,7 +142,7 @@ export default function Register() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-sm">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -153,7 +154,7 @@ export default function Register() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
+                <Label htmlFor="password" className="text-sm">Contraseña</Label>
                 <Input
                   id="password"
                   type="password"
@@ -185,7 +186,7 @@ export default function Register() {
 
             <p className="text-sm text-muted-foreground text-center mt-6">
               ¿Ya tienes cuenta?{' '}
-              <Link to="/login" className="text-primary hover:underline">
+              <Link to="/login" className="text-primary hover:text-primary/80 font-medium transition-colors">
                 Inicia sesión
               </Link>
             </p>

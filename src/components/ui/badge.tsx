@@ -4,20 +4,32 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
-        default: "border-transparent bg-primary text-primary-foreground",
-        secondary: "border-transparent bg-secondary text-secondary-foreground",
-        destructive: "border-transparent bg-destructive text-destructive-foreground",
-        outline: "text-foreground border-border",
-        success: "border-transparent bg-emerald-500/20 text-emerald-400",
-        warning: "border-transparent bg-amber-500/20 text-amber-400",
-        artist: "border-transparent bg-orange-500/20 text-orange-400",
-        manager: "border-transparent bg-purple-500/20 text-purple-400",
-        venue: "border-transparent bg-teal-500/20 text-teal-400",
-        promoter: "border-transparent bg-sky-500/20 text-sky-400",
+        default:
+          "border-transparent bg-primary text-primary-foreground shadow-sm",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground",
+        destructive:
+          "border-transparent bg-destructive/15 text-destructive",
+        outline: 
+          "border-border text-foreground bg-transparent",
+        success:
+          "border-transparent bg-success/15 text-success",
+        warning:
+          "border-transparent bg-accent/15 text-accent",
+        artist:
+          "border-transparent bg-role-artist/15 text-role-artist",
+        manager:
+          "border-transparent bg-role-manager/15 text-role-manager",
+        venue:
+          "border-transparent bg-role-venue/15 text-role-venue",
+        promoter:
+          "border-transparent bg-role-promoter/15 text-role-promoter",
+        glass:
+          "border-foreground/10 bg-foreground/5 text-foreground backdrop-blur-sm",
       },
     },
     defaultVariants: {
