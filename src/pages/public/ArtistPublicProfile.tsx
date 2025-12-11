@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockArtists, mockCalendarDates } from '@/data/mockData';
+import { mockCalendarDates } from '@/data/mockData';
+import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -37,8 +38,35 @@ export default function ArtistPublicProfile() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+  const [artist, setArtist] = useState<any | null>(null);
+  const [loadingArtist, setLoadingArtist] = useState(false);
+  const [artistError, setArtistError] = useState<string | null>(null);
 
-  const artist = mockArtists.find(a => a.id === id);
+  useEffect(() => {
+    if (!id) return;
+    setLoadingArtist(true);
+    setArtistError(null);
+    apiFetch(`/public/users/${id}`)
+      .then((data) => setArtist(data))
+      .catch((err: any) => setArtistError(err.message || 'Error fetching artist'))
+      .finally(() => setLoadingArtist(false));
+  }, [id]);
+
+  if (loadingArtist) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div>Cargando artista...</div>
+      </div>
+    );
+  }
+
+  if (artistError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">Error: {artistError}</div>
+      </div>
+    );
+  }
 
   if (!artist) {
     return (
@@ -53,7 +81,8 @@ export default function ArtistPublicProfile() {
     );
   }
 
-  const canSeePrices = isAuthenticated && (user?.role === 'venue' || user?.role === 'promoter');
+  const allowedRolesForBooking = ['Local', 'local', 'Venue', 'venue', 'Promotor', 'promoter'];
+  const canSeePrices = isAuthenticated && allowedRolesForBooking.includes(user?.role ?? '');
   const canBook = canSeePrices;
 
   const handleBookingSubmit = (e: React.FormEvent) => {
