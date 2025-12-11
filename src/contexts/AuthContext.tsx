@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { User, UserRole } from '@/types';
-import { mockUsers, mockArtists, mockManagers, mockVenues, mockPromoters } from '@/data/mockData';
-
+import { API_BASE_URL } from '../config';
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
@@ -18,35 +17,81 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return saved ? JSON.parse(saved) : null;
   });
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
+ const login = async (email: string, password: string): Promise<boolean> => {
     
-    const foundUser = mockUsers.find(u => u.email === email);
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem('currentUser', JSON.stringify(foundUser));
-      return true;
-    }
-    return false;
-  };
+    // El Backend ya maneja el retraso y la verificación de la contraseña.
+    const credentials = { email, password };
 
-  const register = async (name: string, email: string, password: string, role: UserRole): Promise<boolean> => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(credentials),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // El Backend retorna { access_token: '...', role: 'Artista', user_id: 1 }
+            
+            // 🔑 Guardar el token y el rol
+            localStorage.setItem('book_token', data.access_token);
+            localStorage.setItem('book_role', data.role);
+            // Si necesitas el objeto de usuario completo, el Backend debería enviarlo
+            // Por ahora, solo guardamos lo esencial.
+            
+            // Si el login es exitoso, devolvemos 'true'
+            return true;
+        } else {
+            // Error de credenciales (el backend falló la verificación)
+            // Ya tienes el toast de "Email o contraseña incorrectos" en handleSubmit
+            return false;
+        }
+
+    } catch (error) {
+        // Error de conexión/CORS. El 'catch' de handleSubmit lo capturará
+        console.error('Error al contactar con el Backend:', error);
+        throw error;
+    }
+};
+
+const register = async (name: string, email: string, password: string, role: UserRole): Promise<boolean> => {
     
-    const newUser: User = {
-      id: `u${Date.now()}`,
-      name,
-      email,
-      role,
-      createdAt: new Date(),
-    };
+    // NOTA: El Backend solo necesita 'email', 'password', y 'role'
+    const userData = { name, email, password, role };
+    // Puedes incluir 'name' si lo vas a guardar en una tabla 'profiles' más adelante.
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData),
+        });
+
+        if (response.ok) {
+            // Registro exitoso (código 201 Created)
+            
+            // Opcional: Iniciar sesión inmediatamente después del registro
+            // await login(email, password); 
+            return true;
+        } else {
+            const errorData = await response.json();
+            // Esto capturará errores como "El email ya está registrado" del Backend
+            console.error('Error de registro del Backend:', errorData.message);
+            throw new Error(errorData.message || "Fallo el registro.");
+        }
+
+    } catch (error) {
+        // Error de conexión, CORS, o error lanzado arriba
+        throw error;
+    }
+};
     
-    setUser(newUser);
-    localStorage.setItem('currentUser', JSON.stringify(newUser));
-    return true;
-  };
+  
 
   const logout = () => {
     setUser(null);

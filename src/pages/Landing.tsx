@@ -74,7 +74,7 @@ export default function Landing() {
             <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
               <Music className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl">STAGEBOOK</span>
+            <span className="font-display font-bold text-xl">Bookify Artist</span>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild>

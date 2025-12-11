@@ -1,7 +1,7 @@
 import { Artist, Manager, Venue, Promoter, BookingRequest, CalendarDate, User } from '@/types';
 
 export const mockUsers: User[] = [
-  { id: 'u1', name: 'Carlos Rivera', email: 'carlos@example.com', role: 'artist', createdAt: new Date() },
+  { id: 'u1', name: 'Darlyn Cuevas', email: 'carlos@example.com', role: 'artist', createdAt: new Date() },
   { id: 'u2', name: 'María López', email: 'maria@example.com', role: 'manager', createdAt: new Date() },
   { id: 'u3', name: 'Club Nocturno', email: 'club@example.com', role: 'venue', createdAt: new Date() },
   { id: 'u4', name: 'Pedro Eventos', email: 'pedro@example.com', role: 'promoter', createdAt: new Date() },
@@ -11,24 +11,24 @@ export const mockArtists: Artist[] = [
   {
     id: 'a1',
     userId: 'u1',
-    name: 'Carlos Rivera',
-    stageName: 'DJ BLAZE',
+    name: 'Darlyn Cuevas',
+    stageName: 'EL DIZZY',
     avatar: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400',
     banner: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1200',
-    bio: 'DJ y productor con más de 10 años de experiencia en la escena electrónica internacional. Especializado en techno y house progresivo.',
-    genre: ['Techno', 'House', 'Progressive'],
+    bio: 'Compositor, productor e intérprete con más de 10 años de experiencia en la escena musical internacional.',
+    genre: ['Urbano'],
     country: 'España',
-    city: 'Madrid',
+    city: 'Barcelona',
     basePrice: 2500,
     priceVariants: [
-      { id: 'pv1', name: 'Set Corto (2h)', description: 'DJ set de 2 horas', price: 2500 },
-      { id: 'pv2', name: 'Set Largo (4h)', description: 'DJ set de 4 horas con warmup', price: 4000 },
+      { id: 'pv1', name: 'Set Corto (25min)', description: 'set de 25 minutos', price: 2500 },
+      { id: 'pv2', name: 'Set Largo (45min)', description: 'set de 45 minutos', price: 4000 },
       { id: 'pv3', name: 'Festival', description: 'Actuación en festival con rider completo', price: 8000 },
     ],
     socialLinks: {
-      instagram: 'djblaze',
-      spotify: 'djblaze',
-      youtube: 'djblaze',
+      instagram: 'darlyndcs',
+      spotify: 'darlyndcs',
+      youtube: 'darlyndcs',
     },
     gallery: [
       'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600',
