@@ -8,46 +8,10 @@ import { SearchFilters } from '@/types';
 export default function VenueSearch() {
   const [filters, setFilters] = useState<SearchFilters>({});
 
-  const { data: artists = [] } = useArtists();
+  const { data: artists = [], isLoading } = useArtists(filters);
 
-  const filteredArtists = useMemo(() => {
-    return (artists || []).filter((artist: any) => {
-      if (filters.query) {
-        const query = filters.query.toLowerCase();
-        if (
-          !artist.name.toLowerCase().includes(query) &&
-          !artist.stageName.toLowerCase().includes(query)
-        ) {
-          return false;
-        }
-      }
-
-      if (filters.genre && filters.genre.length > 0) {
-        if (!filters.genre.some((g) => artist.genre.includes(g))) {
-          return false;
-        }
-      }
-
-      if (filters.country && artist.country !== filters.country) {
-        return false;
-      }
-
-      if (filters.city && artist.city !== filters.city) {
-        return false;
-      }
-
-        if (filters.priceMin && (artist.basePrice ?? 0) < filters.priceMin) {
-        return false;
-      }
-
-      if (filters.priceMax && (artist.basePrice ?? 0) > filters.priceMax) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [filters]);
-
+  // Server-side search: results are provided by the backend. Show loading state while fetching.
+  const filteredArtists = artists || [];
   return (
     <DashboardLayout>
       <div className="space-y-6">

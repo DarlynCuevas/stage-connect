@@ -1,4 +1,4 @@
-import { BookingRequest, Artist } from '@/types';
+import { BookingRequest, Artist, User } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,9 +7,12 @@ import { Calendar, MapPin, Clock, MessageSquare, Check, X, ArrowRight } from 'lu
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+type ArtistLike = (Partial<Artist> & Partial<User> & { managerId?: string | number });
+
 interface RequestCardProps {
   request: BookingRequest;
-  artist?: Artist;
+  // Artist info is optional and may be partial (e.g., from Auth user)
+  artist?: ArtistLike;
   isReceiver?: boolean;
   onAccept?: () => void;
   onReject?: () => void;
@@ -50,12 +53,12 @@ export function RequestCard({
             {artist && (
               <Avatar className="h-10 w-10 border-2 border-border shrink-0">
                 <AvatarImage src={artist.avatar} />
-                <AvatarFallback className="text-sm">{artist.stageName.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-sm">{artist.nickName?.charAt(0) || artist.name?.charAt(0) || 'A'}</AvatarFallback>
               </Avatar>
             )}
             <div className="min-w-0">
               <CardTitle className="text-base truncate">
-                {artist?.stageName || 'Artista'}
+                {artist?.nickName || artist?.name || 'Artista'}
               </CardTitle>
               <p className="text-xs text-muted-foreground truncate">{request.eventType}</p>
             </div>
@@ -79,7 +82,7 @@ export function RequestCard({
         <div className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/50">
           <span className="text-xs text-muted-foreground">Oferta</span>
           <span className="text-base font-bold text-primary">
-            €{request.offeredPrice.toLocaleString()}
+            €{request.offeredPrice?.toLocaleString() || '0'}
           </span>
         </div>
 

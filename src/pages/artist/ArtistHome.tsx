@@ -76,6 +76,16 @@ export default function ArtistHome() {
     },
   ];
 
+  if (!artist) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-screen">
+          <p className="text-muted-foreground">No hay usuario autenticado</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -83,7 +93,7 @@ export default function ArtistHome() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-display font-bold mb-2">
-              ¡Hola, {artist.stageName}!
+              ¡Hola, {artist.nickName || artist.name}!
             </h1>
             <p className="text-muted-foreground">
               Aquí está el resumen de tu actividad
@@ -145,11 +155,10 @@ export default function ArtistHome() {
                   <RequestCard
                     key={request.id}
                     request={request}
-                    artist={artist}
+                    artist={artist ?? undefined}
                     isReceiver
-                    onAccept={() => handleAccept(request.id)}
-                    onReject={() => handleReject(request.id)}
-                    isProcessing={updateStatusMutation.isPending}
+                    onAccept={() => handleAccept(String(request.id))}
+                    onReject={() => handleReject(String(request.id))}
                   />
                 ))
               ) : (

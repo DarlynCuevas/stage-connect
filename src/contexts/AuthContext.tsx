@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User, UserRole } from '@/types';
 import { API_BASE_URL } from '../config';
+import apiFetch from '@/lib/api';
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<string | null>;
@@ -8,6 +9,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   token?: string | null;
+  setUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,6 +23,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem('currentUser');
     return saved ? JSON.parse(saved) : null;
   });
+
+  // Helper para mapear la respuesta del backend a nuestro tipo User
+  const mapUser = (u: any): User => ({
+    id: String(u?.id ?? u?.user_id ?? ''),
+    name: u?.name ?? '',
+    email: u?.email ?? '',
+    role: u?.role ?? 'Artista',
+    avatar: u?.avatar,
+    nickName: u?.nickName ?? u?.nick_name,
+    bio: u?.bio,
+    genre: u?.genre,
+    country: u?.country,
+    city: u?.city,
+    basePrice: u?.basePrice ?? u?.base_price,
+    banner: u?.banner,
+    rating: u?.rating,
+    totalShows: u?.totalShows ?? u?.total_shows,
+    verified: u?.verified,
+    managerId: u?.managerId ?? u?.manager_id,
+    socialLinks: u?.socialLinks ?? u?.social_links,
+    gallery: u?.gallery,
+    priceVariants: u?.priceVariants ?? u?.price_variants,
+    createdAt: u?.created_at ? new Date(u.created_at) : u?.createdAt ? new Date(u.createdAt) : new Date(),
+  });
+
+  // Sincronizar user con localStorage cuando cambie
+  const updateUser = (newUser: User | null) => {
+    setUser(newUser);
+    if (newUser) {
+      localStorage.setItem('currentUser', JSON.stringify(newUser));
+    } else {
+      localStorage.removeItem('currentUser');
+    }
+  };
+
+  // Cargar datos completos del usuario desde /users/me
+  const loadUserFromDB = async (authToken: string) => {
+    try {
+      const response = await apiFetch('/users/me', { token: authToken });
+      // Backend devuelve { message: '...', user: {...} }
+      const userData = response?.user || response;
+      const mapped = mapUser(userData);
+      updateUser(mapped);
+      setIsAuthenticated(true);
+      return true;
+    } catch (err) {
+      console.error('Error al cargar usuario desde BD:', err);
+      // Limpiar todo si falla
+      updateUser(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem('book_token');
+      localStorage.removeItem('book_role');
+      setToken(null);
+      return false;
+    }
+  };
+
+  // Al iniciar la app, si hay token, cargar usuario desde BD
+  useEffect(() => {
+    if (token) {
+      loadUserFromDB(token);
+    }
+  }, []);
 
 const login = async (email: string, password: string): Promise<string | null> => {
     const credentials = { email, password };
@@ -38,30 +103,25 @@ const login = async (email: string, password: string): Promise<string | null> =>
         if (response.ok) {
           // El Backend retorna { access_token: '...', role: 'Artista', user_id: 1 }
 
-          // Guardar el token y el rol
-            localStorage.setItem('book_token', data.access_token);
-            localStorage.setItem('book_role', data.role);
-            setToken(data.access_token);
+          // Guardar el token
+          localStorage.setItem('book_token', data.access_token);
+          localStorage.setItem('book_role', data.role);
+          setToken(data.access_token);
 
-          // Construir y guardar un objeto `user` mínimo para el frontend
-          const currentUser: User = {
-            id: String(data.user_id ?? data.id ?? ''),
-            name: data.name ?? '',
-            email,
-            role: data.role,
-            createdAt: new Date(),
-          };
-
-          setUser(currentUser);
-          localStorage.setItem('currentUser', JSON.stringify(currentUser));
-
-          // Marcar autenticado
-          setIsAuthenticated(true);
-
-          // Devolver el rol para compatibilidad con la UI de login
-          return data.role;
+          // Cargar usuario desde BD
+          const success = await loadUserFromDB(data.access_token);
+          
+          if (success) {
+            return data.role;
+          } else {
+            // Si falla cargar desde BD, limpiar y devolver null
+            localStorage.removeItem('book_token');
+            localStorage.removeItem('book_role');
+            setToken(null);
+            return null;
+          }
         } else {
-            // Error de credenciales (el backend falló la verificación)
+            // Error de credenciales
             return null;
         }
 
@@ -126,6 +186,7 @@ const register = async (name: string, email: string, password: string, role: Use
       logout,
       isAuthenticated,
       token,
+      setUser: updateUser,
     }}>
       {children}
     </AuthContext.Provider>

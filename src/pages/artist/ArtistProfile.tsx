@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUpdateProfile, useArtist } from '@/lib/users';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { genres } from '@/data/mockData';
 import {
   Edit,
   Save,
@@ -25,18 +28,84 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ArtistProfile() {
-  const { user: artist } = useAuth();
+  const { user: artist, token, setUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(artist);
+  const [newGenre, setNewGenre] = useState('');
   const { toast } = useToast();
+  const updateProfileMutation = useUpdateProfile();
+  const { data: freshArtist } = useArtist(artist?.id);
 
-  const handleSave = () => {
-    // setArtist(editData);
-    setIsEditing(false);
-    toast({
-      title: 'Perfil actualizado',
-      description: 'Los cambios se han guardado correctamente.',
+  // prefer server data when available
+  const currentArtist = freshArtist || artist;
+
+  useEffect(() => {
+    if (currentArtist) {
+      setEditData(currentArtist);
+    }
+  }, [currentArtist]);
+
+  // Si no hay usuario, mostrar mensaje
+  if (!artist) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-screen">
+          <p className="text-muted-foreground">No hay usuario autenticado</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const addGenre = () => {
+    if (newGenre && !editData?.genre?.includes(newGenre)) {
+      setEditData({
+        ...editData,
+        genre: [...(editData?.genre || []), newGenre]
+      });
+      setNewGenre('');
+    }
+  };
+
+  const removeGenre = (genreToRemove: string) => {
+    setEditData({
+      ...editData,
+      genre: editData?.genre?.filter(g => g !== genreToRemove) || []
     });
+  };
+
+  const handleSave = async () => {
+    if (!token) {
+      toast({
+        title: 'Error',
+        description: 'No estás autenticado',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const updatedUser = await updateProfileMutation.mutateAsync({ 
+        profileData: editData, 
+        token 
+      });
+      
+      // Actualizar el usuario en AuthContext
+      if (updatedUser?.user) {
+        setUser(updatedUser.user);
+      }
+      
+      setIsEditing(false);
+      toast({
+        title: 'Perfil actualizado',
+        description: 'Los cambios se han guardado correctamente en la base de datos.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'No se pudo actualizar el perfil',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -50,9 +119,9 @@ export default function ArtistProfile() {
         {/* Header with banner */}
         <div className="relative rounded-2xl overflow-hidden">
           <div className="h-48 lg:h-64">
-            {artist.banner ? (
+            {currentArtist?.banner ? (
               <img
-                src={artist.banner}
+                src={currentArtist.banner}
                 alt="Banner"
                 className="w-full h-full object-cover"
               />
@@ -66,28 +135,41 @@ export default function ArtistProfile() {
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
               <div className="flex items-end gap-4">
                 <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                  <AvatarImage src={artist.avatar} />
+                  <AvatarImage src={currentArtist?.avatar} />
                   <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                    {artist.stageName.charAt(0)}
+                    {currentArtist?.nickName?.charAt(0) || currentArtist?.name?.charAt(0) || 'A'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h1 className="text-3xl font-display font-bold">{artist.stageName}</h1>
-                    {artist.verified && (
+                    {isEditing ? (
+                      <Input
+                        value={editData?.nickName || ''}
+                        onChange={(e) => setEditData({ ...editData, nickName: e.target.value })}
+                        placeholder="Nombre artístico"
+                        className="text-2xl font-display font-bold max-w-md"
+                      />
+                    ) : (
+                      <h1 className="text-3xl font-display font-bold">{currentArtist?.nickName || currentArtist?.name || 'Artista'}</h1>
+                    )}
+                    {currentArtist?.verified && (
                       <CheckCircle className="w-6 h-6 text-primary" />
                     )}
                   </div>
-                  <p className="text-muted-foreground">{artist.name}</p>
+                  <p className="text-muted-foreground">{currentArtist?.name}</p>
                   <div className="flex items-center gap-3 mt-2">
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      <span>{artist.city}, {artist.country}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-accent">
-                      <Star className="w-4 h-4 fill-current" />
-                      <span className="font-medium">{artist.rating}</span>
-                    </div>
+                    {(currentArtist?.city || currentArtist?.country) && (
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <MapPin className="w-4 h-4" />
+                        <span>{currentArtist?.city || 'Ciudad'}, {currentArtist?.country || 'País'}</span>
+                      </div>
+                    )}
+                    {currentArtist?.rating && (
+                      <div className="flex items-center gap-1 text-accent">
+                        <Star className="w-4 h-4 fill-current" />
+                        <span className="font-medium">{currentArtist.rating}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -123,13 +205,13 @@ export default function ArtistProfile() {
               <CardContent>
                 {isEditing ? (
                   <Textarea
-                    value={editData.bio}
+                    value={editData?.bio || ''}
                     onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
                     rows={4}
                     className="resize-none"
                   />
                 ) : (
-                  <p className="text-muted-foreground">{artist.bio}</p>
+                  <p className="text-muted-foreground">{currentArtist?.bio || 'Sin biografía'}</p>
                 )}
               </CardContent>
             </Card>
@@ -140,20 +222,42 @@ export default function ArtistProfile() {
                 <CardTitle>Géneros Musicales</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {artist.genre.map((genre) => (
-                    <Badge key={genre} variant="secondary" className="text-sm">
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {editData?.genre?.map((genre) => (
+                    <Badge key={genre} variant="secondary" className="text-sm relative">
                       <Music className="w-3 h-3 mr-1" />
                       {genre}
+                      {isEditing && (
+                        <button
+                          onClick={() => removeGenre(genre)}
+                          className="ml-2 hover:text-destructive"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
                     </Badge>
                   ))}
-                  {isEditing && (
-                    <Button variant="outline" size="sm">
+                </div>
+                {isEditing && (
+                  <div className="flex gap-2">
+                    <Select value={newGenre} onValueChange={setNewGenre}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Selecciona un género" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {genres.filter(g => !editData?.genre?.includes(g)).map((genre) => (
+                          <SelectItem key={genre} value={genre}>
+                            {genre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={addGenre} variant="outline" size="sm">
                       <Plus className="w-4 h-4 mr-1" />
                       Añadir
                     </Button>
-                  )}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -164,7 +268,7 @@ export default function ArtistProfile() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                  {artist.gallery.map((image, index) => (
+                  {artist?.gallery?.map((image, index) => (
                     <div
                       key={index}
                       className="relative aspect-video rounded-lg overflow-hidden group"
@@ -207,21 +311,21 @@ export default function ArtistProfile() {
                   {isEditing ? (
                     <Input
                       type="number"
-                      value={editData.basePrice}
+                      value={editData?.basePrice ?? currentArtist?.basePrice ?? 0}
                       onChange={(e) => setEditData({ ...editData, basePrice: Number(e.target.value) })}
                     />
                   ) : (
                     <p className="text-2xl font-bold text-primary">
-                      €{artist.basePrice.toLocaleString()}
+                      €{(currentArtist?.basePrice ?? 0).toLocaleString()}
                     </p>
                   )}
                 </div>
 
-                {artist.priceVariants?.map((variant) => (
+                {currentArtist?.priceVariants?.map((variant) => (
                   <div key={variant.id} className="p-3 rounded-lg bg-secondary/30">
                     <div className="flex items-center justify-between mb-1">
                       <p className="font-medium">{variant.name}</p>
-                      <p className="font-bold text-primary">€{variant.price.toLocaleString()}</p>
+                      <p className="font-bold text-primary">€{variant.price?.toLocaleString() || '0'}</p>
                     </div>
                     <p className="text-sm text-muted-foreground">{variant.description}</p>
                   </div>
@@ -242,37 +346,63 @@ export default function ArtistProfile() {
                 <CardTitle>Redes Sociales</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {artist.socialLinks.instagram && (
-                  <div className="flex items-center gap-3">
-                    <Instagram className="w-5 h-5 text-pink-500" />
+                {(isEditing || currentArtist?.socialLinks?.instagram) && (
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Instagram className="w-5 h-5 text-pink-500" />
+                      Instagram
+                    </Label>
                     {isEditing ? (
                       <Input
-                        value={editData.socialLinks.instagram}
+                        value={editData?.socialLinks?.instagram || ''}
                         onChange={(e) => setEditData({
                           ...editData,
-                          socialLinks: { ...editData.socialLinks, instagram: e.target.value }
+                          socialLinks: { ...editData?.socialLinks, instagram: e.target.value }
                         })}
-                        placeholder="Instagram username"
+                        placeholder="@usuario"
                       />
                     ) : (
-                      <span>@{artist.socialLinks.instagram}</span>
+                      <span>@{currentArtist?.socialLinks?.instagram}</span>
                     )}
                   </div>
                 )}
-                {artist.socialLinks.youtube && (
-                  <div className="flex items-center gap-3">
-                    <Youtube className="w-5 h-5 text-red-500" />
+                {(isEditing || currentArtist?.socialLinks?.youtube) && (
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Youtube className="w-5 h-5 text-red-500" />
+                      YouTube
+                    </Label>
                     {isEditing ? (
                       <Input
-                        value={editData.socialLinks.youtube}
+                        value={editData?.socialLinks?.youtube || ''}
                         onChange={(e) => setEditData({
                           ...editData,
-                          socialLinks: { ...editData.socialLinks, youtube: e.target.value }
+                          socialLinks: { ...editData?.socialLinks, youtube: e.target.value }
                         })}
-                        placeholder="YouTube channel"
+                        placeholder="Canal de YouTube"
                       />
                     ) : (
-                      <span>{artist.socialLinks.youtube}</span>
+                      <span>{currentArtist?.socialLinks?.youtube}</span>
+                    )}
+                  </div>
+                )}
+                {(isEditing || currentArtist?.socialLinks?.spotify) && (
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Music className="w-5 h-5 text-green-500" />
+                      Spotify
+                    </Label>
+                    {isEditing ? (
+                      <Input
+                        value={editData?.socialLinks?.spotify || ''}
+                        onChange={(e) => setEditData({
+                          ...editData,
+                          socialLinks: { ...editData?.socialLinks, spotify: e.target.value }
+                        })}
+                        placeholder="Artista en Spotify"
+                      />
+                    ) : (
+                      <span>{currentArtist?.socialLinks?.spotify}</span>
                     )}
                   </div>
                 )}
@@ -287,13 +417,13 @@ export default function ArtistProfile() {
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Shows totales</span>
-                  <span className="font-bold">{artist.totalShows}</span>
+                  <span className="font-bold">{currentArtist?.totalShows ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Valoración</span>
                   <div className="flex items-center gap-1 text-accent">
                     <Star className="w-4 h-4 fill-current" />
-                    <span className="font-bold">{artist.rating}</span>
+                    <span className="font-bold">{currentArtist?.rating ?? 0}</span>
                   </div>
                 </div>
               </CardContent>

@@ -22,7 +22,7 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
         {artist.banner ? (
           <img
             src={artist.banner}
-            alt={artist.stageName}
+            alt={artist.nickName || artist.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
@@ -31,9 +31,9 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
         
         <Avatar className="absolute -bottom-5 left-4 h-14 w-14 border-[3px] border-card shadow-lg">
-          <AvatarImage src={artist.avatar} alt={artist.stageName} />
+          <AvatarImage src={artist.avatar} alt={artist.nickName || artist.name} />
           <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-            {artist.stageName.charAt(0)}
+            {artist.nickName?.charAt(0) || artist.name?.charAt(0) || 'A'}
           </AvatarFallback>
         </Avatar>
 
@@ -49,7 +49,7 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
         <div className="flex items-start justify-between mb-1.5">
           <div className="min-w-0 flex-1">
             <h3 className="font-display font-semibold text-base text-foreground group-hover:text-primary transition-colors truncate">
-              {artist.stageName}
+              {artist.nickName || artist.name}
             </h3>
             <p className="text-xs text-muted-foreground truncate">{artist.name}</p>
           </div>
@@ -65,15 +65,15 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-1 mb-3">
-          {artist.genre.slice(0, 2).map((genre) => (
+          {artist.genre?.slice(0, 2).map((genre) => (
             <Badge key={genre} variant="secondary" className="text-2xs px-2 py-0.5">
               <Music className="w-2.5 h-2.5 mr-1" />
               {genre}
             </Badge>
           ))}
-          {artist.genre.length > 2 && (
+          {(artist.genre?.length || 0) > 2 && (
             <Badge variant="secondary" className="text-2xs px-2 py-0.5">
-              +{artist.genre.length - 2}
+              +{(artist.genre?.length || 0) - 2}
             </Badge>
           )}
         </div>
@@ -83,7 +83,7 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
             <div>
               <p className="text-2xs text-muted-foreground">Desde</p>
               <p className="text-base font-bold text-primary">
-                €{artist.basePrice.toLocaleString()}
+                €{artist.basePrice?.toLocaleString() || '0'}
               </p>
             </div>
             <Button asChild size="sm" variant="gradient" className="h-8">

@@ -7,13 +7,27 @@ export interface User {
   role: UserRole;
   avatar?: string;
   createdAt: Date;
+  nickName?: string;
+  bio?: string;
+  genre?: string[];
+  country?: string;
+  city?: string;
+  basePrice?: number;
+  banner?: string;
+  rating?: number;
+  totalShows?: number;
+  verified?: boolean;
+  managerId?: string | number;
+  socialLinks?: SocialLinks;
+  gallery?: string[];
+  priceVariants?: PriceVariant[];
 }
 
 export interface Artist {
   id: string;
   userId: string;
   name: string;
-  stageName: string;
+  nickName: string;
   avatar: string;
   banner?: string;
   bio: string;
@@ -25,7 +39,7 @@ export interface Artist {
   socialLinks: SocialLinks;
   gallery: string[];
   videos: string[];
-  managerId?: string;
+  managerId?: string | number;
   rating: number;
   totalShows: number;
   verified: boolean;

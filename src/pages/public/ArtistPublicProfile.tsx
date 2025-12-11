@@ -90,7 +90,7 @@ export default function ArtistPublicProfile() {
     setBookingDialogOpen(false);
     toast({
       title: 'Solicitud enviada',
-      description: `Tu solicitud para ${artist.stageName} ha sido enviada correctamente.`,
+      description: `Tu solicitud para ${artist.nickName || artist.name} ha sido enviada correctamente.`,
     });
   };
 
@@ -129,13 +129,13 @@ export default function ArtistPublicProfile() {
                 <Avatar className="h-28 w-28 border-4 border-background shadow-lg">
                   <AvatarImage src={artist.avatar} />
                   <AvatarFallback className="text-3xl bg-primary text-primary-foreground">
-                    {artist.stageName.charAt(0)}
+                    {artist.nickName?.charAt(0) || artist.name?.charAt(0) || 'A'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <h1 className="text-3xl lg:text-4xl font-display font-bold">
-                      {artist.stageName}
+                      {artist.nickName || artist.name}
                     </h1>
                     {artist.verified && (
                       <CheckCircle className="w-7 h-7 text-primary" />
@@ -143,17 +143,23 @@ export default function ArtistPublicProfile() {
                   </div>
                   <p className="text-lg text-muted-foreground">{artist.name}</p>
                   <div className="flex items-center gap-4 mt-2">
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      <span>{artist.city}, {artist.country}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-accent">
-                      <Star className="w-4 h-4 fill-current" />
-                      <span className="font-medium">{artist.rating}</span>
-                      <span className="text-muted-foreground">
-                        ({artist.totalShows} shows)
-                      </span>
-                    </div>
+                    {(artist.city || artist.country) && (
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <MapPin className="w-4 h-4" />
+                        <span>{artist.city || 'Ciudad'}, {artist.country || 'País'}</span>
+                      </div>
+                    )}
+                    {artist.rating && (
+                      <div className="flex items-center gap-1 text-accent">
+                        <Star className="w-4 h-4 fill-current" />
+                        <span className="font-medium">{artist.rating}</span>
+                        {artist.totalShows > 0 && (
+                          <span className="text-muted-foreground">
+                            ({artist.totalShows} shows)
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -168,7 +174,7 @@ export default function ArtistPublicProfile() {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
-                      <DialogTitle>Solicitar a {artist.stageName}</DialogTitle>
+                      <DialogTitle>Solicitar a {artist.nickName || artist.name}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleBookingSubmit} className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
@@ -217,10 +223,10 @@ export default function ArtistPublicProfile() {
             {/* Bio */}
             <Card variant="gradient">
               <CardHeader>
-                <CardTitle>Sobre {artist.stageName}</CardTitle>
+                <CardTitle>Sobre {artist.nickName || artist.name}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground leading-relaxed">{artist.bio}</p>
+                <p className="text-muted-foreground leading-relaxed">{artist.bio || 'Sin biografía disponible'}</p>
               </CardContent>
             </Card>
 
@@ -231,18 +237,21 @@ export default function ArtistPublicProfile() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {artist.genre.map((genre) => (
+                  {artist.genre?.map((genre) => (
                     <Badge key={genre} variant="secondary" className="text-sm px-3 py-1">
                       <Music className="w-3 h-3 mr-1" />
                       {genre}
                     </Badge>
                   ))}
+                  {(!artist.genre || artist.genre.length === 0) && (
+                    <p className="text-muted-foreground text-sm">Sin géneros especificados</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
             {/* Gallery */}
-            {artist.gallery.length > 0 && (
+            {artist.gallery && artist.gallery.length > 0 && (
               <Card variant="gradient">
                 <CardHeader>
                   <CardTitle>Galería</CardTitle>
@@ -285,7 +294,7 @@ export default function ArtistPublicProfile() {
                   <div className="p-4 rounded-lg bg-primary/10 border border-primary/30">
                     <p className="text-sm text-muted-foreground mb-1">Caché base</p>
                     <p className="text-3xl font-bold text-primary">
-                      €{artist.basePrice.toLocaleString()}
+                      €{artist.basePrice?.toLocaleString() || '0'}
                     </p>
                   </div>
 
@@ -294,7 +303,7 @@ export default function ArtistPublicProfile() {
                       <div className="flex items-center justify-between mb-1">
                         <p className="font-medium">{variant.name}</p>
                         <p className="font-bold text-primary">
-                          €{variant.price.toLocaleString()}
+                          €{variant.price?.toLocaleString() || '0'}
                         </p>
                       </div>
                       <p className="text-sm text-muted-foreground">
@@ -311,7 +320,7 @@ export default function ArtistPublicProfile() {
                 <CardContent className="p-6 text-center">
                   <Calendar className="w-12 h-12 mx-auto mb-4 text-primary" />
                   <h3 className="font-display font-bold mb-2">
-                    ¿Quieres contratar a {artist.stageName}?
+                    ¿Quieres contratar a {artist.nickName || artist.name}?
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     Inicia sesión como Local o Promotor para ver precios y enviar solicitudes.
@@ -329,7 +338,7 @@ export default function ArtistPublicProfile() {
                 <CardTitle>Redes Sociales</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {artist.socialLinks.instagram && (
+                {artist.socialLinks?.instagram && (
                   <a
                     href={`https://instagram.com/${artist.socialLinks.instagram}`}
                     target="_blank"
@@ -340,7 +349,7 @@ export default function ArtistPublicProfile() {
                     <span>@{artist.socialLinks.instagram}</span>
                   </a>
                 )}
-                {artist.socialLinks.youtube && (
+                {artist.socialLinks?.youtube && (
                   <a
                     href={`https://youtube.com/${artist.socialLinks.youtube}`}
                     target="_blank"
@@ -350,6 +359,9 @@ export default function ArtistPublicProfile() {
                     <Youtube className="w-5 h-5 text-red-500" />
                     <span>{artist.socialLinks.youtube}</span>
                   </a>
+                )}
+                {!artist.socialLinks?.instagram && !artist.socialLinks?.youtube && (
+                  <p className="text-muted-foreground text-sm">Sin redes sociales configuradas</p>
                 )}
               </CardContent>
             </Card>
@@ -362,13 +374,13 @@ export default function ArtistPublicProfile() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Shows realizados</span>
-                  <span className="font-bold text-xl">{artist.totalShows}</span>
+                  <span className="font-bold text-xl">{artist.totalShows || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Valoración media</span>
                   <div className="flex items-center gap-1">
                     <Star className="w-5 h-5 text-accent fill-current" />
-                    <span className="font-bold text-xl">{artist.rating}</span>
+                    <span className="font-bold text-xl">{artist.rating || 0}</span>
                   </div>
                 </div>
               </CardContent>

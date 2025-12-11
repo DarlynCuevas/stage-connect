@@ -68,7 +68,7 @@ export default function PromoterHome() {
               Panel de Promotor
             </h1>
             <p className="text-muted-foreground">
-              Bienvenido, {promoter.name} • {promoter.company}
+              Bienvenido, {promoter.name}
             </p>
           </div>
           <div className="flex gap-3">

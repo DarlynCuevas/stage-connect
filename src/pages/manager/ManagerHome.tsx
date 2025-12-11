@@ -66,7 +66,7 @@ export default function ManagerHome() {
               Panel de Manager
             </h1>
             <p className="text-muted-foreground">
-              Bienvenido, {manager?.name || 'Manager'}{manager?.company ? ` • ${manager.company}` : ''}
+              Bienvenido, {manager?.name || 'Manager'}
             </p>
           </div>
           <div className="flex gap-3">
@@ -129,12 +129,12 @@ export default function ManagerHome() {
                   >
                     <Avatar className="h-16 w-16 border-2 border-border">
                       <AvatarImage src={artist.avatar} />
-                      <AvatarFallback>{artist.stageName.charAt(0)}</AvatarFallback>
+                      <AvatarFallback>{artist.nickName?.charAt(0) || artist.name?.charAt(0) || 'A'}</AvatarFallback>
                     </Avatar>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-display font-bold truncate">{artist.stageName}</h3>
+                        <h3 className="font-display font-bold truncate">{artist.nickName || artist.name}</h3>
                         {artist.verified && (
                           <Badge variant="default" className="text-xs">Verificado</Badge>
                         )}
@@ -150,7 +150,7 @@ export default function ManagerHome() {
                         </span>
                       </div>
                       <p className="text-sm text-primary font-medium mt-1">
-                        €{artist.basePrice.toLocaleString()} base
+                        €{artist.basePrice?.toLocaleString() || '0'} base
                       </p>
                     </div>
 
