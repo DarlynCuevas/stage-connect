@@ -63,20 +63,12 @@ export default function ArtistHome() {
       extraHeaders: { Authorization: `Bearer ${token}` },
     });
 
-    socket.on('connect', () => {
-      // Optional: visual feedback when socket connects
-    });
-
     socket.on('request.created', (payload: any) => {
       toast({
         title: 'Nueva solicitud',
         description: `${payload.eventType} - ${payload.eventLocation}`,
       });
       queryClient.invalidateQueries({ queryKey: ['requests'] });
-    });
-
-    socket.on('connect_error', () => {
-      toast({ title: 'Socket desconectado', description: 'Reintentando notificaciones', variant: 'destructive' });
     });
 
     return () => {
