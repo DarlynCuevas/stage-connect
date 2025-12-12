@@ -43,8 +43,9 @@ export default function ArtistRequests() {
   const completedRequests = requests.filter(r => ['Accepted', 'Rejected'].includes(r.status));
 
   return (
-    <DashboardLayout noSidebar>
+    
       <HeaderLayout>
+        <DashboardLayout noSidebar>
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-display font-bold mb-2">
@@ -76,9 +77,9 @@ export default function ArtistRequests() {
                     request={request}
                     artist={artist}
                     isReceiver
-                    onAccept={() => handleAccept(request.id)}
-                    onReject={() => handleReject(request.id)}
-                    onNegotiate={() => handleNegotiate(request.id)}
+                    onAccept={() => handleAccept(String(request.id))}
+                    onReject={() => handleReject(String(request.id))}
+                    onNegotiate={() => handleNegotiate(String(request.id))}
                   />
                 ))
               ) : (
@@ -110,7 +111,7 @@ export default function ArtistRequests() {
           </TabsContent>
         </Tabs>
         </div>
+        </DashboardLayout>
       </HeaderLayout>
-    </DashboardLayout>
   );
 }

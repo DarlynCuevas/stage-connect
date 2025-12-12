@@ -14,6 +14,9 @@ import {
   Shield,
   Volume2
 } from 'lucide-react';
+import { useState } from 'react';
+import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 interface VenueCardProps {
@@ -31,7 +34,9 @@ interface VenueCardProps {
     bio?: string;
     reviewsCount?: number;
     rating?: number;
+    favorite?: boolean;
   };
+  onFavoriteChange?: (venueId: number, favorite: boolean) => void;
 }
 
 const getAmenityIcon = (amenity: string) => {
@@ -43,7 +48,9 @@ const getAmenityIcon = (amenity: string) => {
   return <Shield className="h-3 w-3" />;
 };
 
-export function VenueCard({ venue }: VenueCardProps) {
+export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
+  const { user, token } = useAuth();
+  const [isFavorite, setIsFavorite] = useState(!!venue.favorite);
   const location = [venue.city, venue.province].filter(Boolean).join(', ');
   const displayAmenities = venue.amenities?.slice(0, 3) || [];
   const cap = venue.capacity || 0;
@@ -88,14 +95,26 @@ export function VenueCard({ venue }: VenueCardProps) {
 
             {/* Heart icon for favorites */}
             <button 
-              className="absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background transition-colors"
-              onClick={(e) => {
+              className={`absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background transition-colors ${isFavorite ? 'text-red-500' : ''}`}
+              onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // TODO: Add to favorites functionality
+                const newFav = !isFavorite;
+                setIsFavorite(newFav);
+                if (onFavoriteChange) onFavoriteChange(venue.id, newFav);
+                try {
+                  await apiFetch(`/users/favorite/${venue.id}`, {
+                    method: 'PATCH',
+                    body: { favorite: newFav },
+                    token,
+                  });
+                } catch (err) {
+                  // Opcional: mostrar toast de error
+                }
               }}
+              aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
             >
-              <Heart className="h-4 w-4 text-muted-foreground hover:text-red-500" />
+              <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground hover:text-red-500'}`} />
             </button>
 
             {/* Capacity badge */}

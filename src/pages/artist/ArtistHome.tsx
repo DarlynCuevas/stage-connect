@@ -33,6 +33,8 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { format, isThisYear, isFuture, parseISO, isThisMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { mockVenues } from '@/data/mockData';
+import { VenueCard } from '@/components/venue/VenueCard';
 
 export default function ArtistHome() {
   const { user: artist, token } = useAuth();
@@ -40,10 +42,6 @@ export default function ArtistHome() {
   const { data: confirmedRequests = [] } = useConfirmedRequests(artist?.id ? Number(artist.id) : undefined);
   const { data: managerRequests = [] } = useReceivedManagerRequests();
 
-  // Discovery-style state for venues
-  const [venues, setVenues] = useState<Array<{ id: number; name: string; city?: string; province?: string; capacity?: number; avatar?: string; bio?: string }>>([]);
-  const [loadingVenues, setLoadingVenues] = useState<boolean>(false);
-  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const updateStatusMutation = useUpdateRequestStatus();
   const updateManagerStatusMutation = useUpdateManagerRequestStatus();
@@ -160,21 +158,7 @@ export default function ArtistHome() {
     };
   }, [token, queryClient, toast]);
 
-  // Fetch public venues for discovery section on artist homepage
-  useEffect(() => {
-    const fetchVenues = async () => {
-      try {
-        setLoadingVenues(true);
-        const response = await apiFetch('/public/venues');
-        setVenues(response || []);
-      } catch (error) {
-        console.error('Error fetching venues:', error);
-      } finally {
-        setLoadingVenues(false);
-      }
-    };
-    fetchVenues();
-  }, []);
+
 
   const stats = [
     {
@@ -214,18 +198,16 @@ export default function ArtistHome() {
     },
   ];
 
-  // Filtered venues for search term
-  const filteredVenues = venues.filter(v =>
-    (v.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (v.city || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (v.province || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
+      
+    
   return (
-    <DashboardLayout noSidebar>
+
       <HeaderLayout>
-          {/* Dashboard header */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+         <DashboardLayout noSidebar>
+      <div>
+        {/* Dashboard header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-display font-bold mb-2">Panel de Artista</h1>
               <p className="text-muted-foreground">Bienvenido, {artist.nickName || artist.name}</p>
@@ -385,8 +367,8 @@ export default function ArtistHome() {
                   </CardContent>
                 </Card>
             </div>
-          
-      </HeaderLayout>
-    </DashboardLayout>
+          </div>
+          </DashboardLayout>
+          </HeaderLayout>
   );
 }

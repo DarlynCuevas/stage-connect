@@ -1,3 +1,4 @@
+import InviteFriend from './pages/artist/InviteFriend';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -238,6 +239,7 @@ function AppRoutes() {
       <Route path="/artist/requests" element={<ArtistRequests />} />
         <Route path="/artist/manager-requests" element={<ArtistManagerRequests />} />
       <Route path="/artist/settings" element={<Settings />} />
+      <Route path="/artist/invite" element={<InviteFriend />} />
 
       {/* Manager routes */}
       <Route path="/manager" element={<ManagerDiscover />} />

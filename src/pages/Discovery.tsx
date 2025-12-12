@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { apiFetch } from '@/lib/api';
@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { VenueCard } from '@/components/venue/VenueCard';
 import { Search, MapPin, Filter, X } from 'lucide-react';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+
 
 interface Venue {
   id: number;
@@ -21,7 +23,11 @@ interface Venue {
   closingTime?: string;
   avatar?: string;
   bio?: string;
+  featured?: boolean;
+  verified?: boolean;
+  favorite?: boolean;
 }
+
 
 export default function Discovery() {
   const { user } = useAuth();
@@ -32,52 +38,46 @@ export default function Discovery() {
   const [typeFilter, setTypeFilter] = useState<'all' | 'club' | 'concert' | 'rooftop' | 'bar' | 'festival' | 'theater' | 'private'>('all');
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [showFiltersBar, setShowFiltersBar] = useState<boolean>(false);
+  // Capacidad mínima y máxima
+  const [capacityMin, setCapacityMin] = useState<number | null>(null);
+  const [capacityMax, setCapacityMax] = useState<number | null>(null);
+
+  // Filtros de destacados, verificados y favoritos
+  const [showOnlyFeatured, setShowOnlyFeatured] = useState(false);
+  const [showOnlyVerified, setShowOnlyVerified] = useState(false);
+  const [showOnlyFavorite, setShowOnlyFavorite] = useState(false);
+  // Memoized lists for featured and verified venues
+  const featuredVenues = useMemo(() => venues.filter(v => v.featured), [venues]);
+  const verifiedVenues = useMemo(() => venues.filter(v => v.verified), [venues]);
+
 
   useEffect(() => {
-    fetchVenues();
-  }, []);
-
-  const fetchVenues = async () => {
-    try {
-      setLoading(true);
-      const response = await apiFetch('/public/venues');
-      const allVenues = response || [];
-      setVenues(allVenues);
-    } catch (error) {
-      console.error('Error fetching venues:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredVenues = venues
-    .filter(venue => 
-      venue.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      venue.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      venue.province?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter(venue => {
-      if (cityFilter !== 'all') {
-        const vcity = (venue.city || '').toLowerCase();
-        if (!vcity.includes(cityFilter.toLowerCase())) return false;
+    const fetchVenues = async () => {
+      try {
+        setLoading(true);
+        const params = new URLSearchParams();
+        if (searchTerm) params.append('query', searchTerm);
+        if (cityFilter !== 'all') params.append('city', cityFilter);
+        if (showOnlyFeatured) params.append('featured', 'true');
+        if (showOnlyVerified) params.append('verified', 'true');
+        if (typeFilter !== 'all') params.append('type', typeFilter);
+        if (capacityMin !== null) params.append('capacityMin', String(capacityMin));
+        if (capacityMax !== null) params.append('capacityMax', String(capacityMax));
+        if (showOnlyFavorite) {
+          params.append('favorite', 'true');
+        }
+        const url = `/public/venues${params.toString() ? '?' + params.toString() : ''}`;
+        const response = await apiFetch(url);
+        setVenues(response || []);
+      } catch (error) {
+        console.error('Error fetching venues:', error);
+      } finally {
+        setLoading(false);
       }
-      const type = (venue.bio || '').toLowerCase();
-      if (typeFilter === 'club') return type.includes('discoteca') || type.includes('club');
-      if (typeFilter === 'concert') return type.includes('concierto') || type.includes('sala');
-      if (typeFilter === 'rooftop') return type.includes('rooftop') || type.includes('terraza');
-      if (typeFilter === 'bar') return type.includes('bar') || type.includes('pub');
-      if (typeFilter === 'festival') return type.includes('festival');
-      if (typeFilter === 'theater') return type.includes('teatro') || type.includes('theater');
-      if (typeFilter === 'private') return type.includes('privado') || type.includes('evento privado');
-      return true;
-    })
-    .filter(venue => {
-      const cap = venue.capacity || 0;
-      if (priceFilter === 'low') return cap < 500;
-      if (priceFilter === 'mid') return cap >= 500 && cap < 1200;
-      if (priceFilter === 'high') return cap >= 1200;
-      return true;
-    });
+    };
+    fetchVenues();
+  }, [searchTerm, cityFilter, showOnlyFeatured, showOnlyVerified, typeFilter, capacityMin, capacityMax, showOnlyFavorite]);
+
 
   if (loading) {
     return (
@@ -90,93 +90,170 @@ export default function Discovery() {
     );
   }
 
-  const activeList = searchTerm || cityFilter !== 'all' || typeFilter !== 'all' || priceFilter !== 'all' ? filteredVenues : venues;
+  const activeList = venues;
 
   return (
     <HeaderLayout>
+     <DashboardLayout noSidebar>
       {/* Hero + Search */}
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-display font-bold">
-                Encuentra tu próximo escenario
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Descubre locales y eventos donde mostrar tu talento
-              </p>
-            </div>
-            <Badge variant="secondary" className="text-sm">
-              {activeList.length} locales disponibles
-            </Badge>
+          <div>
+            <h1 className="text-3xl font-display font-bold">
+              Encuentra tu próximo escenario
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Descubre locales y eventos donde mostrar tu talento
+            </p>
+          </div>
+          <Badge variant="secondary" className="text-sm">
+            {activeList.length} locales disponibles
+          </Badge>
         </div>
 
-          {/* Search Bar */}
-          <Card className="border-2 border-primary/20 shadow-lg">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar por nombre, ciudad..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Button variant="destructive" className="px-5" onClick={() => setShowFiltersBar(v => !v)}>
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtros
-                </Button>
+        {/* Search Bar */}
+        <Card className="border-2 border-primary/20 shadow-lg">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre, ciudad..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
               </div>
+              <Button variant="destructive" className="px-5" onClick={() => setShowFiltersBar(v => !v)}>
+                <Filter className="h-4 w-4 mr-2" />
+                Filtros
+              </Button>
+            </div>
 
-              {showFiltersBar && (
-                <div className="mt-4 p-3 rounded-xl border bg-secondary/30">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="rounded-full">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          {cityFilter === 'all' ? 'Todas' : cityFilter}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        {['all','Madrid','Barcelona','Valencia','Sevilla','Bilbao'].map(c => (
-                          <DropdownMenuItem key={c} onClick={() => setCityFilter(c)}>
-                            {c==='all' ? 'Todas' : c}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+            {showFiltersBar && (
+              <div className="mt-4 p-3 rounded-xl border bg-secondary/30">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="rounded-full">
+                        <MapPin className="h-4 w-4 mr-2" />
+                        {cityFilter === 'all' ? 'Todas' : cityFilter}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {['all','Madrid','Barcelona','Valencia','Sevilla','Bilbao'].map(c => (
+                        <DropdownMenuItem key={c} onClick={() => setCityFilter(c)}>
+                          {c==='all' ? 'Todas' : c}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="rounded-full">
-                          {typeFilter === 'all' ? 'Todos los tipos' : typeLabel(typeFilter)}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => setTypeFilter('all')}>Todos los tipos</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTypeFilter('club')}>Discoteca</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTypeFilter('concert')}>Sala de conciertos</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTypeFilter('rooftop')}>Rooftop</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTypeFilter('bar')}>Bar</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTypeFilter('festival')}>Festival</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTypeFilter('theater')}>Teatro</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTypeFilter('private')}>Evento privado</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="rounded-full">
+                        {typeFilter === 'all' ? 'Todos los tipos' : typeLabel(typeFilter)}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => setTypeFilter('all')}>Todos los tipos</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTypeFilter('club')}>Discoteca</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTypeFilter('concert')}>Sala de conciertos</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTypeFilter('rooftop')}>Rooftop</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTypeFilter('bar')}>Bar</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTypeFilter('festival')}>Festival</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTypeFilter('theater')}>Teatro</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTypeFilter('private')}>Evento privado</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-                    <button
-                      className="flex items-center gap-2 text-sm text-muted-foreground hover:underline ml-auto"
-                      onClick={() => { setCityFilter('all'); setTypeFilter('all'); setPriceFilter('all'); }}
-                    >
-                      <X className="h-3 w-3" /> Limpiar filtros
-                    </button>
+                  {/* Filtros de capacidad */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={0}
+                      placeholder="Capacidad mín."
+                      value={capacityMin ?? ''}
+                      onChange={e => setCapacityMin(e.target.value ? parseInt(e.target.value) : null)}
+                      className="w-28 rounded-full border px-3 py-1 text-sm bg-background text-foreground border-border focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <input
+                      type="number"
+                      min={0}
+                      placeholder="Capacidad máx."
+                      value={capacityMax ?? ''}
+                      onChange={e => setCapacityMax(e.target.value ? parseInt(e.target.value) : null)}
+                      className="w-28 rounded-full border px-3 py-1 text-sm bg-background text-foreground border-border focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
                   </div>
+
+                  {/* Destacados, Verificados y Favoritos como botones */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={`rounded-full ${showOnlyFeatured ? 'bg-accent text-primary border-primary' : ''}`}
+                    onClick={() => setShowOnlyFeatured(v => !v)}
+                  >
+                    Destacados
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={`rounded-full ${showOnlyVerified ? 'bg-accent text-primary border-primary' : ''}`}
+                    onClick={() => setShowOnlyVerified(v => !v)}
+                  >
+                    Verificados
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={`rounded-full ${showOnlyFavorite ? 'bg-accent text-primary border-primary' : ''}`}
+                    onClick={() => setShowOnlyFavorite(v => !v)}
+                  >
+                    Favoritos
+                  </Button>
+
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:underline ml-auto"
+                    onClick={() => { setCityFilter('all'); setTypeFilter('all'); setPriceFilter('all'); setShowOnlyFeatured(false); setShowOnlyVerified(false); }}
+                  >
+                    <X className="h-3 w-3" /> Limpiar filtros
+                  </button>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+
+
+        {/* Locales destacados */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">Locales destacados</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {featuredVenues.filter(v => (!showOnlyVerified || v.verified) && (!showOnlyFeatured || v.featured)).length === 0 && <p className="text-muted-foreground">No hay locales destacados.</p>}
+            {featuredVenues
+              .filter(v => (!showOnlyVerified || v.verified) && (!showOnlyFeatured || v.featured))
+              .map(venue => (
+                <VenueCard key={venue.id} venue={venue} />
+              ))}
+          </div>
+        </div>
+
+        {/* Locales verificados */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">Locales verificados</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {verifiedVenues.filter(v => (!showOnlyFeatured || v.featured) && (!showOnlyVerified || v.verified)).length === 0 && <p className="text-muted-foreground">No hay locales verificados.</p>}
+            {verifiedVenues
+              .filter(v => (!showOnlyFeatured || v.featured) && (!showOnlyVerified || v.verified))
+              .map(venue => (
+                <VenueCard key={venue.id} venue={venue} />
+              ))}
+          </div>
+        </div>
       </div>
 
       {/* Main Content */}
@@ -184,10 +261,13 @@ export default function Discovery() {
         <p className="text-muted-foreground mb-4">{activeList.length} locales encontrados</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {activeList.map((venue) => (
-            <VenueCard key={venue.id} venue={venue} />
+            <VenueCard key={venue.id} venue={venue} onFavoriteChange={(venueId, favorite) => {
+              setVenues((prev) => prev.map(v => v.id === venueId ? { ...v, favorite } : v));
+            }} />
           ))}
         </div>
       </div>
+      </DashboardLayout>
     </HeaderLayout>
   );
 }

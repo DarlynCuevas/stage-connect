@@ -6,7 +6,44 @@ export const mockArtists: Artist[] = [];
 
 export const mockManagers: Manager[] = [];
 
-export const mockVenues: Venue[] = [];
+export const mockVenues: Venue[] = [
+  {
+    id: '1',
+    userId: '10',
+    name: 'Club Ibiza',
+    type: 'club',
+    capacity: 1200,
+    city: 'Ibiza',
+    country: 'España',
+    avatar: '/placeholder.svg',
+    featured: true,
+    verified: true,
+  },
+  {
+    id: '2',
+    userId: '11',
+    name: 'Sala Apolo',
+    type: 'concert_hall',
+    capacity: 900,
+    city: 'Barcelona',
+    country: 'España',
+    avatar: '/placeholder.svg',
+    featured: false,
+    verified: true,
+  },
+  {
+    id: '3',
+    userId: '12',
+    name: 'Bar Sol',
+    type: 'bar',
+    capacity: 300,
+    city: 'Madrid',
+    country: 'España',
+    avatar: '/placeholder.svg',
+    featured: true,
+    verified: false,
+  },
+];
 
 export const mockPromoters: Promoter[] = [];
 

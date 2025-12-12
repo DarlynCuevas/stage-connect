@@ -152,13 +152,14 @@ export default function ArtistProfile() {
   };
 
   return (
-    <DashboardLayout noSidebar>
+    
       <HeaderLayout profileTabs={[
         { to: '/artist', label: 'Inicio' },
         { to: '/artist/profile', label: 'Mi perfil' },
         { to: '/artist/calendar', label: 'Calendario' },
         { to: '/artist/requests', label: 'Solicitudes' },
       ]}>
+        <DashboardLayout noSidebar>
         <div className="space-y-6">
         {/* Header with banner */}
         <div className="relative rounded-2xl overflow-hidden">
@@ -973,7 +974,8 @@ export default function ArtistProfile() {
           </div>
         )}
       </div>
+      </DashboardLayout>
       </HeaderLayout>
-    </DashboardLayout>
+   
   );
 }

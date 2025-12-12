@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Music, Bell, Sun, Moon, LayoutDashboard, User, Calendar, MessageSquare, Settings, LogOut } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { useReceivedManagerRequests } from '@/lib/manager-requests';
+import { useReceivedManagerRequests, useManagerRequestsRealtime } from '@/lib/manager-requests';
 import { useArtistRequests as useArtistReqFromRequestsLib } from '@/lib/requests';
 
 
@@ -40,22 +40,35 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Badges: pending requests
+  // Suscripción en tiempo real global para cualquier usuario autenticado
+  useManagerRequestsRealtime();
+
+  // Badges: pending requests (adaptar para todos los roles)
   const { data: artistRequests = [] } = useArtistReqFromRequestsLib();
   const { data: receivedManagerRequests = [] } = useReceivedManagerRequests();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
   const pendingCount = (() => {
-    // For artist role, show pending from artist requests + manager requests
-    if (user && String(user.role).toLowerCase().includes('art')) {
+    if (!user) return 0;
+    const role = String(user.role).toLowerCase();
+    if (role.includes('art')) {
+      // Artista: solicitudes + manager
       const a = artistRequests.filter((r: any) => r.status === 'Pending').length;
       const m = receivedManagerRequests.filter((r: any) => r.status === 'Pending').length;
       return a + m;
     }
+    if (role.includes('manager')) {
+      // Manager: solo manager requests recibidas
+      return receivedManagerRequests.filter((r: any) => r.status === 'Pending').length;
+    }
+    if (role.includes('local') || role.includes('promotor')) {
+      // Local/Promotor: solo solicitudes recibidas (puedes adaptar si hay endpoint específico)
+      return artistRequests.filter((r: any) => r.status === 'Pending').length;
+    }
     return 0;
   })();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
 
   // Tabs: siempre mostrar las 5 opciones para artistas
   let nav: Array<{ to: string; label: string; icon?: React.ReactNode }> = [];
@@ -78,12 +91,12 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
         <div className="container mx-auto px-4">
           <div className="h-14 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <Link to="/artist" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <Music className="w-4 h-4 text-primary" />
               </div>
-              <span className="font-display font-bold">Bookify</span>
-            </div>
+              <span className="font-display font-bold">Artime</span>
+            </Link>
             {/* Profile navigation tabs integrated into header */}
             <nav className="flex items-center gap-2">
               {nav.map((item) => {
@@ -148,6 +161,11 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
                     <DropdownMenuItem asChild>
                       <Link to="/artist/billing" className="flex items-center gap-2">
                         <span className="w-4 h-4 inline-block">💳</span> Facturación
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/artist/invite" to="/artist/invite" className="flex items-center gap-2">
+                        <span className="w-4 h-4 inline-block">🎉</span> Invita a un amigo
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>

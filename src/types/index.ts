@@ -97,6 +97,8 @@ export interface Venue {
   city: string;
   country: string;
   avatar: string;
+  featured?: boolean;
+  verified?: boolean;
 }
 
 export interface Promoter {
