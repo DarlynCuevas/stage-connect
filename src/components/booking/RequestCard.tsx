@@ -1,9 +1,9 @@
 import { BookingRequest, Artist } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Calendar, MapPin, Clock, MessageSquare, Check, X, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, MessageSquare, Check, X, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -18,7 +18,7 @@ interface RequestCardProps {
 }
 
 const statusConfig = {
-  pending: { label: 'Pendiente', variant: 'warning' as const },
+  pending: { label: 'Pendiente', variant: 'muted' as const },
   negotiating: { label: 'Negociando', variant: 'artist' as const },
   accepted: { label: 'Aceptada', variant: 'success' as const },
   rejected: { label: 'Rechazada', variant: 'destructive' as const },
@@ -37,85 +37,76 @@ export function RequestCard({
   const status = statusConfig[request.status];
 
   return (
-    <Card variant="gradient" className="hover:shadow-md transition-all duration-300">
-      <CardHeader className="pb-2 px-4 pt-4">
-        <div className="flex items-start justify-between gap-3">
+    <Card variant="outline" className="hover:shadow-sm transition-all">
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3 min-w-0">
             {artist && (
-              <Avatar className="h-10 w-10 border-2 border-border shrink-0">
+              <Avatar className="h-10 w-10 border border-border shrink-0">
                 <AvatarImage src={artist.avatar} />
-                <AvatarFallback className="text-sm">{artist.stageName.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-sm bg-secondary">{artist.stageName.charAt(0)}</AvatarFallback>
               </Avatar>
             )}
             <div className="min-w-0">
-              <CardTitle className="text-base truncate">
+              <h4 className="font-semibold text-foreground truncate">
                 {artist?.stageName || 'Artista'}
-              </CardTitle>
+              </h4>
               <p className="text-xs text-muted-foreground truncate">{request.eventType}</p>
             </div>
           </div>
-          <Badge variant={status.variant} className="shrink-0 text-2xs">{status.label}</Badge>
+          <Badge variant={status.variant} className="shrink-0">{status.label}</Badge>
         </div>
-      </CardHeader>
 
-      <CardContent className="space-y-3 px-4 pb-4">
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Calendar className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">{format(new Date(request.eventDate), "d MMM, yyyy", { locale: es })}</span>
+        <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>{format(new Date(request.eventDate), "d MMM, yyyy", { locale: es })}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <MapPin className="w-3.5 h-3.5 shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5" />
             <span className="truncate">{request.eventLocation}</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/50">
-          <span className="text-xs text-muted-foreground">Oferta</span>
-          <span className="text-base font-bold text-primary">
+        <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 mb-3">
+          <span className="text-sm text-muted-foreground">Oferta</span>
+          <span className="text-lg font-semibold text-primary">
             €{request.offeredPrice.toLocaleString()}
           </span>
         </div>
 
         {request.message && (
-          <div className="flex items-start gap-2 text-xs text-muted-foreground">
+          <div className="flex items-start gap-2 text-xs text-muted-foreground mb-3">
             <MessageSquare className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-            <p className="line-clamp-2 leading-relaxed">{request.message}</p>
+            <p className="line-clamp-2">{request.message}</p>
           </div>
         )}
 
-        {request.negotiations.length > 0 && (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock className="w-3.5 h-3.5" />
-            <span>{request.negotiations.length} mensaje(s) en negociación</span>
-          </div>
-        )}
-
-        <div className="flex gap-2 pt-1">
+        <div className="flex gap-2">
           {isReceiver && request.status === 'pending' && (
             <>
-              <Button size="sm" variant="gradient" className="flex-1 h-8" onClick={onAccept}>
+              <Button size="sm" className="flex-1 h-9" onClick={onAccept}>
                 <Check className="w-3.5 h-3.5 mr-1" />
                 Aceptar
               </Button>
-              <Button size="sm" variant="outline" className="h-8" onClick={onNegotiate}>
+              <Button size="sm" variant="outline" className="h-9" onClick={onNegotiate}>
                 <MessageSquare className="w-3.5 h-3.5" />
               </Button>
-              <Button size="sm" variant="ghost" className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={onReject}>
+              <Button size="sm" variant="ghost" className="h-9 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={onReject}>
                 <X className="w-3.5 h-3.5" />
               </Button>
             </>
           )}
 
           {isReceiver && request.status === 'negotiating' && (
-            <Button size="sm" variant="gradient" className="flex-1 h-8" onClick={onViewDetails}>
+            <Button size="sm" className="flex-1 h-9" onClick={onViewDetails}>
               Ver conversación
               <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           )}
 
           {!isReceiver && (
-            <Button size="sm" variant="outline" className="flex-1 h-8" onClick={onViewDetails}>
+            <Button size="sm" variant="outline" className="flex-1 h-9" onClick={onViewDetails}>
               Ver detalles
               <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </Button>

@@ -20,6 +20,8 @@ const badgeVariants = cva(
           "border-transparent bg-success/15 text-success",
         warning:
           "border-transparent bg-accent/15 text-accent",
+        muted:
+          "border-transparent bg-muted text-muted-foreground",
         artist:
           "border-transparent bg-role-artist/15 text-role-artist",
         manager:
