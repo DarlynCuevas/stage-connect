@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateProfile, useArtist, useUser } from '@/lib/users';
 import { useConfirmedRequests } from '@/lib/requests';
@@ -30,6 +31,14 @@ import {
   User,
   UserPlus,
   UserMinus,
+  Award,
+  Video,
+  Mic,
+  Languages,
+  Briefcase,
+  Clock,
+  Users,
+  PlayCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -325,6 +334,326 @@ export default function ArtistProfile() {
                     </Button>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Professional Information - Tabs */}
+            <Card variant="gradient">
+              <CardHeader>
+                <CardTitle>Información Profesional</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="experience" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="experience">Experiencia</TabsTrigger>
+                    <TabsTrigger value="multimedia">Multimedia</TabsTrigger>
+                    <TabsTrigger value="technical">Técnico</TabsTrigger>
+                    <TabsTrigger value="coverage">Cobertura</TabsTrigger>
+                  </TabsList>
+
+                  {/* Experience Tab */}
+                  <TabsContent value="experience" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Award className="w-4 h-4 text-primary" />
+                        Años de experiencia
+                      </Label>
+                      {isEditing ? (
+                        <Input
+                          type="number"
+                          value={editData?.yearsOfExperience || ''}
+                          onChange={(e) => setEditData({ ...editData, yearsOfExperience: Number(e.target.value) })}
+                          placeholder="3"
+                        />
+                      ) : (
+                        <p className="text-muted-foreground">{currentArtist?.yearsOfExperience || 'No especificado'} años</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Award className="w-4 h-4 text-primary" />
+                        Logros y premios
+                      </Label>
+                      {isEditing ? (
+                        <Textarea
+                          value={editData?.achievements?.join('\n') || ''}
+                          onChange={(e) => setEditData({ ...editData, achievements: e.target.value.split('\n').filter(Boolean) })}
+                          placeholder="Premio Mejor DJ 2024&#10;Actuación en Festival Internacional&#10;..."
+                          rows={4}
+                        />
+                      ) : (
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                          {currentArtist?.achievements?.map((achievement, i) => (
+                            <li key={i}>{achievement}</li>
+                          )) || <li>No hay logros registrados</li>}
+                        </ul>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Certificaciones y formación</Label>
+                      {isEditing ? (
+                        <Textarea
+                          value={editData?.certifications?.join('\n') || ''}
+                          onChange={(e) => setEditData({ ...editData, certifications: e.target.value.split('\n').filter(Boolean) })}
+                          placeholder="Certificación Ableton Live&#10;Curso de producción musical&#10;..."
+                          rows={3}
+                        />
+                      ) : (
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                          {currentArtist?.certifications?.map((cert, i) => (
+                            <li key={i}>{cert}</li>
+                          )) || <li>No hay certificaciones</li>}
+                        </ul>
+                      )}
+                    </div>
+                  </TabsContent>
+
+                  {/* Multimedia Tab */}
+                  <TabsContent value="multimedia" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Video className="w-4 h-4 text-red-500" />
+                        Video Demo / Showreel
+                      </Label>
+                      {isEditing ? (
+                        <Input
+                          value={editData?.showreelUrl || ''}
+                          onChange={(e) => setEditData({ ...editData, showreelUrl: e.target.value })}
+                          placeholder="https://youtube.com/watch?v=..."
+                        />
+                      ) : currentArtist?.showreelUrl ? (
+                        <a href={currentArtist.showreelUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-2">
+                          <PlayCircle className="w-4 h-4" />
+                          Ver video
+                        </a>
+                      ) : (
+                        <p className="text-muted-foreground">No hay video demo</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Music className="w-4 h-4 text-green-500" />
+                        Perfil de Spotify
+                      </Label>
+                      {isEditing ? (
+                        <Input
+                          value={editData?.spotifyUrl || ''}
+                          onChange={(e) => setEditData({ ...editData, spotifyUrl: e.target.value })}
+                          placeholder="https://open.spotify.com/artist/..."
+                        />
+                      ) : currentArtist?.spotifyUrl ? (
+                        <a href={currentArtist.spotifyUrl} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:underline">
+                          Ver en Spotify
+                        </a>
+                      ) : (
+                        <p className="text-muted-foreground">No configurado</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Youtube className="w-4 h-4 text-red-500" />
+                        Canal de YouTube
+                      </Label>
+                      {isEditing ? (
+                        <Input
+                          value={editData?.youtubeChannel || ''}
+                          onChange={(e) => setEditData({ ...editData, youtubeChannel: e.target.value })}
+                          placeholder="https://youtube.com/@tucanal"
+                        />
+                      ) : currentArtist?.youtubeChannel ? (
+                        <a href={currentArtist.youtubeChannel} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
+                          Ver canal
+                        </a>
+                      ) : (
+                        <p className="text-muted-foreground">No configurado</p>
+                      )}
+                    </div>
+                  </TabsContent>
+
+                  {/* Technical Tab */}
+                  <TabsContent value="technical" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Mic className="w-4 h-4 text-primary" />
+                        Rider técnico
+                      </Label>
+                      {isEditing ? (
+                        <Textarea
+                          value={editData?.technicalRider || ''}
+                          onChange={(e) => setEditData({ ...editData, technicalRider: e.target.value })}
+                          placeholder="2 micrófonos dinámicos&#10;Mesa de mezclas de 4 canales&#10;2 monitores de escenario&#10;..."
+                          rows={5}
+                        />
+                      ) : (
+                        <p className="text-muted-foreground whitespace-pre-line">{currentArtist?.technicalRider || 'No especificado'}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Equipo propio</Label>
+                      {isEditing ? (
+                        <Textarea
+                          value={editData?.equipment?.join('\n') || ''}
+                          onChange={(e) => setEditData({ ...editData, equipment: e.target.value.split('\n').filter(Boolean) })}
+                          placeholder="Controlador DDJ-400&#10;Laptop con software&#10;Cables XLR&#10;..."
+                          rows={4}
+                        />
+                      ) : (
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                          {currentArtist?.equipment?.map((item, i) => (
+                            <li key={i}>{item}</li>
+                          )) || <li>No especificado</li>}
+                        </ul>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-primary" />
+                        Tiempo de montaje/desmontaje
+                      </Label>
+                      {isEditing ? (
+                        <Input
+                          value={editData?.setupTime || ''}
+                          onChange={(e) => setEditData({ ...editData, setupTime: e.target.value })}
+                          placeholder="30 minutos"
+                        />
+                      ) : (
+                        <p className="text-muted-foreground">{currentArtist?.setupTime || 'No especificado'}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Duración típica del set</Label>
+                      {isEditing ? (
+                        <Input
+                          value={editData?.setDuration || ''}
+                          onChange={(e) => setEditData({ ...editData, setDuration: e.target.value })}
+                          placeholder="2 horas"
+                        />
+                      ) : (
+                        <p className="text-muted-foreground">{currentArtist?.setDuration || 'No especificado'}</p>
+                      )}
+                    </div>
+                  </TabsContent>
+
+                  {/* Coverage Tab */}
+                  <TabsContent value="coverage" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Languages className="w-4 h-4 text-primary" />
+                        Idiomas
+                      </Label>
+                      {isEditing ? (
+                        <Textarea
+                          value={editData?.languages?.join(', ') || ''}
+                          onChange={(e) => setEditData({ ...editData, languages: e.target.value.split(',').map(l => l.trim()).filter(Boolean) })}
+                          placeholder="Español, Inglés, Francés"
+                          rows={2}
+                        />
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {currentArtist?.languages?.map((lang, i) => (
+                            <Badge key={i} variant="secondary">{lang}</Badge>
+                          )) || <p className="text-muted-foreground">No especificado</p>}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-primary" />
+                        Áreas de cobertura
+                      </Label>
+                      {isEditing ? (
+                        <Textarea
+                          value={editData?.coverageAreas?.join(', ') || ''}
+                          onChange={(e) => setEditData({ ...editData, coverageAreas: e.target.value.split(',').map(a => a.trim()).filter(Boolean) })}
+                          placeholder="Madrid, Barcelona, Valencia"
+                          rows={2}
+                        />
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {currentArtist?.coverageAreas?.map((area, i) => (
+                            <Badge key={i} variant="outline">{area}</Badge>
+                          )) || <p className="text-muted-foreground">No especificado</p>}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>¿Dispuesto a viajar?</Label>
+                      {isEditing ? (
+                        <Select
+                          value={editData?.willingToTravel ? 'yes' : 'no'}
+                          onValueChange={(value) => setEditData({ ...editData, willingToTravel: value === 'yes' })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="yes">Sí, dispuesto a viajar</SelectItem>
+                            <SelectItem value="no">No, solo local</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="text-muted-foreground">{currentArtist?.willingToTravel ? 'Sí, dispuesto a viajar' : 'Solo local'}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-primary" />
+                        Tipos de eventos
+                      </Label>
+                      {isEditing ? (
+                        <Textarea
+                          value={editData?.performanceTypes?.join(', ') || ''}
+                          onChange={(e) => setEditData({ ...editData, performanceTypes: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })}
+                          placeholder="Clubs, Festivales, Bodas, Eventos privados"
+                          rows={2}
+                        />
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {currentArtist?.performanceTypes?.map((type, i) => (
+                            <Badge key={i} variant="secondary">{type}</Badge>
+                          )) || <p className="text-muted-foreground">No especificado</p>}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-primary" />
+                        Tamaño de audiencia habitual
+                      </Label>
+                      {isEditing ? (
+                        <Select
+                          value={editData?.audienceSize || ''}
+                          onValueChange={(value) => setEditData({ ...editData, audienceSize: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona rango" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="0-50">0-50 personas</SelectItem>
+                            <SelectItem value="50-200">50-200 personas</SelectItem>
+                            <SelectItem value="200-500">200-500 personas</SelectItem>
+                            <SelectItem value="500-1000">500-1000 personas</SelectItem>
+                            <SelectItem value="1000-5000">1000-5000 personas</SelectItem>
+                            <SelectItem value="5000+">Más de 5000</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="text-muted-foreground">{currentArtist?.audienceSize || 'No especificado'} personas</p>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
 

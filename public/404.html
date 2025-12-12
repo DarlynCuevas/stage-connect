@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Not Found</title>
+    <meta http-equiv="refresh" content="0;url=/" />
+    <script>
+      // SPA fallback for GitHub Pages
+      const redirect = () => {
+        const pathSegments = window.location.pathname.split('/').filter(Boolean);
+        // Try to preserve the subpath when project pages are used
+        if (pathSegments.length > 0) {
+          const repo = pathSegments[0];
+          const rest = pathSegments.slice(1).join('/');
+          const base = '/' + repo + '/';
+          if (rest) {
+            window.location.replace(base + '#/' + rest);
+            return;
+          }
+        }
+        window.location.replace('/');
+      };
+      redirect();
+    </script>
+  </head>
+  <body>
+    Redirecting...
+  </body>
+</html>

@@ -24,9 +24,10 @@ import {
   Megaphone,
   Heart,
   ChevronLeft,
+  LayoutDashboard,
 } from 'lucide-react';
 
-const roleConfig = {
+const getRoleConfig = (userId: number) => ({
   artist: {
     color: 'text-role-artist',
     bgColor: 'bg-role-artist/10',
@@ -34,10 +35,11 @@ const roleConfig = {
     icon: Music,
     links: [
       { to: '/artist', icon: Home, label: 'Inicio' },
-      { to: '/artist/profile', icon: User, label: 'Mi Perfil' },
+      { to: '/artist/dashboard', icon: LayoutDashboard, label: 'Panel de datos' },
+      { to: `/artist/${userId}`, icon: User, label: 'Mi Perfil' },
       { to: '/artist/calendar', icon: Calendar, label: 'Calendario' },
       { to: '/artist/requests', icon: MessageSquare, label: 'Solicitudes' },
-        { to: '/artist/manager-requests', icon: UserPlus, label: 'Mi Manager' },
+      { to: '/artist/manager-requests', icon: UserPlus, label: 'Mi Manager' },
       { to: '/artist/settings', icon: Settings, label: 'Ajustes' },
     ],
   },
@@ -48,7 +50,8 @@ const roleConfig = {
     icon: Users,
     links: [
       { to: '/manager', icon: Home, label: 'Inicio' },
-      { to: '/manager/profile', icon: User, label: 'Mi Perfil' },
+      { to: '/manager/dashboard', icon: LayoutDashboard, label: 'Panel de datos' },
+      { to: `/manager/${userId}`, icon: User, label: 'Mi Perfil' },
       { to: '/manager/artists', icon: Music, label: 'Mis Artistas' },
       { to: '/manager/requests', icon: MessageSquare, label: 'Solicitudes' },
       { to: '/manager/settings', icon: Settings, label: 'Ajustes' },
@@ -60,8 +63,9 @@ const roleConfig = {
     hoverBg: 'hover:bg-role-venue/10',
     icon: Building2,
     links: [
-      { to: '/venue', icon: Home, label: 'Inicio' },
-      { to: '/venue/profile', icon: User, label: 'Mi Perfil' },
+      { to: '/', icon: Home, label: 'Inicio' },
+      { to: '/venue', icon: LayoutDashboard, label: 'Panel de datos' },
+      { to: `/venue/${userId}`, icon: User, label: 'Mi Perfil' },
       { to: '/venue/search', icon: Search, label: 'Buscar Artistas' },
       { to: '/venue/requests', icon: MessageSquare, label: 'Mis Solicitudes' },
       { to: '/venue/favorites', icon: Heart, label: 'Favoritos' },
@@ -74,15 +78,16 @@ const roleConfig = {
     hoverBg: 'hover:bg-role-promoter/10',
     icon: Megaphone,
     links: [
-      { to: '/promoter', icon: Home, label: 'Inicio' },
-      { to: '/promoter/profile', icon: User, label: 'Mi Perfil' },
+      { to: '/', icon: Home, label: 'Inicio' },
+      { to: '/promoter', icon: LayoutDashboard, label: 'Panel de datos' },
+      { to: `/promoter/${userId}`, icon: User, label: 'Mi Perfil' },
       { to: '/promoter/search', icon: Search, label: 'Buscar Artistas' },
       { to: '/promoter/events', icon: Calendar, label: 'Mis Eventos' },
       { to: '/promoter/requests', icon: MessageSquare, label: 'Mis Solicitudes' },
       { to: '/promoter/settings', icon: Settings, label: 'Ajustes' },
     ],
   },
-};
+});
 
 export function Sidebar() {
   const { user, logout } = useAuth();
@@ -106,8 +111,9 @@ export function Sidebar() {
     if (r.includes('local') || r.includes('venue')) return 'venue';
     if (r.includes('promot')) return 'promoter';
     return 'artist';
-  })() as keyof typeof roleConfig;
+  })() as 'artist' | 'manager' | 'venue' | 'promoter';
 
+  const roleConfig = getRoleConfig(user.id);
   const config = roleConfig[roleKey];
   const RoleIcon = config.icon;
 

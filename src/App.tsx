@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useEffect } from "react";
@@ -18,9 +18,13 @@ import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ArtistPublicProfile from "./pages/public/ArtistPublicProfile";
+import ManagerPublicProfile from "./pages/public/ManagerPublicProfile";
+import PromoterPublicProfile from "./pages/public/PromoterPublicProfile";
+import VenuePublicProfile from "./pages/public/VenuePublicProfile";
 
 // Artist pages
 import ArtistHome from "./pages/artist/ArtistHome";
+import ArtistDiscover from "./pages/artist/ArtistDiscover";
 import ArtistProfile from "./pages/artist/ArtistProfile";
 import ArtistCalendar from "./pages/artist/ArtistCalendar";
 import ArtistRequests from "./pages/artist/ArtistRequests";
@@ -28,6 +32,7 @@ import ArtistManagerRequests from "./pages/artist/ArtistManagerRequests";
 
 // Manager pages
 import ManagerHome from "./pages/manager/ManagerHome";
+import ManagerDiscover from "./pages/manager/ManagerDiscover";
 import ManagerRequests from "./pages/manager/ManagerRequests";
 import ManagerArtists from "./pages/manager/ManagerArtists";
 import ManagerProfile from "./pages/manager/ManagerProfile";
@@ -221,9 +226,13 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/artist/:id" element={<ArtistPublicProfile />} />
+      <Route path="/manager/:id" element={<ManagerPublicProfile />} />
+      <Route path="/promoter/:id" element={<PromoterPublicProfile />} />
+      <Route path="/venue/:id" element={<VenuePublicProfile />} />
 
       {/* Artist routes */}
-      <Route path="/artist" element={<ArtistHome />} />
+      <Route path="/artist" element={<ArtistDiscover />} />
+      <Route path="/artist/dashboard" element={<ArtistHome />} />
       <Route path="/artist/profile" element={<ArtistProfile />} />
       <Route path="/artist/calendar" element={<ArtistCalendar />} />
       <Route path="/artist/requests" element={<ArtistRequests />} />
@@ -231,7 +240,8 @@ function AppRoutes() {
       <Route path="/artist/settings" element={<Settings />} />
 
       {/* Manager routes */}
-      <Route path="/manager" element={<ManagerHome />} />
+      <Route path="/manager" element={<ManagerDiscover />} />
+      <Route path="/manager/dashboard" element={<ManagerHome />} />
       <Route path="/manager/profile" element={<ManagerProfile />} />
       <Route path="/manager/artists" element={<ManagerArtists />} />
       <Route path="/manager/requests" element={<ManagerRequests />} />
@@ -265,12 +275,12 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <HashRouter>
           <ErrorBoundary>
             <RealtimeToasts />
             <AppRoutes />
           </ErrorBoundary>
-        </BrowserRouter>
+        </HashRouter>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>

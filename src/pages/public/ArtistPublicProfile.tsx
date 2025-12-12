@@ -12,6 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -32,11 +33,21 @@ import {
   Send,
   DollarSign,
   Globe,
+  Award,
+  Video,
+  Mic,
+  Languages,
+  Briefcase,
+  Clock,
+  Users,
+  PlayCircle,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { Sidebar } from '@/components/layout/Sidebar';
 
-export default function ArtistPublicProfile() {
+function ArtistPublicProfile() {
   const { id } = useParams();
   const { user, isAuthenticated, token } = useAuth();
   const navigate = useNavigate();
@@ -47,6 +58,8 @@ export default function ArtistPublicProfile() {
   const [artist, setArtist] = useState<any | null>(null);
   const [loadingArtist, setLoadingArtist] = useState(false);
   const [artistError, setArtistError] = useState<string | null>(null);
+  
+  const isOwner = user?.id === Number(id);
   
   const { data: confirmedRequests = [] } = useConfirmedRequests(id ? Number(id) : undefined);
   const blockedDates = useBlockedDatesCalendar(id ? Number(id) : undefined);
@@ -176,7 +189,7 @@ export default function ArtistPublicProfile() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
         </div>
 
-        <div className="absolute top-4 left-4">
+        <div className="absolute top-4 left-4 flex gap-2">
           <Button
             variant="glass"
             size="sm"
@@ -185,6 +198,15 @@ export default function ArtistPublicProfile() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver
           </Button>
+          {isOwner && (
+            <Button
+              variant="glass"
+              size="sm"
+              onClick={() => navigate('/artist/profile')}
+            >
+              Editar Perfil
+            </Button>
+          )}
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
@@ -290,9 +312,107 @@ export default function ArtistPublicProfile() {
 
       {/* Content */}
       <div className="container mx-auto px-4 py-8">
+        {/* Stats Card - Airbnb Style */}
+        <Card variant="gradient" className="mb-8 border-2 border-primary/20">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-primary mb-1">
+                  {confirmedRequests.length}
+                </div>
+                <p className="text-sm text-muted-foreground">Shows realizados</p>
+              </div>
+              
+              <div className="text-center border-l border-border pl-6">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <span className="text-4xl font-bold">{artist.rating?.toFixed(2) || '0.00'}</span>
+                  <Star className="w-6 h-6 text-accent fill-current" />
+                </div>
+                <p className="text-sm text-muted-foreground">Valoración</p>
+              </div>
+              
+              {artist.yearsOfExperience && (
+                <div className="text-center border-l border-border pl-6">
+                  <div className="text-4xl font-bold text-primary mb-1">
+                    {artist.yearsOfExperience}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Años de experiencia</p>
+                </div>
+              )}
+              
+              {artist.verified && (
+                <div className="text-center border-l border-border pl-6">
+                  <div className="flex items-center justify-center mb-1">
+                    <CheckCircle className="w-10 h-10 text-primary" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">Identidad verificada</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-8">
+            {/* Calendar - Main Focus */}
+            <Card variant="gradient" className="border-2 border-primary/30">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl">Disponibilidad</CardTitle>
+                    <p className="text-muted-foreground mt-1">Selecciona una fecha para solicitar contratación</p>
+                  </div>
+                  {canSeePrices && (
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">Desde</p>
+                      <p className="text-3xl font-bold text-primary">
+                        €{artist.basePrice?.toLocaleString() || '0'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ArtistCalendar 
+                  dates={calendarDates} 
+                  editable={false}
+                  onDateSelect={(date) => {
+                    setSelectedDate(format(date, 'yyyy-MM-dd'));
+                    if (canBook) {
+                      setBookingDialogOpen(true);
+                    }
+                  }}
+                />
+                {canBook && (
+                  <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/30">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold">¿Listo para contratar?</p>
+                        <p className="text-sm text-muted-foreground">Haz clic en una fecha disponible para enviar tu solicitud</p>
+                      </div>
+                      <Button variant="hero" size="lg" onClick={() => setBookingDialogOpen(true)}>
+                        <Send className="w-5 h-5 mr-2" />
+                        Solicitar Ahora
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {!isAuthenticated && (
+                  <div className="mt-6 p-4 bg-secondary/50 rounded-lg text-center">
+                    <Calendar className="w-12 h-12 mx-auto mb-3 text-primary" />
+                    <h3 className="font-bold mb-2">Inicia sesión para reservar</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Crea una cuenta o inicia sesión como Local o Promotor para enviar solicitudes de contratación
+                    </p>
+                    <Button variant="gradient" asChild>
+                      <Link to="/login">Iniciar Sesión</Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Bio */}
             <Card variant="gradient">
               <CardHeader>
@@ -323,6 +443,220 @@ export default function ArtistPublicProfile() {
               </CardContent>
             </Card>
 
+            {/* Professional Information - Tabs */}
+            <Card variant="gradient">
+              <CardHeader>
+                <CardTitle>Información Profesional</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="experience" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="experience">Experiencia</TabsTrigger>
+                    <TabsTrigger value="multimedia">Multimedia</TabsTrigger>
+                    <TabsTrigger value="technical">Técnico</TabsTrigger>
+                    <TabsTrigger value="coverage">Cobertura</TabsTrigger>
+                  </TabsList>
+
+                  {/* Experience Tab */}
+                  <TabsContent value="experience" className="space-y-4 mt-4">
+                    {artist.yearsOfExperience && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Award className="w-4 h-4 text-primary" />
+                          Años de experiencia
+                        </Label>
+                        <p className="text-muted-foreground">{artist.yearsOfExperience} años</p>
+                      </div>
+                    )}
+
+                    {artist.achievements && artist.achievements.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Award className="w-4 h-4 text-primary" />
+                          Logros y premios
+                        </Label>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                          {artist.achievements.map((achievement, i) => (
+                            <li key={i}>{achievement}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {artist.certifications && artist.certifications.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>Certificaciones y formación</Label>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                          {artist.certifications.map((cert, i) => (
+                            <li key={i}>{cert}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {!artist.yearsOfExperience && (!artist.achievements || artist.achievements.length === 0) && (!artist.certifications || artist.certifications.length === 0) && (
+                      <p className="text-muted-foreground text-center py-4">No hay información de experiencia disponible</p>
+                    )}
+                  </TabsContent>
+
+                  {/* Multimedia Tab */}
+                  <TabsContent value="multimedia" className="space-y-4 mt-4">
+                    {artist.showreelUrl && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Video className="w-4 h-4 text-red-500" />
+                          Video Demo / Showreel
+                        </Label>
+                        <a href={artist.showreelUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-2">
+                          <PlayCircle className="w-4 h-4" />
+                          Ver video
+                        </a>
+                      </div>
+                    )}
+
+                    {artist.spotifyUrl && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Music className="w-4 h-4 text-green-500" />
+                          Perfil de Spotify
+                        </Label>
+                        <a href={artist.spotifyUrl} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:underline">
+                          Ver en Spotify
+                        </a>
+                      </div>
+                    )}
+
+                    {artist.youtubeChannel && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Youtube className="w-4 h-4 text-red-500" />
+                          Canal de YouTube
+                        </Label>
+                        <a href={artist.youtubeChannel} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
+                          Ver canal
+                        </a>
+                      </div>
+                    )}
+
+                    {!artist.showreelUrl && !artist.spotifyUrl && !artist.youtubeChannel && (
+                      <p className="text-muted-foreground text-center py-4">No hay contenido multimedia disponible</p>
+                    )}
+                  </TabsContent>
+
+                  {/* Technical Tab */}
+                  <TabsContent value="technical" className="space-y-4 mt-4">
+                    {artist.technicalRider && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Mic className="w-4 h-4 text-primary" />
+                          Rider técnico
+                        </Label>
+                        <p className="text-muted-foreground whitespace-pre-line">{artist.technicalRider}</p>
+                      </div>
+                    )}
+
+                    {artist.equipment && artist.equipment.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>Equipo propio</Label>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                          {artist.equipment.map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {artist.setupTime && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-primary" />
+                          Tiempo de montaje/desmontaje
+                        </Label>
+                        <p className="text-muted-foreground">{artist.setupTime}</p>
+                      </div>
+                    )}
+
+                    {artist.setDuration && (
+                      <div className="space-y-2">
+                        <Label>Duración típica del set</Label>
+                        <p className="text-muted-foreground">{artist.setDuration}</p>
+                      </div>
+                    )}
+
+                    {!artist.technicalRider && (!artist.equipment || artist.equipment.length === 0) && !artist.setupTime && !artist.setDuration && (
+                      <p className="text-muted-foreground text-center py-4">No hay información técnica disponible</p>
+                    )}
+                  </TabsContent>
+
+                  {/* Coverage Tab */}
+                  <TabsContent value="coverage" className="space-y-4 mt-4">
+                    {artist.languages && artist.languages.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Languages className="w-4 h-4 text-primary" />
+                          Idiomas
+                        </Label>
+                        <div className="flex flex-wrap gap-2">
+                          {artist.languages.map((lang, i) => (
+                            <Badge key={i} variant="secondary">{lang}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {artist.coverageAreas && artist.coverageAreas.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-primary" />
+                          Áreas de cobertura
+                        </Label>
+                        <div className="flex flex-wrap gap-2">
+                          {artist.coverageAreas.map((area, i) => (
+                            <Badge key={i} variant="outline">{area}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {artist.willingToTravel !== undefined && (
+                      <div className="space-y-2">
+                        <Label>¿Dispuesto a viajar?</Label>
+                        <p className="text-muted-foreground">{artist.willingToTravel ? 'Sí, dispuesto a viajar' : 'Solo local'}</p>
+                      </div>
+                    )}
+
+                    {artist.performanceTypes && artist.performanceTypes.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Briefcase className="w-4 h-4 text-primary" />
+                          Tipos de eventos
+                        </Label>
+                        <div className="flex flex-wrap gap-2">
+                          {artist.performanceTypes.map((type, i) => (
+                            <Badge key={i} variant="secondary">{type}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {artist.audienceSize && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-primary" />
+                          Tamaño de audiencia habitual
+                        </Label>
+                        <p className="text-muted-foreground">{artist.audienceSize} personas</p>
+                      </div>
+                    )}
+
+                    {(!artist.languages || artist.languages.length === 0) && (!artist.coverageAreas || artist.coverageAreas.length === 0) && !artist.willingToTravel && (!artist.performanceTypes || artist.performanceTypes.length === 0) && !artist.audienceSize && (
+                      <p className="text-muted-foreground text-center py-4">No hay información de cobertura disponible</p>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+
             {/* Gallery */}
             {artist.gallery && artist.gallery.length > 0 && (
               <Card variant="gradient">
@@ -348,17 +682,79 @@ export default function ArtistPublicProfile() {
               </Card>
             )}
 
-            {/* Calendar */}
-            <ArtistCalendar 
-              dates={calendarDates} 
-              editable={false}
-              onDateSelect={(date) => {
-                setSelectedDate(format(date, 'yyyy-MM-dd'));
-                if (canBook) {
-                  setBookingDialogOpen(true);
-                }
-              }}
-            />
+            {/* Reviews Section */}
+            <Card variant="gradient">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Evaluaciones de {artist.nickName || artist.name}</span>
+                  <div className="flex items-center gap-1 text-accent">
+                    <Star className="w-5 h-5 fill-current" />
+                    <span className="font-bold">{artist.rating?.toFixed(2) || '0.00'}</span>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Mock reviews - replace with real data later */}
+                <div className="space-y-6">
+                  {[
+                    {
+                      name: "Club Razzmatazz",
+                      role: "Local",
+                      avatar: "https://api.dicebear.com/7.x/initials/svg?seed=Razzmatazz",
+                      rating: 5,
+                      date: "octubre de 2025",
+                      comment: `${artist.nickName || artist.name} fue increíble. La energía que trajo al evento fue impresionante y el público quedó encantado. Profesionalismo total, llegó puntual con todo su equipo y la calidad del show superó nuestras expectativas.`
+                    },
+                    {
+                      name: "Marina Events",
+                      role: "Promotor",
+                      avatar: "https://api.dicebear.com/7.x/initials/svg?seed=Marina",
+                      rating: 5,
+                      date: "septiembre de 2025",
+                      comment: `Excelente colaboración. ${artist.nickName || artist.name} es muy profesional y se adapta perfectamente a cualquier tipo de evento. Recomendado 100%.`
+                    }
+                  ].map((review, index) => (
+                    <div key={index} className="border-b border-border pb-6 last:border-0 last:pb-0">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={review.avatar} />
+                          <AvatarFallback>{review.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <div>
+                              <p className="font-semibold">{review.name}</p>
+                              <p className="text-sm text-muted-foreground">{review.role}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={cn(
+                                    "w-4 h-4",
+                                    i < review.rating ? "text-accent fill-current" : "text-muted"
+                                  )}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-sm text-muted-foreground">· {review.date}</span>
+                          </div>
+                          <p className="text-muted-foreground">{review.comment}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {artist.totalShows > 2 && (
+                  <Button variant="outline" className="w-full mt-6">
+                    Mostrar más evaluaciones
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}
@@ -469,29 +865,28 @@ export default function ArtistPublicProfile() {
                 )}
               </CardContent>
             </Card>
-
-            {/* Stats */}
-            <Card variant="gradient">
-              <CardHeader>
-                <CardTitle>Estadísticas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Shows realizados</span>
-                  <span className="font-bold text-xl">{artist.totalShows || 0}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Valoración media</span>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-5 h-5 text-accent fill-current" />
-                    <span className="font-bold text-xl">{artist.rating || 0}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+const ArtistPublicProfileWithLayout = () => {
+  const { isAuthenticated } = useAuth();
+  
+  if (isAuthenticated) {
+    return (
+      <>
+        <Sidebar />
+        <div className="lg:ml-64">
+          <ArtistPublicProfile />
+        </div>
+      </>
+    );
+  }
+  
+  return <ArtistPublicProfile />;
+};
+
+export default ArtistPublicProfileWithLayout;
