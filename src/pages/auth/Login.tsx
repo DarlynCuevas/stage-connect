@@ -47,21 +47,15 @@ export default function Login() {
   };
 
   const demoAccounts = [
-    { email: 'carlos@example.com', role: 'Artista', variant: 'artist' as const },
-    { email: 'maria@example.com', role: 'Manager', variant: 'manager' as const },
-    { email: 'club@example.com', role: 'Local', variant: 'venue' as const },
-    { email: 'pedro@example.com', role: 'Promotor', variant: 'promoter' as const },
+    { email: 'carlos@example.com', role: 'Artista', color: 'text-primary' },
+    { email: 'maria@example.com', role: 'Manager', color: 'text-role-manager' },
+    { email: 'club@example.com', role: 'Local', color: 'text-role-venue' },
+    { email: 'pedro@example.com', role: 'Promotor', color: 'text-role-promoter' },
   ];
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Background effects */}
-      <div className="fixed inset-0 bg-gradient-hero" />
-      <div className="fixed inset-0 mesh-gradient opacity-40" />
-      <div className="fixed top-1/4 left-1/4 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px]" />
-      <div className="fixed bottom-1/4 right-1/4 w-[300px] h-[300px] bg-accent/10 rounded-full blur-[80px]" />
-
-      <div className="w-full max-w-sm relative z-10">
+      <div className="w-full max-w-sm">
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 text-sm"
@@ -70,14 +64,14 @@ export default function Login() {
           Volver al inicio
         </Link>
 
-        <Card variant="glass" className="shadow-elevated">
+        <Card className="border-border shadow-lg">
           <CardHeader className="text-center pb-2">
-            <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center mx-auto mb-3 shadow-glow">
+            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-3">
               <Music className="w-6 h-6 text-primary-foreground" />
             </div>
             <CardTitle className="text-xl">Iniciar Sesión</CardTitle>
             <CardDescription className="text-sm">
-              Accede a tu cuenta de Stagebook
+              Accede a tu cuenta de Bookify
             </CardDescription>
           </CardHeader>
 
@@ -109,7 +103,6 @@ export default function Login() {
 
               <Button
                 type="submit"
-                variant="gradient"
                 className="w-full"
                 size="lg"
                 disabled={isLoading}
@@ -135,10 +128,10 @@ export default function Login() {
                     key={account.email}
                     variant="outline"
                     size="sm"
-                    className="text-xs h-8"
+                    className="text-xs h-9"
                     onClick={() => setEmail(account.email)}
                   >
-                    <span className={`text-role-${account.variant}`}>{account.role}</span>
+                    <span className={account.color}>{account.role}</span>
                   </Button>
                 ))}
               </div>
@@ -146,7 +139,7 @@ export default function Login() {
 
             <p className="text-sm text-muted-foreground text-center mt-6">
               ¿No tienes cuenta?{' '}
-              <Link to="/register" className="text-primary hover:text-primary/80 font-medium transition-colors">
+              <Link to="/register" className="text-primary hover:underline font-medium">
                 Regístrate
               </Link>
             </p>

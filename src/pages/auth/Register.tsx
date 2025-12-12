@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const roles: { value: UserRole; label: string; icon: any; color: string; bgColor: string }[] = [
-  { value: 'artist', label: 'Artista', icon: Music, color: 'text-role-artist', bgColor: 'bg-role-artist/10' },
+  { value: 'artist', label: 'Artista', icon: Music, color: 'text-primary', bgColor: 'bg-primary/10' },
   { value: 'manager', label: 'Manager', icon: Users, color: 'text-role-manager', bgColor: 'bg-role-manager/10' },
   { value: 'venue', label: 'Local', icon: Building2, color: 'text-role-venue', bgColor: 'bg-role-venue/10' },
   { value: 'promoter', label: 'Promotor', icon: Megaphone, color: 'text-role-promoter', bgColor: 'bg-role-promoter/10' },
@@ -46,7 +46,7 @@ export default function Register() {
       if (success) {
         toast({
           title: '¡Cuenta creada!',
-          description: 'Bienvenido a Stagebook.',
+          description: 'Bienvenido a Bookify.',
         });
         navigate('/');
       }
@@ -63,13 +63,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Background effects */}
-      <div className="fixed inset-0 bg-gradient-hero" />
-      <div className="fixed inset-0 mesh-gradient opacity-40" />
-      <div className="fixed top-1/4 left-1/4 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px]" />
-      <div className="fixed bottom-1/4 right-1/4 w-[300px] h-[300px] bg-accent/10 rounded-full blur-[80px]" />
-
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-md">
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 text-sm"
@@ -78,14 +72,14 @@ export default function Register() {
           Volver al inicio
         </Link>
 
-        <Card variant="glass" className="shadow-elevated">
+        <Card className="border-border shadow-lg">
           <CardHeader className="text-center pb-2">
-            <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center mx-auto mb-3 shadow-glow">
+            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-3">
               <Music className="w-6 h-6 text-primary-foreground" />
             </div>
             <CardTitle className="text-xl">Crear Cuenta</CardTitle>
             <CardDescription className="text-sm">
-              Únete a la comunidad de Stagebook
+              Únete a la comunidad de Bookify
             </CardDescription>
           </CardHeader>
 
@@ -103,8 +97,8 @@ export default function Register() {
                       className={cn(
                         "relative flex flex-col items-center gap-2 p-3.5 rounded-xl border-2 transition-all duration-200",
                         selectedRole === role.value
-                          ? `border-primary/60 ${role.bgColor} shadow-sm`
-                          : "border-border/60 hover:border-border hover:bg-secondary/50"
+                          ? `border-primary ${role.bgColor}`
+                          : "border-border hover:border-muted-foreground/30 hover:bg-secondary/50"
                       )}
                     >
                       {selectedRole === role.value && (
@@ -113,7 +107,7 @@ export default function Register() {
                         </div>
                       )}
                       <div className={cn(
-                        "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
+                        "w-10 h-10 rounded-lg flex items-center justify-center",
                         role.bgColor
                       )}>
                         <role.icon className={cn("w-5 h-5", role.color)} />
@@ -168,7 +162,6 @@ export default function Register() {
 
               <Button
                 type="submit"
-                variant="gradient"
                 className="w-full"
                 size="lg"
                 disabled={isLoading || !selectedRole}
@@ -186,7 +179,7 @@ export default function Register() {
 
             <p className="text-sm text-muted-foreground text-center mt-6">
               ¿Ya tienes cuenta?{' '}
-              <Link to="/login" className="text-primary hover:text-primary/80 font-medium transition-colors">
+              <Link to="/login" className="text-primary hover:underline font-medium">
                 Inicia sesión
               </Link>
             </p>

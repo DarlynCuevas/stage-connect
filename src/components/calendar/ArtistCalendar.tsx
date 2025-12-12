@@ -34,7 +34,7 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle }: Artist
   const selectedDateInfo = selectedDate ? getDateStatus(selectedDate) : null;
 
   return (
-    <Card variant="gradient">
+    <Card variant="outline">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
