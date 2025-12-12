@@ -4,11 +4,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Sidebar } from './Sidebar';
 import { cn } from '@/lib/utils';
 
+
+
 interface DashboardLayoutProps {
   children: ReactNode;
+  noSidebar?: boolean;
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout({ children, noSidebar }: DashboardLayoutProps) {
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
@@ -17,8 +20,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar />
-      <main className="lg:ml-64 min-h-screen transition-all duration-300">
+      {!noSidebar && <Sidebar />}
+      <main className={noSidebar ? 'min-h-screen transition-all duration-300' : 'lg:ml-64 min-h-screen transition-all duration-300'}>
         <div className="p-6 lg:p-8 pt-20 lg:pt-8">
           {children}
         </div>
@@ -26,3 +29,4 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     </div>
   );
 }
+

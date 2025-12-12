@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -151,8 +152,14 @@ export default function ArtistProfile() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <DashboardLayout noSidebar>
+      <HeaderLayout profileTabs={[
+        { to: '/artist', label: 'Inicio' },
+        { to: '/artist/profile', label: 'Mi perfil' },
+        { to: '/artist/calendar', label: 'Calendario' },
+        { to: '/artist/requests', label: 'Solicitudes' },
+      ]}>
+        <div className="space-y-6">
         {/* Header with banner */}
         <div className="relative rounded-2xl overflow-hidden">
           <div className="h-48 lg:h-64">
@@ -269,6 +276,8 @@ export default function ArtistProfile() {
             </div>
           </div>
         </div>
+
+
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main info */}
@@ -964,6 +973,7 @@ export default function ArtistProfile() {
           </div>
         )}
       </div>
+      </HeaderLayout>
     </DashboardLayout>
   );
 }

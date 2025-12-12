@@ -22,6 +22,23 @@ export interface User {
   socialLinks?: SocialLinks;
   gallery?: string[];
   priceVariants?: PriceVariant[];
+
+  // Propiedades extendidas para perfil de artista
+  yearsOfExperience?: number;
+  achievements?: string[];
+  certifications?: string[];
+  showreelUrl?: string;
+  spotifyUrl?: string;
+  youtubeChannel?: string;
+  technicalRider?: string;
+  equipment?: string[];
+  setupTime?: string;
+  setDuration?: string;
+  languages?: string[];
+  coverageAreas?: string[];
+  willingToTravel?: boolean;
+  performanceTypes?: string[];
+  audienceSize?: string;
 }
 
 export interface Artist {

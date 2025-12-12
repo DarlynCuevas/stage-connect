@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -92,7 +93,7 @@ export default function Discovery() {
   const activeList = searchTerm || cityFilter !== 'all' || typeFilter !== 'all' || priceFilter !== 'all' ? filteredVenues : venues;
 
   return (
-    <div className="min-h-screen bg-background">
+    <HeaderLayout>
       {/* Hero + Search */}
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
@@ -187,7 +188,7 @@ export default function Discovery() {
           ))}
         </div>
       </div>
-    </div>
+    </HeaderLayout>
   );
 }
 

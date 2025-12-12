@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useCallback, useMemo, useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -221,13 +222,13 @@ export default function ArtistHome() {
   );
 
   return (
-    <DashboardLayout>
-          <div className="space-y-8">
-            {/* Dashboard header */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-display font-bold mb-2">Panel de Artista</h1>
-                <p className="text-muted-foreground">Bienvenido, {artist.nickName || artist.name}</p>
+    <DashboardLayout noSidebar>
+      <HeaderLayout>
+          {/* Dashboard header */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-display font-bold mb-2">Panel de Artista</h1>
+              <p className="text-muted-foreground">Bienvenido, {artist.nickName || artist.name}</p>
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" asChild>
@@ -384,7 +385,8 @@ export default function ArtistHome() {
                   </CardContent>
                 </Card>
             </div>
-          </div>
-        </DashboardLayout>
-      );
+          
+      </HeaderLayout>
+    </DashboardLayout>
+  );
 }

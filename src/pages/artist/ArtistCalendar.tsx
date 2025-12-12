@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { ArtistCalendar as CalendarComponent } from '@/components/calendar/ArtistCalendar';
 import { CalendarDate } from '@/types';
 import { format } from 'date-fns';
@@ -83,23 +84,25 @@ export default function ArtistCalendar() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-display font-bold mb-2">
-            Mi Calendario
-          </h1>
-          <p className="text-muted-foreground">
-            Gestiona tu disponibilidad para que los locales y promotores puedan ver cuándo estás libre. Bloquea días en los que no estés disponible.
-          </p>
-        </div>
+    <DashboardLayout noSidebar>
+      <HeaderLayout>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-display font-bold mb-2">
+              Mi Calendario
+            </h1>
+            <p className="text-muted-foreground">
+              Gestiona tu disponibilidad para que los locales y promotores puedan ver cuándo estás libre. Bloquea días en los que no estés disponible.
+            </p>
+          </div>
 
-        <CalendarComponent
-          dates={dates}
-          editable
-          onDateToggle={handleBlockDate}
-        />
-      </div>
+          <CalendarComponent
+            dates={dates}
+            editable
+            onDateToggle={handleBlockDate}
+          />
+        </div>
+      </HeaderLayout>
     </DashboardLayout>
   );
 }

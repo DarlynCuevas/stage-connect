@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { RequestCard } from '@/components/booking/RequestCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockArtists } from '@/data/mockData';
@@ -42,22 +43,23 @@ export default function ArtistRequests() {
   const completedRequests = requests.filter(r => ['Accepted', 'Rejected'].includes(r.status));
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-display font-bold mb-2">
-            Solicitudes de Contratación
-          </h1>
-          <p className="text-muted-foreground">
-            Gestiona las propuestas que recibes de locales y promotores.
-          </p>
-        </div>
+    <DashboardLayout noSidebar>
+      <HeaderLayout>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-display font-bold mb-2">
+              Solicitudes de Contratación
+            </h1>
+            <p className="text-muted-foreground">
+              Gestiona las propuestas que recibes de locales y promotores.
+            </p>
+          </div>
 
-        <Tabs defaultValue="pending" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="pending" className="gap-2">
-              <Clock className="w-4 h-4" />
-              Pendientes ({pendingRequests.length})
+          <Tabs defaultValue="pending" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="pending" className="gap-2">
+                <Clock className="w-4 h-4" />
+                Pendientes ({pendingRequests.length})
             </TabsTrigger>
             <TabsTrigger value="completed" className="gap-2">
               <Check className="w-4 h-4" />
@@ -107,7 +109,8 @@ export default function ArtistRequests() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+        </div>
+      </HeaderLayout>
     </DashboardLayout>
   );
 }
