@@ -16,8 +16,8 @@ export const mockVenues: Venue[] = [
     city: 'Ibiza',
     country: 'España',
     avatar: '/placeholder.svg',
-    featured: true,
-    verified: true,
+    featured: true, // destacado
+    verified: true, // verificado
   },
   {
     id: '2',
@@ -28,8 +28,8 @@ export const mockVenues: Venue[] = [
     city: 'Barcelona',
     country: 'España',
     avatar: '/placeholder.svg',
-    featured: false,
-    verified: true,
+    featured: true, // destacado
+    verified: true, // verificado
   },
   {
     id: '3',
@@ -40,8 +40,20 @@ export const mockVenues: Venue[] = [
     city: 'Madrid',
     country: 'España',
     avatar: '/placeholder.svg',
-    featured: true,
-    verified: false,
+    featured: true, // destacado
+    verified: true, // verificado
+  },
+  {
+    id: '4',
+    userId: '13',
+    name: 'Teatro Real',
+    type: 'theater',
+    capacity: 1800,
+    city: 'Madrid',
+    country: 'España',
+    avatar: '/placeholder.svg',
+    featured: true, // destacado
+    verified: true, // verificado
   },
 ];
 

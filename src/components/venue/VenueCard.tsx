@@ -12,7 +12,8 @@ import {
   Car,
   Music,
   Shield,
-  Volume2
+  Volume2,
+  CheckCircle2
 } from 'lucide-react';
 import { useState } from 'react';
 import { apiFetch } from '@/lib/api';
@@ -35,6 +36,7 @@ interface VenueCardProps {
     reviewsCount?: number;
     rating?: number;
     favorite?: boolean;
+    verified?: boolean;
   };
   onFavoriteChange?: (venueId: number, favorite: boolean) => void;
 }
@@ -75,6 +77,13 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
         <div className="relative">
           {/* Image placeholder or avatar */}
           <div className="aspect-[2/1] relative overflow-hidden rounded-xl">
+            {/* Icono de verificado arriba a la izquierda */}
+            {venue.verified && (
+              <span className="absolute top-3 left-3 z-10">
+                <CheckCircle2 className="h-5 w-5 text-green-500 drop-shadow" />
+              </span>
+            )}
+
             {venue.gallery?.[0] ? (
               <img 
                 src={venue.gallery[0]} 
