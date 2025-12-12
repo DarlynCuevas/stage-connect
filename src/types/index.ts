@@ -51,7 +51,7 @@ export interface Manager {
   userId: string;
   name: string;
   company?: string;
-  artists: string[]; // Artist IDs
+  artists: string[];
   avatar: string;
 }
 
@@ -59,11 +59,17 @@ export interface Venue {
   id: string;
   userId: string;
   name: string;
-  type: 'club' | 'bar' | 'festival' | 'concert_hall' | 'private' | 'other';
+  type: 'club' | 'bar' | 'festival' | 'concert_hall' | 'private' | 'rooftop' | 'theater' | 'other';
+  description?: string;
   capacity: number;
   city: string;
   country: string;
   avatar: string;
+  images?: string[];
+  rating?: number;
+  reviewCount?: number;
+  priceRange?: 'low' | 'medium' | 'high' | 'premium';
+  features?: string[];
 }
 
 export interface Promoter {
@@ -78,7 +84,7 @@ export interface Promoter {
 }
 
 export interface CalendarDate {
-  date: string; // ISO date string
+  date: string;
   available: boolean;
   eventId?: string;
   note?: string;
@@ -118,4 +124,5 @@ export interface SearchFilters {
   priceMax?: number;
   managerId?: string;
   availability?: string;
+  venueType?: string;
 }
