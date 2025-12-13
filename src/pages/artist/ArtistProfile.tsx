@@ -44,6 +44,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import CalendarComponent from '@/components/calendar/CalendarComponent';
+import ModalSolicitudContratacion from '@/components/calendar/ModalSolicitudContratacion';
 
 export default function ArtistProfile() {
     function renderEditButton() {
@@ -69,6 +71,8 @@ export default function ArtistProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const [newGenre, setNewGenre] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(null);
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
   const { data: freshArtist } = useArtist(artistId);
@@ -81,6 +85,7 @@ export default function ArtistProfile() {
 
   // prefer server data when available
   const currentArtist = freshArtist || authUser;
+  const cacheBase = currentArtist?.basePrice ?? 0;
 
   // Fetch manager data if exists
   const { data: managerData } = useUser(
@@ -171,6 +176,18 @@ export default function ArtistProfile() {
     setIsEditing(false);
   };
 
+  function handleSolicitudContratacion(date: Date) {
+    if (authUser?.role !== 'Local') return;
+    setFechaSeleccionada(date);
+    setModalOpen(true);
+  }
+
+  function handleEnviarSolicitud(data: { fecha: Date; oferta: number; nombreLocal: string; ciudadLocal: string; }) {
+    // Aquí puedes implementar la lógica real de envío
+    console.log('Solicitud enviada:', data);
+    // Puedes mostrar un toast de éxito si quieres
+  }
+
   return (
     <HeaderLayout profileTabs={[
       { to: '/artist', label: 'Inicio' },
@@ -179,23 +196,15 @@ export default function ArtistProfile() {
       { to: '/artist/requests', label: 'Solicitudes' },
     ]}>
       <DashboardLayout noSidebar>
-        <div className="space-y-6">
           {/* Header with banner */}
           <div className="relative rounded-2xl overflow-hidden">
             <div className="h-48 lg:h-64">
-              {currentArtist?.banner ? (
-                <img
-                  src={currentArtist.banner}
-                  alt="Banner"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
                 <img
                   src={`https://picsum.photos/1200/400?random=${Math.random()}`}
                   alt="Banner"
                   className="w-full h-full object-cover"
                 />
-              )}
+              
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -216,6 +225,7 @@ export default function ArtistProfile() {
                           placeholder="Nombre artístico"
                           className="text-2xl font-display font-bold max-w-md"
                         />
+                        
                       ) : (
                         <h1 className="text-3xl font-display font-bold">{currentArtist?.nickName || currentArtist?.name || 'Artista'}</h1>
                       )}
@@ -283,6 +293,12 @@ export default function ArtistProfile() {
           <div className="flex flex-col lg:flex-row gap-6 mt-6">
             {/* Main info */}
             <div className="lg:col-span-2 space-y-6 flex-1">
+            {/* Calendario encima de Biografía */}
+            <CalendarComponent
+              artistId={currentArtist?.id}
+              editable={false}
+              onDateSelect={handleSolicitudContratacion}
+            />
             {/* Bio */}
             <Card variant="gradient">
               <CardHeader>
@@ -703,6 +719,50 @@ export default function ArtistProfile() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Pricing (private) */}
+            <Card variant="gradient">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  💰 Precios
+                  <Badge variant="secondary" className="text-xs">Privado</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-3 rounded-lg bg-secondary/50">
+                  <p className="text-sm text-muted-foreground mb-1">Caché base</p>
+                  {isEditing ? (
+                    <Input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={editData?.basePrice ?? 0}
+                      onChange={(e) => setEditData({ ...editData, basePrice: e.target.value ? Number(e.target.value) : 0 })}
+                    />
+                  ) : (
+                    <p className="text-2xl font-bold text-primary">
+                      €{(currentArtist?.basePrice ?? 0).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+
+                {currentArtist?.priceVariants?.map((variant) => (
+                  <div key={variant.id} className="p-3 rounded-lg bg-secondary/30">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="font-medium">{variant.name}</p>
+                      <p className="font-bold text-primary">€{variant.price?.toLocaleString() || '0'}</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{variant.description}</p>
+                  </div>
+                ))}
+
+                {isEditing && (
+                  <Button variant="outline" className="w-full">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Añadir variante
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
             {/* Manager Section */}
             <Card variant="gradient">
               <CardHeader>
@@ -776,51 +836,6 @@ export default function ArtistProfile() {
                       </div>
                     )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Pricing (private) */}
-            <Card variant="gradient">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  💰 Precios
-                  <Badge variant="secondary" className="text-xs">Privado</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-3 rounded-lg bg-secondary/50">
-                  <p className="text-sm text-muted-foreground mb-1">Caché base</p>
-                  {isEditing ? (
-                    <Input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={editData?.basePrice ?? 0}
-                      onChange={(e) => setEditData({ ...editData, basePrice: e.target.value ? Number(e.target.value) : 0 })}
-                    />
-                  ) : (
-                    <p className="text-2xl font-bold text-primary">
-                      €{(currentArtist?.basePrice ?? 0).toLocaleString()}
-                    </p>
-                  )}
-                </div>
-
-                {currentArtist?.priceVariants?.map((variant) => (
-                  <div key={variant.id} className="p-3 rounded-lg bg-secondary/30">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="font-medium">{variant.name}</p>
-                      <p className="font-bold text-primary">€{variant.price?.toLocaleString() || '0'}</p>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{variant.description}</p>
-                  </div>
-                ))}
-
-                {isEditing && (
-                  <Button variant="outline" className="w-full">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Añadir variante
-                  </Button>
                 )}
               </CardContent>
             </Card>
@@ -962,7 +977,7 @@ export default function ArtistProfile() {
               </CardContent>
             </Card>
           </div>
-        </div>
+      
 
         {/* Save button */}
         {isEditing && (
@@ -973,6 +988,8 @@ export default function ArtistProfile() {
             </Button>
           </div>
         )}
+
+        <ModalSolicitudContratacion open={modalOpen && authUser?.role === 'Local'} onClose={() => setModalOpen(false)} fecha={fechaSeleccionada} cacheBase={cacheBase} onSubmit={handleEnviarSolicitud} />
       </div>
       </DashboardLayout>
       </HeaderLayout>

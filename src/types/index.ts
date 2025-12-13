@@ -119,6 +119,7 @@ export interface CalendarDate {
   note?: string;
   confirmed?: boolean; // true cuando es una reserva aceptada
   blocked?: boolean; // true cuando el artista bloquea el día
+  past?: boolean; // true cuando es un día pasado (bloqueado por lógica)
 }
 
 export interface BookingRequest {

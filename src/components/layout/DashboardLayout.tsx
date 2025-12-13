@@ -22,7 +22,7 @@ export function DashboardLayout({ children, noSidebar }: DashboardLayoutProps) {
     <div className="min-h-screen bg-background">
       {!noSidebar && <Sidebar />}
       <main className={noSidebar ? 'min-h-screen transition-all duration-300' : 'lg:ml-64 min-h-screen transition-all duration-300'}>
-        <div className="p-6 lg:p-8 pt-20 lg:pt-8">
+        <div>
           {children}
         </div>
       </main>

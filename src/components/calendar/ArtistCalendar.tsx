@@ -81,6 +81,12 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle, onDateSe
               available: dates.filter(d => d.available).map(d => parseISO(d.date)),
               unavailable: dates.filter(d => !d.available && (d as any).confirmed).map(d => parseISO(d.date)),
               blocked: dates.filter(d => (d as any).blocked).map(d => parseISO(d.date)),
+              past: Array.from({ length: 365 }, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                d.setHours(0,0,0,0);
+                return d;
+              }).filter(d => d < today),
               selected: selectedDate ? [selectedDate] : [],
               today: [today],
             }}
@@ -99,6 +105,13 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle, onDateSe
                 backgroundColor: 'hsl(38, 92%, 50%)',
                 color: 'white',
                 fontWeight: 600,
+                borderRadius: '50%',
+              },
+              past: {
+                backgroundColor: 'rgba(156,163,175,0.15)', // gris transparente
+                color: '#d1d5db',
+                pointerEvents: 'none',
+                opacity: 1,
                 borderRadius: '50%',
               },
               selected: {
