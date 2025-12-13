@@ -49,6 +49,7 @@ import ModalSolicitudContratacion from '@/components/calendar/ModalSolicitudCont
 
 export default function ArtistProfile() {
     function renderEditButton() {
+      if (!canEdit) return null;
       if (!isEditing) {
         return (
           <Button onClick={() => setIsEditing(true)} variant="outline">
@@ -66,7 +67,6 @@ export default function ArtistProfile() {
     }
   const { id } = useParams();
   const { user: authUser, token, setUser } = useAuth();
-  // const isOwnProfile = authUser && id && String(authUser.id) === String(id);
   const artistId = id ? Number(id) : undefined;
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
@@ -92,6 +92,9 @@ export default function ArtistProfile() {
     currentArtist?.managerId ? Number(currentArtist.managerId) : undefined,
     token as string
   );
+
+  // Solo puede editar si es artista y su id coincide con la url
+  const canEdit = authUser && authUser.role === 'Artista' && String(authUser.id) === String(id);
 
   useEffect(() => {
     if (currentArtist) {
@@ -329,7 +332,7 @@ export default function ArtistProfile() {
                     <Badge key={genre} variant="secondary" className="text-sm relative">
                       <Music className="w-3 h-3 mr-1" />
                       {genre}
-                      {isEditing && (
+                      {isEditing && canEdit && (
                         <button
                           onClick={() => removeGenre(genre)}
                           className="ml-2 hover:text-destructive"
@@ -340,7 +343,7 @@ export default function ArtistProfile() {
                     </Badge>
                   ))}
                 </div>
-                {isEditing && (
+                {isEditing && canEdit && (
                   <div className="flex gap-2">
                     <Select value={newGenre} onValueChange={setNewGenre}>
                       <SelectTrigger className="flex-1">
