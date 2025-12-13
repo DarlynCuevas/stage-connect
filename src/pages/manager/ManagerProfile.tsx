@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,28 +8,34 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUpdateProfile } from '@/lib/users';
+import { useUpdateProfile, useUser } from '@/lib/users';
 import { Edit, Save, X, MapPin, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ManagerProfile() {
-  const { user: manager, token, setUser } = useAuth();
+  const { id } = useParams();
+  const { user: authUser, token, setUser } = useAuth();
+  const isOwnProfile = authUser && id && String(authUser.id) === String(id);
+  const managerId = id ? Number(id) : undefined;
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState(manager);
+  const [editData, setEditData] = useState<any>(null);
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
+  const { data: manager } = useUser(managerId);
 
   useEffect(() => {
-    if (manager) {
+    if (isOwnProfile && authUser) {
+      setEditData(authUser);
+    } else if (manager) {
       setEditData(manager);
     }
-  }, [manager]);
+  }, [isOwnProfile, authUser, manager]);
 
-  if (!manager) {
+  if (!editData) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-screen">
-          <p className="text-muted-foreground">No hay usuario autenticado</p>
+          <p className="text-muted-foreground">No se encontró el manager</p>
         </div>
       </DashboardLayout>
     );
@@ -94,22 +101,24 @@ export default function ManagerProfile() {
                 <p className="text-muted-foreground">{manager?.email}</p>
               </div>
             </div>
-            {!isEditing ? (
-              <Button onClick={() => setIsEditing(true)} variant="outline">
-                <Edit className="w-4 h-4 mr-2" />
-                Editar Perfil
-              </Button>
-            ) : (
-              <div className="flex gap-2">
-                <Button onClick={handleSave} disabled={updateProfileMutation.isPending}>
-                  <Save className="w-4 h-4 mr-2" />
-                  Guardar
+            {isOwnProfile && (
+              !isEditing ? (
+                <Button onClick={() => setIsEditing(true)} variant="outline">
+                  <Edit className="w-4 h-4 mr-2" />
+                  Editar Perfil
                 </Button>
-                <Button onClick={handleCancel} variant="ghost">
-                  <X className="w-4 h-4 mr-2" />
-                  Cancelar
-                </Button>
-              </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Button onClick={handleSave} disabled={updateProfileMutation.isPending}>
+                    <Save className="w-4 h-4 mr-2" />
+                    Guardar
+                  </Button>
+                  <Button onClick={handleCancel} variant="ghost">
+                    <X className="w-4 h-4 mr-2" />
+                    Cancelar
+                  </Button>
+                </div>
+              )
             )}
           </div>
         </div>

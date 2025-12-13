@@ -18,15 +18,12 @@ import { Button } from "@/components/ui/button";
 import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-import ArtistPublicProfile from "./pages/public/ArtistPublicProfile";
-import ManagerPublicProfile from "./pages/public/ManagerPublicProfile";
-import PromoterPublicProfile from "./pages/public/PromoterPublicProfile";
-import VenuePublicProfile from "./pages/public/VenuePublicProfile";
 
 // Artist pages
 import ArtistHome from "./pages/artist/ArtistHome";
 import ArtistDiscover from "./pages/artist/ArtistDiscover";
 import ArtistProfile from "./pages/artist/ArtistProfile";
+import ArtistProfileById from "./pages/artist/ArtistProfileById";
 import ArtistCalendar from "./pages/artist/ArtistCalendar";
 import ArtistRequests from "./pages/artist/ArtistRequests";
 import ArtistManagerRequests from "./pages/artist/ArtistManagerRequests";
@@ -37,6 +34,7 @@ import ManagerDiscover from "./pages/manager/ManagerDiscover";
 import ManagerRequests from "./pages/manager/ManagerRequests";
 import ManagerArtists from "./pages/manager/ManagerArtists";
 import ManagerProfile from "./pages/manager/ManagerProfile";
+
 
 // Venue pages
 import VenueHome from "./pages/venue/VenueHome";
@@ -226,32 +224,32 @@ function AppRoutes() {
       <Route path="/" element={<RoleBasedRedirect />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/artist/:id" element={<ArtistPublicProfile />} />
-      <Route path="/manager/:id" element={<ManagerPublicProfile />} />
-      <Route path="/promoter/:id" element={<PromoterPublicProfile />} />
-      <Route path="/venue/:id" element={<VenuePublicProfile />} />
+      {/* <Route path="/artist/:id" element={<ArtistPublicProfile />} /> */}
+      {/* <Route path="/manager/:id" element={<ManagerPublicProfile />} /> */}
+      {/* <Route path="/promoter/:id" element={<PromoterPublicProfile />} /> */}
+      {/* <Route path="/venue/:id" element={<VenuePublicProfile />} /> */}
 
       {/* Artist routes */}
       <Route path="/artist" element={<ArtistDiscover />} />
       <Route path="/artist/dashboard" element={<ArtistHome />} />
-      <Route path="/artist/profile" element={<ArtistProfile />} />
+      <Route path="/artist/profile/:id" element={<ArtistProfile />} />
       <Route path="/artist/calendar" element={<ArtistCalendar />} />
       <Route path="/artist/requests" element={<ArtistRequests />} />
-        <Route path="/artist/manager-requests" element={<ArtistManagerRequests />} />
+      <Route path="/artist/manager-requests" element={<ArtistManagerRequests />} />
       <Route path="/artist/settings" element={<Settings />} />
       <Route path="/artist/invite" element={<InviteFriend />} />
 
       {/* Manager routes */}
       <Route path="/manager" element={<ManagerDiscover />} />
       <Route path="/manager/dashboard" element={<ManagerHome />} />
-      <Route path="/manager/profile" element={<ManagerProfile />} />
+      <Route path="/manager/profile/:id" element={<ManagerProfile />} />
       <Route path="/manager/artists" element={<ManagerArtists />} />
       <Route path="/manager/requests" element={<ManagerRequests />} />
       <Route path="/manager/settings" element={<Settings />} />
 
       {/* Venue routes */}
       <Route path="/venue" element={<VenueHome />} />
-      <Route path="/venue/profile" element={<VenueProfile />} />
+      <Route path="/venue/profile/:id" element={<VenueProfile />} />
       <Route path="/venue/search" element={<VenueSearch />} />
       <Route path="/venue/requests" element={<VenueRequests />} />
       <Route path="/venue/favorites" element={<VenueHome />} />
@@ -259,7 +257,7 @@ function AppRoutes() {
 
       {/* Promoter routes */}
       <Route path="/promoter" element={<PromoterHome />} />
-      <Route path="/promoter/profile" element={<PromoterProfile />} />
+      <Route path="/promoter/profile/:id" element={<PromoterProfile />} />
       <Route path="/promoter/search" element={<VenueSearch />} />
       <Route path="/promoter/events" element={<PromoterHome />} />
       <Route path="/promoter/requests" element={<PromoterRequests />} />

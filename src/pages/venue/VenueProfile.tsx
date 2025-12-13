@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUpdateProfile } from '@/lib/users';
+import { useUpdateProfile, useUser } from '@/lib/users';
 import { 
   Edit, 
   Save, 
@@ -42,25 +43,31 @@ const DEFAULT_VENUE_PHOTOS = [
 ];
 
 export default function VenueProfile() {
-  const { user: venue, token, setUser } = useAuth();
+  const { id } = useParams();
+  const { user: authUser, token, setUser } = useAuth();
+  const isOwnProfile = authUser && id && String(authUser.id) === String(id);
+  const venueId = id ? Number(id) : undefined;
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState(venue);
+  const [editData, setEditData] = useState<any>(null);
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
+  const { data: venue } = useUser(venueId);
 
   useEffect(() => {
-    if (venue) {
+    if (isOwnProfile && authUser) {
+      setEditData(authUser);
+    } else if (venue) {
       setEditData(venue);
     }
-  }, [venue]);
+  }, [isOwnProfile, authUser, venue]);
 
-  if (!venue) {
+  if (!editData) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-screen">
-          <p className="text-muted-foreground">No hay usuario autenticado</p>
+          <p className="text-muted-foreground">No se encontró el local</p>
         </div>
       </DashboardLayout>
     );
@@ -119,13 +126,44 @@ export default function VenueProfile() {
     }
   };
 
-  const removePhoto = (index: number) => {
+  const removePhoto = async (index: number) => {
+    if (!token) {
+      toast({
+        title: 'Error',
+        description: 'No estás autenticado',
+        variant: 'destructive',
+        duration: 4000,
+      });
+      return;
+    }
     if (editData) {
       const currentGallery = (editData as any)?.gallery || [];
+      const newGallery = currentGallery.filter((_: any, i: number) => i !== index);
       setEditData({
         ...editData,
-        gallery: currentGallery.filter((_: any, i: number) => i !== index)
+        gallery: newGallery
       } as any);
+      try {
+        const updatedUser = await updateProfileMutation.mutateAsync({
+          profileData: { ...editData, gallery: newGallery },
+          token
+        });
+        if (updatedUser?.user) {
+          setUser(updatedUser.user);
+        }
+        toast({
+          title: 'Foto eliminada',
+          description: 'La foto fue eliminada de la galería.',
+          duration: 3000,
+        });
+      } catch (error: any) {
+        toast({
+          title: 'Error',
+          description: error.message || 'No se pudo eliminar la foto',
+          variant: 'destructive',
+          duration: 4000,
+        });
+      }
     }
   };
 
@@ -156,31 +194,52 @@ export default function VenueProfile() {
       <div className="space-y-6 max-w-6xl mx-auto">
         {/* Header with Edit Button */}
         <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-4xl font-display font-bold mb-2">
-              {venue?.name || 'Mi Local'}
-            </h1>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <MapPin className="w-4 h-4" />
-              <span>{(venue as any)?.city || 'Ciudad'}, {(venue as any)?.country || 'País'}</span>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-4xl font-display font-bold mb-2">
+                {venue?.name || 'Mi Local'}
+              </h1>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="w-4 h-4" />
+                <span>{(venue as any)?.city || 'Ciudad'}, {(venue as any)?.country || 'País'}</span>
+              </div>
+            </div>
+            {/* Avatar + Eliminar */}
+            <div className="flex flex-col items-center">
+              <Avatar className="h-16 w-16 border-2 border-sidebar-border">
+                <AvatarImage src={editData?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=venue'} />
+                <AvatarFallback>{venue?.name?.charAt(0) || 'V'}</AvatarFallback>
+              </Avatar>
+              {isEditing && editData?.avatar && (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="mt-2"
+                  onClick={() => setEditData({ ...editData, avatar: '' })}
+                >
+                  <Trash2 className="w-4 h-4 mr-1" /> Quitar foto
+                </Button>
+              )}
             </div>
           </div>
-          {!isEditing ? (
-            <Button onClick={() => setIsEditing(true)} variant="outline" size="lg">
-              <Edit className="w-4 h-4 mr-2" />
-              Editar Perfil
-            </Button>
-          ) : (
-            <div className="flex gap-2">
-              <Button onClick={handleSave} disabled={updateProfileMutation.isPending} size="lg">
-                <Save className="w-4 h-4 mr-2" />
-                Guardar Cambios
+          {isOwnProfile && (
+            !isEditing ? (
+              <Button onClick={() => setIsEditing(true)} variant="outline" size="lg">
+                <Edit className="w-4 h-4 mr-2" />
+                Editar Perfil
               </Button>
-              <Button onClick={handleCancel} variant="ghost" size="lg">
-                <X className="w-4 h-4 mr-2" />
-                Cancelar
-              </Button>
-            </div>
+            ) : (
+              <div className="flex gap-2">
+                <Button onClick={handleSave} disabled={updateProfileMutation.isPending} size="lg">
+                  <Save className="w-4 h-4 mr-2" />
+                  Guardar Cambios
+                </Button>
+                <Button onClick={handleCancel} variant="ghost" size="lg">
+                  <X className="w-4 h-4 mr-2" />
+                  Cancelar
+                </Button>
+              </div>
+            )
           )}
         </div>
 
@@ -194,41 +253,53 @@ export default function VenueProfile() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {(((venue as any)?.gallery && (venue as any).gallery.length > 0) 
-                ? (venue as any).gallery 
-                : DEFAULT_VENUE_PHOTOS
-              ).map((photo: string, index: number) => (
-                <Dialog key={index}>
-                  <DialogTrigger asChild>
-                    <div className="relative group aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
-                      <img 
-                        src={photo} 
-                        alt={`Foto ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      {isEditing && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removePhoto(index);
-                          }}
-                          className="absolute top-2 right-2 bg-destructive text-destructive-foreground p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl w-full p-0 overflow-hidden bg-transparent border-0">
-                    <img 
-                      src={photo} 
-                      alt={`Foto ${index + 1}`}
-                      className="w-full h-auto max-h-[90vh] object-contain"
+              {((venue as any)?.gallery && (venue as any).gallery.length > 0)
+                ? (venue as any).gallery.map((photo: string, index: number) => (
+                    <Dialog key={index}>
+                      <DialogTrigger asChild>
+                        <div className="relative group aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
+                          <img 
+                            src={photo} 
+                            alt={`Foto ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          {isEditing && (
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                await removePhoto(index);
+                              }}
+                              className="absolute top-2 right-2 bg-destructive text-destructive-foreground p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl w-full p-0 overflow-hidden bg-transparent border-0">
+                        <img 
+                          src={photo} 
+                          alt={`Foto ${index + 1}`}
+                          className="w-full h-auto max-h-[90vh] object-contain"
+                        />
+                      </DialogContent>
+                    </Dialog>
+                  ))
+                : (
+                  <div className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 p-4">
+                    <Input
+                      placeholder="URL de la foto"
+                      value={newPhotoUrl}
+                      onChange={(e) => setNewPhotoUrl(e.target.value)}
+                      className="text-xs"
                     />
-                  </DialogContent>
-                </Dialog>
-              ))}
-              {isEditing && (
+                    <Button size="sm" onClick={addPhoto} disabled={!newPhotoUrl}>
+                      <ImagePlus className="w-4 h-4 mr-1" />
+                      Añadir
+                    </Button>
+                  </div>
+                )}
+              {isEditing && (venue as any)?.gallery && (venue as any).gallery.length > 0 && (
                 <div className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 p-4">
                   <Input
                     placeholder="URL de la foto"

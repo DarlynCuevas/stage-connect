@@ -91,7 +91,7 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
               </p>
             </div>
             <Button asChild size="sm" variant="gradient" className="h-8">
-              <Link to={`/artist/${artist.id}`}>
+              <Link to={`/artist/profile/${artist.id}`}>
                 <Eye className="w-3.5 h-3.5 mr-1" />
                 Ver perfil
               </Link>
@@ -99,7 +99,7 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
           </div>
         ) : (
           <Button asChild className="w-full h-9" variant="outline" size="sm">
-            <Link to={`/artist/${artist.id}`}>Ver perfil</Link>
+            <Link to={`/artist/profile/${artist.id}`}>Ver perfil</Link>
           </Button>
         )}
       </CardContent>

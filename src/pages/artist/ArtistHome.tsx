@@ -214,7 +214,7 @@ export default function ArtistHome() {
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" asChild>
-                  <Link to="/artist/profile">
+                  <Link to={artist ? `/artist/profile/${artist.id}` : '/artist/profile'}>
                     <User className="w-4 h-4 mr-2" />
                     Mi Perfil
                   </Link>

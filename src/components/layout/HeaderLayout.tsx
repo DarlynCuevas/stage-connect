@@ -76,7 +76,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
     nav = [
       { to: '/artist', label: 'Inicio' },
       { to: '/artist/dashboard', label: 'Panel de datos' },
-      { to: '/artist/profile', label: 'Mi perfil' },
+      { to: user ? `/artist/profile/${user.id}` : '/login', label: 'Mi perfil' },
       { to: '/artist/calendar', label: 'Calendario' },
       { to: '/artist/requests', label: 'Solicitudes' },
     ];
@@ -89,9 +89,9 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
-        <div className="container mx-auto px-4">
+        <div className="w-full px-0">
           <div className="h-14 flex items-center justify-between">
-            <Link to="/artist" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <Link to="/artist" className="flex items-center gap-3 hover:opacity-80 transition-opacity ml-8 sm:ml-16">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <Music className="w-4 h-4 text-primary" />
               </div>
@@ -119,7 +119,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
                 );
               })}
             </nav>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mr-8 sm:mr-16">
               <button
                 aria-label="Cambiar tema"
                 className="w-9 h-9 rounded-full border flex items-center justify-center text-muted-foreground hover:text-foreground"
@@ -154,7 +154,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem asChild>
-                      <Link to="/artist/manager-requests" className="flex items-center gap-2">
+                      <Link to={user && user.managerId ? `/manager/profile/${user.managerId}` : '/manager/profile'} className="flex items-center gap-2">
                         <User className="w-4 h-4" /> Mi Manager
                       </Link>
                     </DropdownMenuItem>

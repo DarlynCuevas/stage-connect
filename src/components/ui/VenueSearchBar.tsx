@@ -1,3 +1,5 @@
+import { Plus } from 'lucide-react';
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import { useState, useRef, useMemo } from 'react';
 import { City } from 'country-state-city';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
@@ -102,6 +104,16 @@ export function VenueSearchBar({
     onSearch({ city, dateRange: selectedDate ? { from: selectedDate, to: selectedDate } : null, type: capacity || '' });
   };
 
+  // Determinar si hay filtros activos
+  const hasActiveFilters = city !== '' || capacity !== '' || selectedDate !== null;
+
+  const handleClearFilters = () => {
+    setCity('');
+    setCapacity('');
+    setSelectedDate(null);
+    onSearch({ city: '', dateRange: null, type: '' });
+  };
+
   return (
     <form
       className="w-full flex justify-center my-6"
@@ -178,6 +190,15 @@ export function VenueSearchBar({
                 locale={es}
                 showOutsideDays
                 className="min-w-[260px] rounded-2xl text-black"
+                modifiers={{
+                  today: [new Date()],
+                }}
+                modifiersStyles={{
+                  today: {
+                    border: '2px solid #2563eb', // azul
+                    borderRadius: '50%',
+                  },
+                }}
                 today={new Date()}
                 disabled={date => isBefore(date, startOfDay(new Date()))}
               />
@@ -196,12 +217,13 @@ export function VenueSearchBar({
           {showCapacityDropdown && (
             <div className="absolute left-0 right-0 top-12 z-30 bg-white rounded-2xl shadow-lg border border-border/20 max-h-64 overflow-y-auto text-left animate-fade-in">
               <ul>
-                {['+100', '+1000', '+5000'].map((cap) => (
+                {['100', '1000', '5000'].map((cap) => (
                   <li
                     key={cap}
-                    className="px-4 py-2 cursor-pointer hover:bg-primary/10 text-black text-[15px]"
-                    onMouseDown={() => { setCapacity(cap); setShowCapacityDropdown(false); }}
+                    className="px-4 py-2 cursor-pointer hover:bg-primary/10 text-black text-[15px] flex items-center gap-2"
+                    onMouseDown={() => { setCapacity('+' + cap); setShowCapacityDropdown(false); }}
                   >
+                    <Plus className="w-4 h-4 text-primary" />
                     {cap}
                   </li>
                 ))}
@@ -209,6 +231,18 @@ export function VenueSearchBar({
             </div>
           )}
         </div>
+        {hasActiveFilters && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="rounded-full p-2 text-primary hover:bg-primary/10 focus:bg-primary/10 transition-all"
+            aria-label="Limpiar filtros"
+            onClick={handleClearFilters}
+          >
+            <CleaningServicesIcon fontSize="small" className="w-5 h-5" />
+          </Button>
+        )}
         <Button
           variant="soft"
           size="sm"

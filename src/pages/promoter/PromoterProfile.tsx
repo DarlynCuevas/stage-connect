@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,28 +8,56 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUpdateProfile } from '@/lib/users';
+import { useUpdateProfile, useUser } from '@/lib/users';
 import { Edit, Save, X, Megaphone, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function PromoterProfile() {
-  const { user: promoter, token, setUser } = useAuth();
+    function renderEditButton() {
+      if (!isEditing) {
+        return (
+          <Button onClick={() => setIsEditing(true)} variant="outline">
+            <Edit className="w-4 h-4 mr-2" />
+            Editar Perfil
+          </Button>
+        );
+      }
+      return (
+        <div className="flex gap-2">
+          <Button onClick={handleSave} disabled={updateProfileMutation.isPending}>
+            <Save className="w-4 h-4 mr-2" />
+            Guardar
+          </Button>
+          <Button onClick={handleCancel} variant="ghost">
+            <X className="w-4 h-4 mr-2" />
+            Cancelar
+          </Button>
+        </div>
+      );
+    }
+  const { id } = useParams();
+  const { user: authUser, token, setUser } = useAuth();
+  // const isOwnProfile = authUser && id && String(authUser.id) === String(id);
+  const promoterId = id ? Number(id) : undefined;
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState(promoter);
+  const [editData, setEditData] = useState<any>(null);
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
+  const { data: promoter } = useUser(promoterId);
 
   useEffect(() => {
     if (promoter) {
       setEditData(promoter);
+    } else if (authUser) {
+      setEditData(authUser);
     }
-  }, [promoter]);
+  }, [authUser, promoter]);
 
-  if (!promoter) {
+  if (!editData) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-screen">
-          <p className="text-muted-foreground">No hay usuario autenticado</p>
+          <p className="text-muted-foreground">No se encontró el promotor</p>
         </div>
       </DashboardLayout>
     );
@@ -94,26 +123,9 @@ export default function PromoterProfile() {
                 <p className="text-muted-foreground">{promoter?.email}</p>
               </div>
             </div>
-            {!isEditing ? (
-              <Button onClick={() => setIsEditing(true)} variant="outline">
-                <Edit className="w-4 h-4 mr-2" />
-                Editar Perfil
-              </Button>
-            ) : (
-              <div className="flex gap-2">
-                <Button onClick={handleSave} disabled={updateProfileMutation.isPending}>
-                  <Save className="w-4 h-4 mr-2" />
-                  Guardar
-                </Button>
-                <Button onClick={handleCancel} variant="ghost">
-                  <X className="w-4 h-4 mr-2" />
-                  Cancelar
-                </Button>
-              </div>
-            )}
+            {renderEditButton()}
           </div>
         </div>
-
         {/* Profile Information */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Personal Info */}
@@ -138,12 +150,10 @@ export default function PromoterProfile() {
                   <p className="text-sm text-muted-foreground mt-1">{promoter?.name || 'No especificado'}</p>
                 )}
               </div>
-
               <div>
                 <Label htmlFor="email">Email</Label>
                 <p className="text-sm text-muted-foreground mt-1">{promoter?.email}</p>
               </div>
-
               <div>
                 <Label htmlFor="gender">Género</Label>
                 {isEditing ? (
@@ -159,7 +169,6 @@ export default function PromoterProfile() {
               </div>
             </CardContent>
           </Card>
-
           {/* Bio */}
           <Card>
             <CardHeader>

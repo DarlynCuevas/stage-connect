@@ -192,7 +192,7 @@ export default function ManagerArtists() {
                         size="sm"
                         asChild
                       >
-                        <Link to={`/artist/${artist.id}`}>
+                        <Link to={`/artist/profile/${artist.id}`}>
                           <ExternalLink className="w-4 h-4" />
                         </Link>
                       </Button>
@@ -450,7 +450,7 @@ export default function ManagerArtists() {
                           size="sm"
                           asChild
                         >
-                          <Link to={`/artist/${artist.id}`}>
+                          <Link to={`/artist/profile/${artist.id}`}>
                             <ExternalLink className="w-4 h-4" />
                           </Link>
                         </Button>

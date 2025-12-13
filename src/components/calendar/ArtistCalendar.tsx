@@ -41,6 +41,10 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle, onDateSe
 
   const selectedDateInfo = selectedDate ? getDateStatus(selectedDate) : null;
 
+  // Obtener la fecha de hoy (sin hora)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   return (
     <Card variant="gradient">
       <CardHeader>
@@ -78,6 +82,7 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle, onDateSe
               unavailable: dates.filter(d => !d.available && (d as any).confirmed).map(d => parseISO(d.date)),
               blocked: dates.filter(d => (d as any).blocked).map(d => parseISO(d.date)),
               selected: selectedDate ? [selectedDate] : [],
+              today: [today],
             }}
             modifiersStyles={{
               available: {
@@ -99,6 +104,10 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle, onDateSe
               selected: {
                 backgroundColor: 'hsl(var(--accent))',
                 color: 'inherit',
+                borderRadius: '50%',
+              },
+              today: {
+                border: '2px solid #2563eb', // azul
                 borderRadius: '50%',
               },
             }}

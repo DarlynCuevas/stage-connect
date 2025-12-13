@@ -72,7 +72,7 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
   // Placeholder image handling deferred; keep icon fallback for now
 
   return (
-    <Link to={`/venue/${venue.id}`} className="group">
+    <Link to={`/venue/profile/${venue.id}`} className="group">
       <Card className="overflow-hidden border-0 bg-transparent shadow-none transition-all duration-300">
         <div className="relative">
           {/* Image placeholder or avatar */}

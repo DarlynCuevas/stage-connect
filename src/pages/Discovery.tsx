@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Heart } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
 
-// Ejemplo: actualizar un local a verificado o destacado
+// Ejemplo: actualizar una sala a verificada o destacada
 async function updateVenueField(
   venueId: string,
   data: { verified?: boolean; featured?: boolean },
@@ -33,7 +33,7 @@ export default function Discovery() {
     setVenueList(venues);
   }, [venues]);
 
-  // Filtrar locales verificados y destacados, sin duplicados
+  // Filtrar salas verificadas y destacadas, sin duplicados
   const verified = venueList.filter((v) => v.verified);
   const featured = venueList.filter((v) => v.featured && !v.verified);
   const others = venueList.filter((v) => !v.verified && !v.featured);
@@ -49,13 +49,13 @@ export default function Discovery() {
 
   return (
     <HeaderLayout>
-      <div className="container mx-auto px-4 py-6">
+      <div className="w-full max-w-[1800px] mx-auto px-4 py-6">
         <div className="flex flex-col items-center justify-center mb-4 text-center">
           <h1 className="text-3xl font-display font-bold mb-1">
             Encuentra tu próximo escenario
           </h1>
           <p className="text-muted-foreground mb-2">
-            Descubre locales y eventos donde mostrar tu talento
+            Descubre salas y eventos donde mostrar tu talento
           </p>
         </div>
         <VenueSearchBar
@@ -71,23 +71,23 @@ export default function Discovery() {
         />
         <div className="flex justify-center my-4">
           <Badge variant="secondary" className="text-sm">
-            {venues.length} locales disponibles
+            {venues.length} salas disponibles
           </Badge>
         </div>
         {loading ? (
           <div className="min-h-[200px] flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
             <p className="text-muted-foreground ml-4">
-              Descubriendo locales increíbles...
+              Descubriendo salas increíbles...
             </p>
           </div>
         ) : (
           <>
-            <div className="container mx-auto px-4 py-4">
-              {/* Primera fila: locales verificados */}
+            <div className="w-full max-w-[1800px] mx-auto px-4 py-4">
+              {/* Primera fila: salas verificadas */}
                <div className="mb-6 relative">
                  <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                   Locales verificados
+                   Salas verificadas
                  </h2>
                  <div className="relative">
                    <Carousel>
@@ -96,7 +96,7 @@ export default function Discovery() {
                          <CarouselPrevious />
                          <CarouselNext />
                        </div>
-                       <CarouselContent>
+                       <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
                          {verified.map((venue) => (
                            <CarouselItem key={venue.id} className="basis-72 max-w-xs">
                              <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} />
@@ -107,10 +107,10 @@ export default function Discovery() {
                    </Carousel>
                  </div>
                </div>
-              {/* Segunda fila: locales destacados */}
+              {/* Segunda fila: salas destacadas */}
                <div className="mb-6 relative">
                  <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                   Locales destacados
+                   Salas destacadas
                  </h2>
                  <div className="relative">
                    <Carousel>
@@ -119,7 +119,7 @@ export default function Discovery() {
                          <CarouselPrevious />
                          <CarouselNext />
                        </div>
-                       <CarouselContent>
+                       <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
                          {featured.map((venue) => (
                            <CarouselItem key={venue.id} className="basis-72 max-w-xs">
                              <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} />
@@ -151,7 +151,7 @@ export default function Discovery() {
                            <CarouselPrevious />
                            <CarouselNext />
                          </div>
-                         <CarouselContent>
+                         <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
                            {favorites.map((venue) => (
                              <CarouselItem key={venue.id} className="basis-72 max-w-xs">
                                <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} />
@@ -163,13 +163,13 @@ export default function Discovery() {
                    )}
                  </div>
                )}
-              {/* Tercera fila: otros locales */}
+              {/* Tercera fila: otras salas */}
               {others.length > 0 && (
                 <div className="mb-6">
                   <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                    Otros locales
+                    Otras salas
                   </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                     {others.map((venue) => (
                       <VenueCard key={venue.id} venue={venue} onFavoriteChange={handleFavoriteChange} />
                     ))}

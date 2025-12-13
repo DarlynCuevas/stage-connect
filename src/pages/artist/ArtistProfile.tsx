@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,14 +46,33 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ArtistProfile() {
-  const { user: artist, token, setUser } = useAuth();
+    function renderEditButton() {
+      if (!isEditing) {
+        return (
+          <Button onClick={() => setIsEditing(true)} variant="outline">
+            <Edit className="w-4 h-4 mr-2" />
+            Editar Perfil
+          </Button>
+        );
+      }
+      return (
+        <Button onClick={handleCancel} variant="outline">
+          <X className="w-4 h-4 mr-2" />
+          Cancelar
+        </Button>
+      );
+    }
+  const { id } = useParams();
+  const { user: authUser, token, setUser } = useAuth();
+  // const isOwnProfile = authUser && id && String(authUser.id) === String(id);
+  const artistId = id ? Number(id) : undefined;
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState(artist);
+  const [editData, setEditData] = useState<any>(null);
   const [newGenre, setNewGenre] = useState('');
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
-  const { data: freshArtist } = useArtist(artist?.id);
-  const { data: confirmedRequests = [] } = useConfirmedRequests(artist?.id ? Number(artist.id) : undefined);
+  const { data: freshArtist } = useArtist(artistId);
+  const { data: confirmedRequests = [] } = useConfirmedRequests(artistId);
   const createManagerRequestMutation = useCreateManagerRequest();
   const removeManagerRelationMutation = useRemoveManagerRelation();
   const { data: receivedRequests = [] } = useReceivedManagerRequests();
@@ -60,8 +80,8 @@ export default function ArtistProfile() {
   const [managerIdToAdd, setManagerIdToAdd] = useState('');
 
   // prefer server data when available
-  const currentArtist = freshArtist || artist;
-  
+  const currentArtist = freshArtist || authUser;
+
   // Fetch manager data if exists
   const { data: managerData } = useUser(
     currentArtist?.managerId ? Number(currentArtist.managerId) : undefined,
@@ -75,11 +95,11 @@ export default function ArtistProfile() {
   }, [currentArtist]);
 
   // Si no hay usuario, mostrar mensaje
-  if (!artist) {
+  if (!currentArtist) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-screen">
-          <p className="text-muted-foreground">No hay usuario autenticado</p>
+          <p className="text-muted-foreground">No se encontró el artista</p>
         </div>
       </DashboardLayout>
     );
@@ -147,142 +167,122 @@ export default function ArtistProfile() {
   };
 
   const handleCancel = () => {
-    setEditData(artist);
+    setEditData(currentArtist);
     setIsEditing(false);
   };
 
   return (
-    
-      <HeaderLayout profileTabs={[
-        { to: '/artist', label: 'Inicio' },
-        { to: '/artist/profile', label: 'Mi perfil' },
-        { to: '/artist/calendar', label: 'Calendario' },
-        { to: '/artist/requests', label: 'Solicitudes' },
-      ]}>
-        <DashboardLayout noSidebar>
+    <HeaderLayout profileTabs={[
+      { to: '/artist', label: 'Inicio' },
+      { to: `/artist/profile/${currentArtist?.id || ''}`, label: 'Mi perfil' },
+      { to: '/artist/calendar', label: 'Calendario' },
+      { to: '/artist/requests', label: 'Solicitudes' },
+    ]}>
+      <DashboardLayout noSidebar>
         <div className="space-y-6">
-        {/* Header with banner */}
-        <div className="relative rounded-2xl overflow-hidden">
-          <div className="h-48 lg:h-64">
-            {currentArtist?.banner ? (
-              <img
-                src={currentArtist.banner}
-                alt="Banner"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <img
-                src={`https://picsum.photos/1200/400?random=${Math.random()}`}
-                alt="Banner"
-                className="w-full h-full object-cover"
-              />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-          </div>
-
-          <div className="absolute bottom-0 left-0 right-0 p-6">
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-              <div className="flex items-end gap-4">
-                <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                  <AvatarImage src={currentArtist?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
-                  <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                    {currentArtist?.nickName?.charAt(0) || currentArtist?.name?.charAt(0) || 'A'}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    {isEditing ? (
-                      <Input
-                        value={editData?.nickName || ''}
-                        onChange={(e) => setEditData({ ...editData, nickName: e.target.value })}
-                        placeholder="Nombre artístico"
-                        className="text-2xl font-display font-bold max-w-md"
-                      />
-                    ) : (
-                      <h1 className="text-3xl font-display font-bold">{currentArtist?.nickName || currentArtist?.name || 'Artista'}</h1>
-                    )}
-                    {currentArtist?.verified && (
-                      <CheckCircle className="w-6 h-6 text-primary" />
-                    )}
-                  </div>
-                  <p className="text-muted-foreground">{currentArtist?.name}</p>
-                  <div className="flex items-center gap-3 mt-2 flex-wrap">
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
+          {/* Header with banner */}
+          <div className="relative rounded-2xl overflow-hidden">
+            <div className="h-48 lg:h-64">
+              {currentArtist?.banner ? (
+                <img
+                  src={currentArtist.banner}
+                  alt="Banner"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img
+                  src={`https://picsum.photos/1200/400?random=${Math.random()}`}
+                  alt="Banner"
+                  className="w-full h-full object-cover"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 p-6">
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                <div className="flex items-end gap-4">
+                  <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
+                    <AvatarImage src={currentArtist?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
+                    <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+                      {currentArtist?.nickName?.charAt(0) || currentArtist?.name?.charAt(0) || 'A'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
                       {isEditing ? (
-                        <div className="flex gap-2">
-                          <Input
-                            value={editData?.city || ''}
-                            onChange={(e) => setEditData({ ...editData, city: e.target.value })}
-                            placeholder="Ciudad"
-                            className="h-6 text-sm"
-                          />
-                          <Input
-                            value={editData?.country || ''}
-                            onChange={(e) => setEditData({ ...editData, country: e.target.value })}
-                            placeholder="País"
-                            className="h-6 text-sm"
-                          />
-                        </div>
+                        <Input
+                          value={editData?.nickName || ''}
+                          onChange={(e) => setEditData({ ...editData, nickName: e.target.value })}
+                          placeholder="Nombre artístico"
+                          className="text-2xl font-display font-bold max-w-md"
+                        />
                       ) : (
-                        <span>{currentArtist?.city || 'Ciudad'}, {currentArtist?.country || 'País'}</span>
+                        <h1 className="text-3xl font-display font-bold">{currentArtist?.nickName || currentArtist?.name || 'Artista'}</h1>
+                      )}
+                      {currentArtist?.verified && (
+                        <CheckCircle className="w-6 h-6 text-primary" />
                       )}
                     </div>
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <User className="w-4 h-4" />
-                      {isEditing ? (
-                        <Select
-                          value={editData?.gender || ''}
-                          onValueChange={(value) => setEditData({ ...editData, gender: value })}
-                        >
-                          <SelectTrigger className="h-8 min-w-[140px]">
-                            <SelectValue placeholder="Selecciona género" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Hombre">Hombre</SelectItem>
-                            <SelectItem value="Mujer">Mujer</SelectItem>
-                            <SelectItem value="Otro">Otro</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <span>{currentArtist?.gender || 'No especificado'}</span>
-                      )}
-                    </div>
-                    {currentArtist?.rating && currentArtist.rating > 0 && (
-                      <div className="flex items-center gap-1 text-accent">
-                        <Star className="w-4 h-4 fill-current" />
-                        <span className="font-medium">{currentArtist.rating}</span>
+                    <p className="text-muted-foreground">{currentArtist?.name}</p>
+                    <div className="flex items-center gap-3 mt-2 flex-wrap">
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <MapPin className="w-4 h-4" />
+                        {isEditing ? (
+                          <div className="flex gap-2">
+                            <Input
+                              value={editData?.city || ''}
+                              onChange={(e) => setEditData({ ...editData, city: e.target.value })}
+                              placeholder="Ciudad"
+                              className="h-6 text-sm"
+                            />
+                            <Input
+                              value={editData?.country || ''}
+                              onChange={(e) => setEditData({ ...editData, country: e.target.value })}
+                              placeholder="País"
+                              className="h-6 text-sm"
+                            />
+                          </div>
+                        ) : (
+                          <span>{currentArtist?.city || 'Ciudad'}, {currentArtist?.country || 'País'}</span>
+                        )}
                       </div>
-                    )}
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <User className="w-4 h-4" />
+                        {isEditing ? (
+                          <Select
+                            value={editData?.gender || ''}
+                            onValueChange={(value) => setEditData({ ...editData, gender: value })}
+                          >
+                            <SelectTrigger className="h-8 min-w-[140px]">
+                              <SelectValue placeholder="Selecciona género" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Hombre">Hombre</SelectItem>
+                              <SelectItem value="Mujer">Mujer</SelectItem>
+                              <SelectItem value="Otro">Otro</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <span>{currentArtist?.gender || 'No especificado'}</span>
+                        )}
+                      </div>
+                      {currentArtist?.rating && currentArtist.rating > 0 && (
+                        <div className="flex items-center gap-1 text-accent">
+                          <Star className="w-4 h-4 fill-current" />
+                          <span className="font-medium">{currentArtist.rating}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
+                {renderEditButton()}
               </div>
-
-              <Button
-                variant={isEditing ? "outline" : "gradient"}
-                onClick={() => isEditing ? handleCancel() : setIsEditing(true)}
-              >
-                {isEditing ? (
-                  <>
-                    <X className="w-4 h-4 mr-2" />
-                    Cancelar
-                  </>
-                ) : (
-                  <>
-                    <Edit className="w-4 h-4 mr-2" />
-                    Editar Perfil
-                  </>
-                )}
-              </Button>
             </div>
           </div>
-        </div>
-
-
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main info */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Main info and sidebar wrapper */}
+          <div className="flex flex-col lg:flex-row gap-6 mt-6">
+            {/* Main info */}
+            <div className="lg:col-span-2 space-y-6 flex-1">
             {/* Bio */}
             <Card variant="gradient">
               <CardHeader>
@@ -674,7 +674,7 @@ export default function ArtistProfile() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                  {artist?.gallery?.map((image, index) => (
+                  {currentArtist?.gallery?.map((image, index) => (
                     <div
                       key={index}
                       className="relative aspect-video rounded-lg overflow-hidden group"
@@ -715,7 +715,7 @@ export default function ArtistProfile() {
                 {currentArtist?.managerId && managerData ? (
                   <div className="space-y-3">
                     <Link
-                      to={`/manager/${managerData.id}`}
+                      to={managerData ? `/manager/profile/${managerData.id}` : '/manager/profile'}
                       className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
                     >
                       <Avatar className="h-12 w-12">

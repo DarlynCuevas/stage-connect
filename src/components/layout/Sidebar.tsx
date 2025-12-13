@@ -65,7 +65,7 @@ const getRoleConfig = (userId: number) => ({
     links: [
       { to: '/', icon: Home, label: 'Inicio' },
       { to: '/venue', icon: LayoutDashboard, label: 'Panel de datos' },
-      { to: `/venue/${userId}`, icon: User, label: 'Mi Perfil' },
+      { to: '/venue/profile', icon: User, label: 'Mi Perfil' },
       { to: '/venue/search', icon: Search, label: 'Buscar Artistas' },
       { to: '/venue/requests', icon: MessageSquare, label: 'Mis Solicitudes' },
       { to: '/venue/favorites', icon: Heart, label: 'Favoritos' },
