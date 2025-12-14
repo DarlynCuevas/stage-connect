@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateProfile, useArtist, useUser } from '@/lib/users';
 import { useConfirmedRequests } from '@/lib/requests';
-import { useRemoveManagerRelation, useReceivedManagerRequests } from '@/lib/manager-requests';
+import { useRemoveManagerRelation, useReceivedManagerRequests, useCreateManagerRequest } from '@/lib/manager-requests';
 import { useCreateBookingRequest } from '@/lib/requests';
 import { Link } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -88,6 +88,7 @@ export default function ArtistProfile() {
   const { data: freshArtist } = useArtist(artistId);
   const { data: confirmedRequests = [] } = useConfirmedRequests(artistId);
   const createBookingRequestMutation = useCreateBookingRequest();
+  const createManagerRequestMutation = useCreateManagerRequest();
   const removeManagerRelationMutation = useRemoveManagerRelation();
   const { data: receivedRequests = [] } = useReceivedManagerRequests();
   const [showManagerDialog, setShowManagerDialog] = useState(false);

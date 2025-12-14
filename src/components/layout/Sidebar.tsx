@@ -118,10 +118,14 @@ export function Sidebar() {
   const RoleIcon = config.icon;
 
   // Función para obtener el contador de un link específico
+  // Badge de solicitudes pendientes para Artista: suma booking requests + manager requests
   const getBadgeCount = (linkTo: string): number => {
     if (roleKey === 'artist') {
       if (linkTo === '/artist/requests') {
-        return artistRequests.filter(r => r.status === 'Pending').length;
+        // Suma solicitudes de booking pendientes + manager requests pendientes
+        const booking = artistRequests.filter(r => r.status === 'Pending').length;
+        const manager = receivedManagerRequests.filter(r => r.status === 'Pending').length;
+        return booking + manager;
       }
       if (linkTo === '/artist/manager-requests') {
         return receivedManagerRequests.filter(r => r.status === 'Pending').length;

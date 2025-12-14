@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useBookingSocket } from '@/hooks/useBookingSocket';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,10 +19,31 @@ interface ArtistCalendarProps {
 
 export function ArtistCalendar({ dates, editable = false, onDateToggle, onDateSelect }: ArtistCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [localDates, setLocalDates] = useState<CalendarDate[]>(dates);
+
+  // Sincroniza localDates si cambian las props
+  useEffect(() => {
+    setLocalDates(dates);
+  }, [dates]);
+
+  // Callback para bloquear el día cuando se acepte una solicitud
+  const handleRequestAccepted = useCallback((payload: { eventDate: string }) => {
+    setLocalDates(prev => {
+      const dateStr = payload.eventDate.split('T')[0];
+      // Si ya está bloqueado, no hacer nada
+      if (prev.some(d => d.date === dateStr && d.blocked)) return prev;
+      return [
+        ...prev,
+        { date: dateStr, available: false, note: 'Día bloqueado por reserva aceptada', blocked: true },
+      ];
+    });
+  }, []);
+
+  useBookingSocket(handleRequestAccepted);
 
   const getDateStatus = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return dates.find(d => d.date === dateStr);
+    return localDates.find(d => d.date === dateStr);
   };
 
   const handleDateClick = (date: Date | undefined) => {
@@ -78,9 +100,9 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle, onDateSe
             locale={es}
             className="rounded-lg border border-border p-3"
             modifiers={{
-              available: dates.filter(d => d.available).map(d => parseISO(d.date)),
-              unavailable: dates.filter(d => !d.available && (d as any).confirmed).map(d => parseISO(d.date)),
-              blocked: dates.filter(d => (d as any).blocked).map(d => parseISO(d.date)),
+              available: localDates.filter(d => d.available).map(d => parseISO(d.date)),
+              unavailable: localDates.filter(d => !d.available && (d as any).confirmed).map(d => parseISO(d.date)),
+              blocked: localDates.filter(d => (d as any).blocked).map(d => parseISO(d.date)),
               past: Array.from({ length: 365 }, (_, i) => {
                 const d = new Date();
                 d.setDate(d.getDate() - i);

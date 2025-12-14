@@ -145,12 +145,14 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
             <nav className="flex items-center gap-2">
               {nav.map((item) => {
                 const active = location.pathname === item.to;
+                // Mostrar badge solo en la pestaña de Solicitudes para Artista
+                const isArtistRequestsTab = user && String(user.role).toLowerCase().includes('art') && item.to.includes('/requests') && item.label === 'Solicitudes';
                 return (
                   <Link
                     key={item.to}
                     to={item.to}
                     className={cn(
-                      'px-5 py-2 rounded-full font-medium text-sm transition-colors',
+                      'px-5 py-2 rounded-full font-medium text-sm transition-colors relative',
                       active
                         ? 'bg-[#232329] text-white shadow-sm'
                         : 'text-muted-foreground hover:text-primary'
@@ -159,6 +161,11 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
                   >
                     {item.icon && <span className="mr-2 align-middle">{item.icon}</span>}
                     {item.label}
+                    {isArtistRequestsTab && pendingCount > 0 && (
+                      <Badge variant="destructive" className="absolute -bottom-2 -right-2 h-5 min-w-5 px-1.5 text-xs">
+                        {pendingCount > 99 ? '99+' : pendingCount}
+                      </Badge>
+                    )}
                   </Link>
                 );
               })}
@@ -180,14 +187,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
                 </svg>
               </button>
-              <div className="relative">
-                <Bell className="w-5 h-5 text-muted-foreground" />
-                {pendingCount > 0 && (
-                  <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs">
-                    {pendingCount > 99 ? '99+' : pendingCount}
-                  </Badge>
-                )}
-              </div>
+
               {user && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
