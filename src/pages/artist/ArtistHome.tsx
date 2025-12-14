@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { useCallback, useMemo, useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { io, Socket } from 'socket.io-client';
 import { apiFetch } from '@/lib/api';
+import { useArtistRating } from '@/hooks/useArtistRating';
 import {
   Calendar,
   MessageSquare,
@@ -34,31 +35,29 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { format, isThisYear, isFuture, parseISO, isThisMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { mockVenues } from '@/data/mockData';
-import { VenueCard } from '@/components/venue/VenueCard';
+
 
 export default function ArtistHome() {
-
+  const { id } = useParams();
   const { user: artist, token } = useAuth();
+  if (id && artist && String(artist.id) !== String(id)) {
+    return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
+  }
+
   const { data: requests = [], isLoading } = useArtistRequests();
   const { data: confirmedRequests = [] } = useConfirmedRequests(artist?.id ? Number(artist.id) : undefined);
   const { data: managerRequests = [] } = useReceivedManagerRequests();
 
-  // Estado para rating y totalReviews reales
-  const [realRating, setRealRating] = useState<number | null>(null);
-  const [realTotalReviews, setRealTotalReviews] = useState<number | null>(null);
+   const artistNav = [
+    { to: artist ? `/artist/${artist.id}/discover` : '/login', label: 'Inicio' },
+    { to: `/artist/${artist.id}/dashboard`, label: 'Panel de datos' },
+    { to: artist ? `/artist/${artist.id}/profile` : '/login', label: 'Mi perfil' },
+    { to: artist ? `/artist/${artist.id}/calendar` : '/login', label: 'Calendario' },
+    { to: `/artist/${artist.id}/requests`, label: 'Solicitudes' },
+  ];
 
-  useEffect(() => {
-    if (!artist?.id) return;
-    // Obtener número de reseñas
-    apiFetch<{ totalReviews: number }>(`/reviews/artist/${artist.id}/count`).then(res => {
-      setRealTotalReviews(res.totalReviews);
-    });
-    // Obtener rating medio
-    apiFetch<{ averageRating: number }>(`/reviews/artist/${artist.id}/average`).then(res => {
-      setRealRating(res.averageRating);
-    });
-  }, [artist?.id]);
+  // Obtener rating y totalReviews con el custom hook
+  const { averageRating, totalReviews, loading: ratingLoading } = useArtistRating(artist?.id);
 
   const updateStatusMutation = useUpdateRequestStatus();
   const updateManagerStatusMutation = useUpdateManagerRequestStatus();
@@ -276,34 +275,49 @@ export default function ArtistHome() {
     
   return (
 
-      <HeaderLayout>
-         <DashboardLayout noSidebar>
+    <HeaderLayout profileTabs={artistNav}>
       <div>
+        {/* Banner con rating sobre la imagen */}
+        <div className="relative rounded-2xl overflow-hidden mb-8">
+          <div className="h-48 lg:h-64">
+            <img
+              src={`https://picsum.photos/1200/400?random=${artist?.id || 1}`}
+              alt="Banner"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+          </div>
+          {/* Rating sobre la imagen, esquina inferior derecha */}
+          <div className="absolute bottom-4 right-6 flex items-center gap-2 bg-black/70 px-3 py-1.5 rounded-full shadow-lg">
+            <Star className="w-5 h-5 text-yellow-400" fill="#facc15" />
+            <span className="text-lg font-semibold text-yellow-400">
+              {ratingLoading ? '...' : averageRating !== null ? averageRating.toFixed(1) : '—'}
+            </span>
+            <span className="text-sm text-[#facc15]/80">({ratingLoading ? '...' : totalReviews !== null ? totalReviews : 0})</span>
+          </div>
+        </div>
+
         {/* Dashboard header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-display font-bold mb-2">Panel de Artista</h1>
-              <p className="text-muted-foreground">Bienvenido, {artist.nickName || artist.name}</p>
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline" asChild>
-                  <Link to={artist ? `/artist/${artist.id}/discover` : '/login'}>
-                    <User className="w-4 h-4 mr-2" />
-                    Inicio
-                  </Link>
-                </Button>
-                <Button variant="gradient" asChild>
-                  <Link to={artist ? `/artist/calendar/${artist.id}` : '/artist/calendar'}>
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Calendario
-                  </Link>
-                </Button>
-              </div>
-            </div>
-
-
-
-            {/* Sección Económica - estilo elegante */}
+          <div>
+            <h1 className="text-3xl font-display font-bold mb-2">Panel de Artista</h1>
+            <p className="text-muted-foreground">Bienvenido, {artist.nickName || artist.name}</p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" asChild>
+              <Link to={artist ? `/artist/${artist.id}/discover` : '/login'}>
+                <User className="w-4 h-4 mr-2" />
+                Inicio
+              </Link>
+            </Button>
+            <Button variant="gradient" asChild>
+              <Link to={artist ? `/artist/calendar/${artist.id}` : '/artist/calendar'}>
+                <Calendar className="w-4 h-4 mr-2" />
+                Calendario
+              </Link>
+            </Button>
+          </div>
+        </div>
             <div className="mb-10">
               <h2 className="text-2xl font-semibold mb-6 tracking-tight text-yellow-400 drop-shadow-sm">Resumen Económico</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
@@ -325,10 +339,14 @@ export default function ArtistHome() {
                 {/* Tarjeta destacada de valoración media */}
                 <div className="bg-gradient-to-br from-[#23272f] to-[#181a20] rounded-2xl shadow-lg p-7 flex flex-col items-center justify-center border border-[#23272f]/60 hover:shadow-2xl transition-shadow duration-200 min-h-[120px]">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-3xl font-semibold text-yellow-400">{realRating !== null ? realRating.toFixed(1) : '—'}</span>
+                    <span className="text-3xl font-semibold text-yellow-400">
+                      {ratingLoading ? '...' : averageRating !== null ? averageRating.toFixed(1) : '—'}
+                    </span>
                     <Star className="w-7 h-7 text-yellow-400" fill="#facc15" />
                   </div>
-                  <span className="text-xs text-[#bfc9d4] tracking-wide font-medium">{realTotalReviews !== null ? realTotalReviews : 0} reseñas</span>
+                  <span className="text-xs text-[#bfc9d4] tracking-wide font-medium">
+                    {ratingLoading ? '...' : totalReviews !== null ? totalReviews : 0} reseñas
+                  </span>
                   <span className="text-sm text-[#bfc9d4] mt-1">Valoración media</span>
                 </div>
               </div>
@@ -475,7 +493,6 @@ export default function ArtistHome() {
                 </Card>
             </div>
           </div>
-          </DashboardLayout>
           </HeaderLayout>
   );
 }

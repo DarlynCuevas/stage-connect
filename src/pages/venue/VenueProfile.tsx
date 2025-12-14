@@ -45,6 +45,10 @@ const DEFAULT_VENUE_PHOTOS = [
 export default function VenueProfile() {
   const { id } = useParams();
   const { user: authUser, token, setUser } = useAuth();
+  // Comprobación de seguridad: solo el dueño puede ver su perfil
+  if (id && authUser && String(authUser.id) !== String(id)) {
+    return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
+  }
   const isOwnProfile = authUser && id && String(authUser.id) === String(id);
   const venueId = id ? Number(id) : undefined;
   const [isEditing, setIsEditing] = useState(false);
@@ -192,10 +196,10 @@ export default function VenueProfile() {
   // Navegación para el HeaderLayout
   const localNav = [
     { to: `/venue/${id}/discover`, label: 'Inicio' },
-    { to: '/venue/dashboard', label: 'Panel de datos' },
-    { to: `/venue/profile/${id}`, label: 'Mi perfil' },
-    { to: `/venue/calendar/${id}`, label: 'Calendario' },
-    { to: '/venue/requests', label: 'Solicitudes' },
+    { to: `/venue/${id}/dashboard`, label: 'Panel de datos' },
+    { to: `/venue/${id}/profile`, label: 'Mi perfil' },
+    { to: `/venue/${id}/calendar`, label: 'Calendario' },
+    { to: `/venue/${id}/requests`, label: 'Solicitudes' },
   ];
 
   return (

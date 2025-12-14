@@ -17,8 +17,13 @@ import {
   Star,
 } from 'lucide-react';
 
+import { useParams } from 'react-router-dom';
 export default function VenueHome() {
   const { user } = useAuth();
+  const { id } = useParams();
+  if (id && user && String(user.id) !== String(id)) {
+    return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
+  }
   const { data: featuredArtists = [], isLoading } = useArtists();
   const { data: sentRequests = [] } = useSentRequests();
   // Simulación de datos adicionales
@@ -40,11 +45,11 @@ export default function VenueHome() {
 
   // Menú personalizado para Local
   const localNav = [
-    { to: user ? `/venue/${user.id}/discover` : '/login', label: 'Inicio' },
-    { to: '/venue/dashboard', label: 'Panel de datos' },
-    { to: user ? `/venue/profile/${user.id}` : '/login', label: 'Mi perfil' },
-    { to: user ? `/venue/calendar/${user.id}` : '/venue/calendar', label: 'Calendario' },
-    { to: '/venue/requests', label: 'Solicitudes' },
+     { to: `/venue/${id}/discover`, label: 'Inicio' },
+    { to: `/venue/${id}/dashboard`, label: 'Panel de datos' },
+    { to: `/venue/${id}/profile`, label: 'Mi perfil' },
+    { to: `/venue/${id}/calendar`, label: 'Calendario' },
+    { to: `/venue/${id}/requests`, label: 'Solicitudes' },
   ];
 
   const stats = [

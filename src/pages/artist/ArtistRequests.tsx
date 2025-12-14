@@ -8,8 +8,15 @@ import { BookingRequest } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useArtistRequests, useUpdateRequestStatus } from '@/lib/requests';
 import { MessageSquare, Clock, Check, X } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function ArtistRequests() {
+    const { id } = useParams();
+    const { user: authUser } = useAuth();
+    if (id && authUser && String(authUser.id) !== String(id)) {
+      return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
+    }
   const { data: requests = [], isLoading } = useArtistRequests();
   const artist = mockArtists[0];
   const { toast } = useToast();
@@ -41,11 +48,16 @@ export default function ArtistRequests() {
 
   const pendingRequests = requests.filter(r => r.status === 'Pending');
   const completedRequests = requests.filter(r => ['Accepted', 'Rejected'].includes(r.status));
-
+    const artistNav = [
+    { to: id ? `/artist/${id}/discover` : '/login', label: 'Inicio' },
+    { to: `/artist/${id}/dashboard`, label: 'Panel de datos' },
+    { to: id ? `/artist/${id}/profile` : '/login', label: 'Mi perfil' },
+    { to: id ? `/artist/${id}/calendar` : '/login', label: 'Calendario' },
+    { to: `/artist/${id}/requests`, label: 'Solicitudes' },
+  ];
   return (
     
-      <HeaderLayout>
-        <DashboardLayout noSidebar>
+      <HeaderLayout profileTabs={artistNav}>
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-display font-bold mb-2">
@@ -111,7 +123,6 @@ export default function ArtistRequests() {
           </TabsContent>
         </Tabs>
         </div>
-        </DashboardLayout>
       </HeaderLayout>
   );
 }

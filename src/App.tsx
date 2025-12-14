@@ -232,21 +232,20 @@ function AppRoutes() {
 
       {/* Artist routes */}
       <Route path="/artist/:id/discover" element={<ProtectedArtistDiscover />} />
-      <Route path="/artist/dashboard" element={<ArtistHome />} />
-      <Route path="/artist/profile/:id" element={<ArtistProfile />} />
-      <Route path="/artist/calendar/:id" element={<ArtistCalendar />} />
-      <Route path="/artist/requests" element={<ArtistRequests />} />
-      <Route path="/artist/manager-requests" element={<ArtistManagerRequests />} />
-      <Route path="/artist/settings" element={<Settings />} />
-      <Route path="/artist/invite" element={<InviteFriend />} />
+      <Route path="/artist/:id/dashboard" element={<ArtistHome />} />
+      <Route path="/artist/:id/profile" element={<ArtistProfile />} />
+      <Route path="/artist/:id/calendar" element={<ArtistCalendar />} />
+      <Route path="/artist/:id/requests" element={<ArtistRequests />} />
+      <Route path="/artist/:id/settings" element={<Settings />} />
+      <Route path="/artist/:id/invite" element={<InviteFriend />} />
 
         {/* Venue routes */}
       <Route path="/venue/:id/discover" element={<VenueDiscover />} />
-      <Route path="/venue/profile/:id" element={<VenueProfile />} />
-      <Route path="/venue/search" element={<Discovery type="artists" />} />
-      <Route path="/venue/requests" element={<VenueRequests />} />
-      <Route path="/venue/dashboard/" element={<VenueHome />} />
-      <Route path="/venue/settings" element={<Settings />} />
+      <Route path="/venue/:id/profile" element={<VenueProfile />} />
+      <Route path="/venue/:id/search" element={<Discovery type="artists" />} />
+      <Route path="/venue/:id/requests" element={<VenueRequests />} />
+      <Route path="/venue/:id/dashboard/" element={<VenueHome />} />
+      <Route path="/venue/:idsettings" element={<Settings />} />
 
 
       {/* Manager routes */}

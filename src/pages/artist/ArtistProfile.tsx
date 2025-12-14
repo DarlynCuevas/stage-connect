@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useArtistRating } from '@/hooks/useArtistRating';
 import { useParams } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
@@ -49,6 +50,11 @@ import CalendarComponent from '@/components/calendar/CalendarComponent';
 import ModalSolicitudContratacion from '@/components/calendar/ModalSolicitudContratacion';
 
 export default function ArtistProfile() {
+  const { id } = useParams();
+  const { user: authUser, token, setUser } = useAuth();
+      if (id && authUser && String(authUser.id) !== String(id)) {
+        return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
+      }
     function renderEditButton() {
       if (!canEdit) return null;
       if (!isEditing) {
@@ -66,8 +72,7 @@ export default function ArtistProfile() {
         </Button>
       );
     }
-  const { id } = useParams();
-  const { user: authUser, token, setUser } = useAuth();
+
   const artistId = id ? Number(id) : undefined;
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
@@ -87,6 +92,8 @@ export default function ArtistProfile() {
   // prefer server data when available
   const currentArtist = freshArtist || authUser;
   const cacheBase = currentArtist?.basePrice ?? 0;
+  // Obtener rating y totalReviews con el custom hook
+  const { averageRating, totalReviews, loading: ratingLoading } = useArtistRating(currentArtist?.id);
 
   // Fetch manager data if exists
   const { data: managerData } = useUser(
@@ -191,14 +198,15 @@ export default function ArtistProfile() {
     console.log('Solicitud enviada:', data);
     // Puedes mostrar un toast de éxito si quieres
   }
-
+      const artistNav = [
+    { to: id ? `/artist/${id}/discover` : '/login', label: 'Inicio' },
+    { to: `/artist/${id}/dashboard`, label: 'Panel de datos' },
+    { to: id ? `/artist/${id}/profile` : '/login', label: 'Mi perfil' },
+    { to: id ? `/artist/${id}/calendar` : '/login', label: 'Calendario' },
+    { to: `/artist/${id}/requests`, label: 'Solicitudes' },
+  ];
   return (
-    <HeaderLayout profileTabs={[
-      { to: '/artist', label: 'Inicio' },
-      { to: `/artist/profile/${currentArtist?.id || ''}`, label: 'Mi perfil' },
-      { to: currentArtist?.id ? `/artist/calendar/${currentArtist.id}` : '/artist/calendar', label: 'Calendario' },
-      { to: '/artist/requests', label: 'Solicitudes' },
-    ]}>
+    <HeaderLayout profileTabs={artistNav}>
       <DashboardLayout noSidebar>
           {/* Header with banner */}
           <div className="relative rounded-2xl overflow-hidden">
@@ -280,10 +288,10 @@ export default function ArtistProfile() {
                           <span>{currentArtist?.gender || 'No especificado'}</span>
                         )}
                       </div>
-                      {currentArtist?.rating && currentArtist.rating > 0 && (
+                      {averageRating > 0 && (
                         <div className="flex items-center gap-1 text-accent">
                           <Star className="w-4 h-4 fill-current" />
-                          <span className="font-medium">{currentArtist.rating}</span>
+                          <span className="font-medium">{averageRating.toFixed(1)}</span>
                         </div>
                       )}
                     </div>
@@ -975,7 +983,12 @@ export default function ArtistProfile() {
                   <span className="text-muted-foreground">Valoración</span>
                   <div className="flex items-center gap-1 text-accent">
                     <Star className="w-4 h-4 fill-current" />
-                    <span className="font-bold">{currentArtist?.rating ?? 0}</span>
+                    <span className="font-bold">
+                      {ratingLoading ? '...' : averageRating !== null ? averageRating.toFixed(1) : 0}
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      ({ratingLoading ? '...' : totalReviews !== null ? totalReviews : 0} reseñas)
+                    </span>
                   </div>
                 </div>
               </CardContent>

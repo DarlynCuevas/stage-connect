@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Gift, UserPlus, Settings } from 'lucide-react';
 
 export default function InviteFriend() {
@@ -22,8 +22,20 @@ export default function InviteFriend() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const { id } = useParams();
+  if (id && user && String(user.id) !== String(id)) {
+    return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
+  }
+  const artistNav = [
+    { to: id ? `/artist/${id}/discover` : '/login', label: 'Inicio' },
+    { to: `/artist/${id}/dashboard`, label: 'Panel de datos' },
+    { to: id ? `/artist/${id}/profile` : '/login', label: 'Mi perfil' },
+    { to: id ? `/artist/${id}/calendar` : '/login', label: 'Calendario' },
+    { to: `/artist/${id}/requests`, label: 'Solicitudes' },
+  ];
+
   return (
-    <HeaderLayout>
+    <HeaderLayout profileTabs={artistNav}>
       <div className="container mx-auto px-4 py-12 flex flex-col items-center">
         <h1 className="text-3xl md:text-5xl font-display font-bold text-center mb-4">
           Invita a un amigo y recibe <span className="text-primary">beneficios exclusivos</span>
