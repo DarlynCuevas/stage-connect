@@ -74,7 +74,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
   let nav: Array<{ to: string; label: string; icon?: React.ReactNode }> = [];
   if (user && String(user.role).toLowerCase().includes('art')) {
     nav = [
-      { to: '/artist', label: 'Inicio' },
+      { to: user ? `/artist/${user.id}/discover` : '/login', label: 'Inicio' },
       { to: '/artist/dashboard', label: 'Panel de datos' },
       { to: user ? `/artist/profile/${user.id}` : '/login', label: 'Mi perfil' },
       { to: user ? `/artist/calendar/${user.id}` : '/artist/calendar', label: 'Calendario' },
@@ -91,7 +91,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
         <div className="w-full px-0">
           <div className="h-14 flex items-center justify-between">
-            <Link to="/artist" className="flex items-center gap-3 hover:opacity-80 transition-opacity ml-8 sm:ml-16">
+            <Link to={user ? `/artist/${user.id}/discover` : '/login'} className="flex items-center gap-3 hover:opacity-80 transition-opacity ml-8 sm:ml-16">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <Music className="w-4 h-4 text-primary" />
               </div>

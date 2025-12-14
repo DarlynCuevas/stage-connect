@@ -287,9 +287,9 @@ export default function ArtistHome() {
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" asChild>
-                  <Link to={artist ? `/artist/profile/${artist.id}` : '/artist/profile'}>
+                  <Link to={artist ? `/artist/${artist.id}/discover` : '/login'}>
                     <User className="w-4 h-4 mr-2" />
-                    Mi Perfil
+                    Inicio
                   </Link>
                 </Button>
                 <Button variant="gradient" asChild>
@@ -366,8 +366,8 @@ export default function ArtistHome() {
                       Solicitudes Pendientes
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>
-                      <Link to="/artist/requests">
-                        Ver todas
+                      <Link to={artist ? `/artist/${artist.id}/discover` : '/login'}>
+                        Ir a inicio
                         <ArrowRight className="w-4 h-4 ml-1" />
                       </Link>
                     </Button>

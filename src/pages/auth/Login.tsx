@@ -33,9 +33,16 @@ export default function Login() {
             
             // === LÓGICA DE REDIRECCIÓN CONDICIONAL CORREGIDA ===
             switch (userRole) {
-                case 'Artista':
-                    navigate('/artist'); // Usar /artist según tu configuración
+                case 'Artista': {
+                    // Redirigir a discover protegido con id
+                    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                    if (user && user.id) {
+                      navigate(`/artist/${user.id}/discover`);
+                    } else {
+                      navigate('/login');
+                    }
                     break;
+                }
                 case 'Manager':
                     navigate('/manager'); // Usar /manager según tu configuración
                     break;

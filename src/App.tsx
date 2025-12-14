@@ -24,6 +24,7 @@ import ArtistHome from "./pages/artist/ArtistHome";
 import ArtistDiscover from "./pages/artist/ArtistDiscover";
 import ArtistProfile from "./pages/artist/ArtistProfile";
 import ArtistProfileById from "./pages/artist/ArtistProfileById";
+import ProtectedArtistDiscover from "./pages/artist/ProtectedArtistDiscover";
 import ArtistCalendar from "./pages/artist/ArtistCalendar";
 import ArtistRequests from "./pages/artist/ArtistRequests";
 import ArtistManagerRequests from "./pages/artist/ArtistManagerRequests";
@@ -230,7 +231,7 @@ function AppRoutes() {
       {/* <Route path="/venue/:id" element={<VenuePublicProfile />} /> */}
 
       {/* Artist routes */}
-      <Route path="/artist" element={<ArtistDiscover />} />
+      <Route path="/artist/:id/discover" element={<ProtectedArtistDiscover />} />
       <Route path="/artist/dashboard" element={<ArtistHome />} />
       <Route path="/artist/profile/:id" element={<ArtistProfile />} />
       <Route path="/artist/calendar/:id" element={<ArtistCalendar />} />
