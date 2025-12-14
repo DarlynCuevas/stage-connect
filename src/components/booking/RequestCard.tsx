@@ -59,14 +59,16 @@ export function RequestCard({
     : (request.artist?.nickName || request.artist?.name || artist?.nickName || artist?.name);
 
   return (
-    <Card variant="gradient" className="hover:shadow-md transition-all duration-300">
+    <Card variant="gradient" className="rounded-2xl shadow-lg hover:shadow-2xl border border-border/60 transition-all duration-300 bg-white/90 dark:bg-background/80">
       <CardHeader className="pb-2 px-4 pt-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             {displayPerson && (
-              <Avatar className="h-10 w-10 border-2 border-border shrink-0">
-                <AvatarImage src={displayPerson.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
-                <AvatarFallback className="text-sm">{displayName?.charAt(0) || 'U'}</AvatarFallback>
+              <Avatar className="h-16 w-16 border-2 border-primary/60 shadow-lg shrink-0">
+                <AvatarImage src={displayPerson.avatar || ''} />
+                <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary/80 to-secondary/80 text-white">
+                  {displayName?.charAt(0) || 'U'}
+                </AvatarFallback>
               </Avatar>
             )}
             <div className="min-w-0">

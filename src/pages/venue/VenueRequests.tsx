@@ -9,7 +9,7 @@ import { RequestDetailModal } from '@/components/booking/RequestDetailModal';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSentRequests } from '@/lib/requests';
-import { Clock, Check, Loader2, HelpCircle } from 'lucide-react';
+import { Clock, Check, Loader2, HelpCircle, X } from 'lucide-react';
 
 
 const VenueRequests = () => {
@@ -27,6 +27,7 @@ const VenueRequests = () => {
 
   const pendingRequests = filterRequests(requests.filter(r => r.status === 'Pending'));
   const acceptedRequests = filterRequests(requests.filter(r => r.status === 'Accepted'));
+  const rejectedRequests = filterRequests(requests.filter(r => r.status === 'Rejected'));
 
   // Mutación para cancelar solicitud
   const { mutateAsync: updateRequestStatus } = useUpdateRequestStatus();
@@ -115,6 +116,24 @@ const VenueRequests = () => {
   return (
     <HeaderLayout profileTabs={localNav}>
       <div className="space-y-6">
+        {/* Resumen superior */}
+        <div className="flex flex-wrap gap-4 items-center justify-center mb-2">
+          <div className="flex items-center gap-2 bg-yellow-100/80 dark:bg-yellow-900/40 px-4 py-2 rounded-lg">
+            <Clock className="w-4 h-4 text-yellow-500" />
+            <span className="font-medium text-yellow-700 dark:text-yellow-300">Pendientes</span>
+            <Badge variant="warning" className="text-xs px-2 py-0.5">{pendingRequests.length}</Badge>
+          </div>
+          <div className="flex items-center gap-2 bg-green-100/80 dark:bg-green-900/40 px-4 py-2 rounded-lg">
+            <Check className="w-4 h-4 text-green-600" />
+            <span className="font-medium text-green-700 dark:text-green-300">Aceptadas</span>
+            <Badge variant="success" className="text-xs px-2 py-0.5">{acceptedRequests.length}</Badge>
+          </div>
+          <div className="flex items-center gap-2 bg-red-100/80 dark:bg-red-900/40 px-4 py-2 rounded-lg">
+            <X className="w-4 h-4 text-red-500" />
+            <span className="font-medium text-red-700 dark:text-red-300">Rechazadas</span>
+            <Badge variant="destructive" className="text-xs px-2 py-0.5">{rejectedRequests.length}</Badge>
+          </div>
+        </div>
         <div className="flex justify-end">
           <Dialog>
             <DialogTrigger asChild>
@@ -173,25 +192,35 @@ const VenueRequests = () => {
           </TabsList>
 
           <TabsContent value="pending">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {pendingRequests.length > 0 ? (
                 pendingRequests.map((request) => (
-                  <div key={request.id} className="relative">
-                    <RequestCard
-                      request={request}
-                      isReceiver={false}
-                      onViewDetails={() => openDetailModal(request)}
-                    />
-                    <div className="flex gap-2 mt-2">
-                      <Button size="sm" variant="outline" onClick={() => handleEdit(request.id)}>
-                        Editar
-                      </Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleCancel(request.id)} disabled={isUpdating}>
-                        Cancelar
-                      </Button>
-                      <Button size="sm" variant="secondary" onClick={() => handleResend(request.id)}>
-                        Reenviar
-                      </Button>
+                  <div
+                    key={request.id}
+                    className="relative pb-4 border-b border-gray-300 dark:border-white/20 last:border-b-0 last:pb-0 transition-colors duration-200 rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow-sm hover:shadow-lg focus-within:shadow-lg hover:bg-white/90 dark:hover:bg-zinc-900/80 ring-0 hover:ring-2 focus-within:ring-2 ring-primary/30"
+                    tabIndex={0}
+                  >
+                    {/* Icono contextual grande */}
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-10 flex justify-center w-full">
+                      <Clock className="w-12 h-12 text-yellow-400 bg-white dark:bg-zinc-900 rounded-full shadow-lg p-2 border-4 border-yellow-100 dark:border-yellow-900" />
+                    </div>
+                    <div className="pt-8">
+                      <RequestCard
+                        request={request}
+                        isReceiver={false}
+                        onViewDetails={() => openDetailModal(request)}
+                      />
+                      <div className="flex gap-2 mt-2">
+                        <Button size="sm" variant="outline" onClick={() => handleEdit(request.id)} className="transition-colors focus-visible:ring-2 focus-visible:ring-primary/60 hover:bg-primary/10">
+                          Editar
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleCancel(request.id)} disabled={isUpdating} className="transition-colors focus-visible:ring-2 focus-visible:ring-red-400/60 hover:bg-red-100 dark:hover:bg-red-900/30">
+                          Cancelar
+                        </Button>
+                        <Button size="sm" variant="secondary" onClick={() => handleResend(request.id)} className="transition-colors focus-visible:ring-2 focus-visible:ring-secondary/60 hover:bg-secondary/10">
+                          Reenviar
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -208,13 +237,23 @@ const VenueRequests = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {acceptedRequests.length > 0 ? (
                 acceptedRequests.map((request) => (
-                  <div key={request.id} className="relative">
-                    {/* Estado ya mostrado en RequestCard */}
-                    <RequestCard
-                      request={request}
-                      isReceiver={false}
-                      onViewDetails={() => openDetailModal(request)}
-                    />
+                  <div
+                    key={request.id}
+                    className="relative rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow-sm hover:shadow-lg focus-within:shadow-lg hover:bg-white/90 dark:hover:bg-zinc-900/80 ring-0 hover:ring-2 focus-within:ring-2 ring-primary/30 transition-colors duration-200"
+                    tabIndex={0}
+                  >
+                    {/* Icono contextual grande */}
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-10 flex justify-center w-full">
+                      <Check className="w-12 h-12 text-green-500 bg-white dark:bg-zinc-900 rounded-full shadow-lg p-2 border-4 border-green-100 dark:border-green-900" />
+                    </div>
+                    <div className="pt-8">
+                      {/* Estado ya mostrado en RequestCard */}
+                      <RequestCard
+                        request={request}
+                        isReceiver={false}
+                        onViewDetails={() => openDetailModal(request)}
+                      />
+                    </div>
                   </div>
                 ))
               ) : (
