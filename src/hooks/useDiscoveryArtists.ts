@@ -17,7 +17,7 @@ export interface DiscoveryArtist {
 
 export interface DiscoveryArtistFilters {
   city: string;
-  genre: string;
+  genre: string[];
   priceMin?: number;
   priceMax?: number;
 }
@@ -25,7 +25,7 @@ export interface DiscoveryArtistFilters {
 export function useDiscoveryArtists() {
   const [artists, setArtists] = useState<DiscoveryArtist[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<DiscoveryArtistFilters>({ city: 'all', genre: 'all' });
+  const [filters, setFilters] = useState<DiscoveryArtistFilters>({ city: 'all', genre: [] });
 
   useEffect(() => {
     const fetchArtists = async () => {
@@ -33,7 +33,9 @@ export function useDiscoveryArtists() {
       try {
         const params = new URLSearchParams();
         if (filters.city !== 'all') params.append('city', filters.city);
-        if (filters.genre !== 'all') params.append('genre', filters.genre);
+        if (filters.genre && filters.genre.length > 0) {
+          filters.genre.forEach((g) => params.append('genre', g));
+        }
         if (filters.priceMin !== undefined) params.append('priceMin', String(filters.priceMin));
         if (filters.priceMax !== undefined) params.append('priceMax', String(filters.priceMax));
         const url = `/public/users?role=Artista${params.toString() ? '&' + params.toString() : ''}`;

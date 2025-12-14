@@ -35,6 +35,43 @@ export default function Discovery({ type }: DiscoveryProps) {
   if (type === 'artists') {
     // Mostrar artistas para venues
     const { artists, loading, setFilters, filters } = useDiscoveryArtists();
+    // Adaptar los filtros para ArtistSearch (SearchFilters espera campos opcionales)
+    const searchFilters = {
+      ...filters,
+      genre: filters.genre || [],
+    };
+    // Adaptar onFiltersChange para que acepte SearchFilters y lo convierta a DiscoveryArtistFilters
+    const handleFiltersChange = (newFilters) => {
+      setFilters({
+        city: newFilters.city || 'all',
+        genre: newFilters.genre || [],
+        priceMin: newFilters.priceMin,
+        priceMax: newFilters.priceMax,
+      });
+    };
+    // Mapear DiscoveryArtist a ArtistCard (rellenar campos mínimos)
+    const mapToArtistCard = (artist) => ({
+      id: String(artist.id),
+      userId: String(artist.id),
+      name: artist.name,
+      nickName: artist.name,
+      avatar: artist.avatar || '',
+      banner: '',
+      bio: artist.bio || '',
+      genre: artist.genre ? (Array.isArray(artist.genre) ? artist.genre : [artist.genre]) : [],
+      country: '',
+      city: artist.city || '',
+      basePrice: artist.basePrice || 0,
+      priceVariants: [],
+      socialLinks: {},
+      gallery: [],
+      videos: [],
+      managerId: '',
+      rating: artist.rating || 0,
+      totalShows: 0,
+      verified: artist.verified || false,
+      gender: '',
+    });
     return (
       <div className="w-full max-w-[1800px] mx-auto px-4 py-6">
         <div className="flex flex-col items-center justify-center mb-4 text-center">
@@ -45,7 +82,7 @@ export default function Discovery({ type }: DiscoveryProps) {
             Descubre y contacta artistas disponibles
           </p>
         </div>
-        <ArtistSearch filters={filters} onFiltersChange={setFilters} />
+        <ArtistSearch filters={searchFilters} onFiltersChange={handleFiltersChange} />
         <div className="flex justify-center my-4">
           <Badge variant="secondary" className="text-sm">
             {artists.length} artistas disponibles
@@ -61,7 +98,7 @@ export default function Discovery({ type }: DiscoveryProps) {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {artists.map((artist) => (
-              <ArtistCard key={artist.id} artist={artist} showPrice />
+              <ArtistCard key={artist.id} artist={mapToArtistCard(artist)} showPrice />
             ))}
           </div>
         )}
