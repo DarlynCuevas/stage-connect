@@ -220,7 +220,7 @@ export default function ArtistHome() {
                   </Link>
                 </Button>
                 <Button variant="gradient" asChild>
-                  <Link to="/artist/calendar">
+                  <Link to={artist ? `/artist/calendar/${artist.id}` : '/artist/calendar'}>
                     <Calendar className="w-4 h-4 mr-2" />
                     Calendario
                   </Link>
@@ -327,7 +327,7 @@ export default function ArtistHome() {
                       Próximas Actuaciones Este Mes
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>
-                      <Link to="/artist/calendar">
+                      <Link to={artist ? `/artist/calendar/${artist.id}` : '/artist/calendar'}>
                         Ver calendario
                         <ArrowRight className="w-4 h-4 ml-1" />
                       </Link>

@@ -195,7 +195,7 @@ export default function ArtistProfile() {
     <HeaderLayout profileTabs={[
       { to: '/artist', label: 'Inicio' },
       { to: `/artist/profile/${currentArtist?.id || ''}`, label: 'Mi perfil' },
-      { to: '/artist/calendar', label: 'Calendario' },
+      { to: currentArtist?.id ? `/artist/calendar/${currentArtist.id}` : '/artist/calendar', label: 'Calendario' },
       { to: '/artist/requests', label: 'Solicitudes' },
     ]}>
       <DashboardLayout noSidebar>

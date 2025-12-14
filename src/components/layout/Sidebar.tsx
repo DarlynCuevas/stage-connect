@@ -37,7 +37,7 @@ const getRoleConfig = (userId: number) => ({
       { to: '/artist', icon: Home, label: 'Inicio' },
       { to: '/artist/dashboard', icon: LayoutDashboard, label: 'Panel de datos' },
       { to: `/artist/${userId}`, icon: User, label: 'Mi Perfil' },
-      { to: '/artist/calendar', icon: Calendar, label: 'Calendario' },
+      { to: `/artist/calendar/${userId}`, icon: Calendar, label: 'Calendario' },
       { to: '/artist/requests', icon: MessageSquare, label: 'Solicitudes' },
       { to: '/artist/manager-requests', icon: UserPlus, label: 'Mi Manager' },
       { to: '/artist/settings', icon: Settings, label: 'Ajustes' },

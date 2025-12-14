@@ -85,51 +85,55 @@ export default function Discovery() {
           <>
             <div className="w-full max-w-[1800px] mx-auto px-4 py-4">
               {/* Primera fila: salas verificadas */}
-               <div className="mb-6 relative">
-                 <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                   Salas verificadas
-                 </h2>
-                 <div className="relative">
-                   <Carousel>
-                     <div className="flex flex-col">
-                       <div className="flex justify-center items-center gap-1 mb-3">
-                         <CarouselPrevious />
-                         <CarouselNext />
-                       </div>
-                       <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
-                         {verified.map((venue) => (
-                           <CarouselItem key={venue.id} className="basis-72 max-w-xs">
-                             <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} />
-                           </CarouselItem>
-                         ))}
-                       </CarouselContent>
-                     </div>
-                   </Carousel>
-                 </div>
-               </div>
+              {verified.length > 0 && (
+                <div className="mb-6 relative">
+                  <h2 className="text-lg font-semibold text-muted-foreground mb-2">
+                    Salas verificadas
+                  </h2>
+                  <div className="relative">
+                    <Carousel>
+                      <div className="flex flex-col">
+                        <div className="flex justify-center items-center gap-1 mb-3">
+                          <CarouselPrevious />
+                          <CarouselNext />
+                        </div>
+                        <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
+                          {verified.map((venue) => (
+                            <CarouselItem key={venue.id} className="basis-72 max-w-xs">
+                              <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} />
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                      </div>
+                    </Carousel>
+                  </div>
+                </div>
+              )}
               {/* Segunda fila: salas destacadas */}
-               <div className="mb-6 relative">
-                 <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                   Salas destacadas
-                 </h2>
-                 <div className="relative">
-                   <Carousel>
-                     <div className="flex flex-col">
-                       <div className="flex justify-center items-center gap-1 mb-3">
-                         <CarouselPrevious />
-                         <CarouselNext />
-                       </div>
-                       <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
-                         {featured.map((venue) => (
-                           <CarouselItem key={venue.id} className="basis-72 max-w-xs">
-                             <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} />
-                           </CarouselItem>
-                         ))}
-                       </CarouselContent>
-                     </div>
-                   </Carousel>
-                 </div>
-               </div>
+              {featured.length > 0 && (
+                <div className="mb-6 relative">
+                  <h2 className="text-lg font-semibold text-muted-foreground mb-2">
+                    Salas destacadas
+                  </h2>
+                  <div className="relative">
+                    <Carousel>
+                      <div className="flex flex-col">
+                        <div className="flex justify-center items-center gap-1 mb-3">
+                          <CarouselPrevious />
+                          <CarouselNext />
+                        </div>
+                        <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
+                          {featured.map((venue) => (
+                            <CarouselItem key={venue.id} className="basis-72 max-w-xs">
+                              <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} />
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                      </div>
+                    </Carousel>
+                  </div>
+                </div>
+              )}
               {/* Sección colapsable de favoritos */}
                {favorites.length > 0 && (
                  <div className="mb-6 relative">

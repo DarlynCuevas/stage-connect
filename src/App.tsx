@@ -233,7 +233,7 @@ function AppRoutes() {
       <Route path="/artist" element={<ArtistDiscover />} />
       <Route path="/artist/dashboard" element={<ArtistHome />} />
       <Route path="/artist/profile/:id" element={<ArtistProfile />} />
-      <Route path="/artist/calendar" element={<ArtistCalendar />} />
+      <Route path="/artist/calendar/:id" element={<ArtistCalendar />} />
       <Route path="/artist/requests" element={<ArtistRequests />} />
       <Route path="/artist/manager-requests" element={<ArtistManagerRequests />} />
       <Route path="/artist/settings" element={<Settings />} />

@@ -77,7 +77,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
       { to: '/artist', label: 'Inicio' },
       { to: '/artist/dashboard', label: 'Panel de datos' },
       { to: user ? `/artist/profile/${user.id}` : '/login', label: 'Mi perfil' },
-      { to: '/artist/calendar', label: 'Calendario' },
+      { to: user ? `/artist/calendar/${user.id}` : '/artist/calendar', label: 'Calendario' },
       { to: '/artist/requests', label: 'Solicitudes' },
     ];
   } else {
