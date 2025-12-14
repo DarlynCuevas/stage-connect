@@ -1,10 +1,11 @@
+
 import { Link } from 'react-router-dom';
 import { Artist } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { MapPin, Star, Music, CheckCircle, Eye } from 'lucide-react';
+import { MapPin, Users, Star, Heart, Music, CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
 
 interface ArtistCardProps {
   artist: Artist;
@@ -13,106 +14,93 @@ interface ArtistCardProps {
 }
 
 export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
+  const [isFavorite, setIsFavorite] = useState(false); // Puedes conectar lógica real si tienes favoritos
+  const location = [artist.city, artist.country].filter(Boolean).join(', ');
+  const genres = artist.genre || [];
+
   return (
-    <Card 
-      variant="gradient" 
-      className="group hover:shadow-lg hover-lift transition-all duration-300 !overflow-visible relative min-h-[340px] flex flex-col"
-    >
-      <div className="relative h-28 overflow-hidden rounded-t-xl">
-        {artist.banner ? (
-          <img
-            src={artist.banner}
-            alt={artist.nickName || artist.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <img
-            src={`https://picsum.photos/400/200?random=${Math.random()}`}
-            alt={artist.nickName || artist.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
-      </div>
-      
-      <Avatar className="absolute top-[84px] left-4 h-14 w-14 border-[3px] border-card shadow-lg z-10">
-        <AvatarImage src={artist.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} alt={artist.nickName || artist.name} />
-        <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-          {artist.nickName?.charAt(0) || artist.name?.charAt(0) || 'A'}
-        </AvatarFallback>
-      </Avatar>
-
-      {artist.verified && (
-        <Badge variant="default" className="absolute top-2.5 right-2.5 gap-1 text-2xs px-2 py-0.5 z-10">
-          <CheckCircle className="w-3 h-3" />
-          Verificado
-        </Badge>
-      )}
-
-      <CardContent className="pt-7 pb-4 px-4 flex flex-col flex-1">
-        <div className="flex items-start justify-between mb-1.5">
-          <div className="min-w-0 flex-1">
-            <h3 className="font-display font-semibold text-base text-foreground group-hover:text-primary transition-colors truncate">
-              {artist.nickName || artist.name}
-            </h3>
-            <p className="text-xs text-muted-foreground truncate">{artist.name}</p>
-          </div>
-          <div className="flex items-center gap-1 text-accent shrink-0 ml-2">
-            <Star className="w-3.5 h-3.5 fill-current" />
-            <span className="text-xs font-medium">{artist.rating}</span>
-          </div>
-        </div>
-
-
-        {/* Bloque ciudad siempre presente */}
-        <div className="flex items-center gap-1 text-muted-foreground text-xs mb-3 min-h-[20px]">
-          <MapPin className="w-3 h-3 shrink-0" />
-          <span className="truncate">{artist.city || ' '}{artist.country ? `, ${artist.country}` : ''}</span>
-        </div>
-
-        {/* Bloque género siempre presente */}
-        <div className="flex flex-wrap gap-1 mb-3 min-h-[24px]">
-          {artist.genre && artist.genre.length > 0 ? (
-            <>
-              {artist.genre.slice(0, 2).map((genre) => (
-                <Badge key={genre} variant="secondary" className="text-2xs px-2 py-0.5">
-                  <Music className="w-2.5 h-2.5 mr-1" />
-                  {genre}
-                </Badge>
-              ))}
-              {artist.genre.length > 2 && (
-                <Badge variant="secondary" className="text-2xs px-2 py-0.5">
-                  +{artist.genre.length - 2}
-                </Badge>
-              )}
-            </>
-          ) : (
-            // Espacio vacío para igualar altura
-            <span className="invisible">-</span>
-          )}
-        </div>
-
-        {showPrice ? (
-          <div className="flex items-center justify-between pt-3 border-t border-border/50 mt-auto">
-            <div>
-              <p className="text-2xs text-muted-foreground">Desde</p>
-              <p className="text-sm font-bold text-primary leading-tight">
+    <Link to={`/artist/profile/${artist.id}`} className="group">
+      <Card className="overflow-hidden border-0 bg-transparent shadow-none transition-all duration-300">
+        <div className="relative">
+          {/* Banner principal */}
+          <div className="aspect-[2/1] relative overflow-hidden rounded-xl">
+            {/* Badge de verificado arriba a la izquierda */}
+            {artist.verified && (
+              <span className="absolute top-3 left-3 z-10">
+                <CheckCircle2 className="h-5 w-5 text-green-500 drop-shadow" />
+              </span>
+            )}
+            {artist.gallery && artist.gallery.length > 0 ? (
+              <img
+                src={artist.gallery[0]}
+                alt={artist.nickName || artist.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : artist.banner ? (
+              <img
+                src={artist.banner}
+                alt={artist.nickName || artist.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Music className="h-12 w-12 text-primary/40" />
+              </div>
+            )}
+            {/* Botón de favorito (simulado) */}
+            <button
+              className={`absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background transition-colors ${isFavorite ? 'text-red-500' : ''}`}
+              onClick={e => { e.preventDefault(); setIsFavorite(v => !v); }}
+              aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            >
+              <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground hover:text-red-500'}`} />
+            </button>
+            {/* Badge de precio desde o género */}
+            {showPrice && (
+              <Badge variant="secondary" className="absolute bottom-3 left-3 bg-background/90 text-xs">
                 €{artist.basePrice?.toLocaleString() || '0'}
-              </p>
-            </div>
-            <Button asChild size="sm" variant="gradient" className="h-8">
-              <Link to={`/artist/profile/${artist.id}`}>
-                <Eye className="w-3.5 h-3.5 mr-1" />
-                Ver perfil
-              </Link>
-            </Button>
+              </Badge>
+            )}
+            {!showPrice && genres.length > 0 && (
+              <Badge variant="secondary" className="absolute bottom-3 left-3 bg-background/90 text-xs">
+                <Music className="h-3 w-3 mr-1" />
+                {genres[0]}
+              </Badge>
+            )}
           </div>
-        ) : (
-          <Button asChild className="w-full h-9 mt-auto" variant="outline" size="sm">
-            <Link to={`/artist/profile/${artist.id}`}>Ver perfil</Link>
-          </Button>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+        <CardContent className="px-0 py-2 space-y-2">
+          {/* Nombre + calificación */}
+          <div className="space-y-1">
+            <div className="flex items-start justify-between">
+              <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
+                {artist.nickName || artist.name}
+              </h3>
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Star className="h-3 w-3 fill-current text-amber-400" />
+                <span>{artist.rating ?? 4.5}</span>
+              </div>
+            </div>
+            {/* Género + Ciudad en la misma línea */}
+            {(genres.length > 0 || location) && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                {genres.length > 0 && <span className="truncate">{genres[0]}</span>}
+                {location && (
+                  <span className="flex items-center gap-1 truncate">
+                    • <MapPin className="h-3 w-3" /> {location}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          {/* Descripción corta (2 líneas con puntos suspensivos) */}
+          {artist.bio && (
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+              {artist.bio}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

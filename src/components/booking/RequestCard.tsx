@@ -18,6 +18,9 @@ interface RequestCardProps {
   onReject?: () => void;
   onNegotiate?: () => void;
   onViewDetails?: () => void;
+  onEdit?: () => void;
+  onCancel?: () => void;
+  onResend?: () => void;
   isProcessing?: boolean;
 }
 

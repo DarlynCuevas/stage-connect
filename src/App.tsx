@@ -38,7 +38,7 @@ import ManagerProfile from "./pages/manager/ManagerProfile";
 
 // Venue pages
 import VenueHome from "./pages/venue/VenueHome";
-import VenueSearch from "./pages/venue/VenueSearch";
+import Discovery from "./pages/Discovery";
 import VenueRequests from "./pages/venue/VenueRequests";
 import VenueProfile from "./pages/venue/VenueProfile";
 
@@ -243,7 +243,7 @@ function AppRoutes() {
         {/* Venue routes */}
       <Route path="/venue/:id/discover" element={<VenueDiscover />} />
       <Route path="/venue/profile/:id" element={<VenueProfile />} />
-      <Route path="/venue/search" element={<VenueSearch />} />
+      <Route path="/venue/search" element={<Discovery type="artists" />} />
       <Route path="/venue/requests" element={<VenueRequests />} />
       <Route path="/venue/dashboard/" element={<VenueHome />} />
       <Route path="/venue/settings" element={<Settings />} />
@@ -261,7 +261,7 @@ function AppRoutes() {
       {/* Promoter routes */}
       <Route path="/promoter" element={<PromoterHome />} />
       <Route path="/promoter/profile/:id" element={<PromoterProfile />} />
-      <Route path="/promoter/search" element={<VenueSearch />} />
+      <Route path="/promoter/search" element={<Discovery type="artists" />} />
       <Route path="/promoter/events" element={<PromoterHome />} />
       <Route path="/promoter/requests" element={<PromoterRequests />} />
       <Route path="/promoter/settings" element={<Settings />} />

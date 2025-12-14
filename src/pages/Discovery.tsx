@@ -33,28 +33,36 @@ async function updateVenueField(
 
 export default function Discovery({ type }: DiscoveryProps) {
   if (type === 'artists') {
-    // Mostrar artistas para venues
+    // Mostrar artistas para venues, pero usando VenueSearchBar como filtro visual
     const { artists, loading, setFilters, filters } = useDiscoveryArtists();
-    // Adaptar los filtros para ArtistSearch (SearchFilters espera campos opcionales)
-    const searchFilters = {
-      ...filters,
-      genre: filters.genre || [],
+    // Mantener hooks siempre en el mismo orden
+    const [showFavorites, setShowFavorites] = useState(false);
+    const [artistList, setArtistList] = useState(artists);
+
+    useEffect(() => {
+      setArtistList(artists);
+    }, [artists]);
+
+    // Filtrar artistas verificados, destacados y favoritos
+    const verified = artistList.filter((a) => a.verified);
+    const featured = artistList.filter((a) => a.featured && !a.verified);
+    const others = artistList.filter((a) => !a.verified && !a.featured);
+    const favorites = artistList.filter((a) => a.favorite);
+
+    const handleFavoriteChange = (artistId, favorite) => {
+      setArtistList((prev) =>
+        prev.map((a) =>
+          a.id === artistId ? { ...a, favorite } : a
+        )
+      );
     };
-    // Adaptar onFiltersChange para que acepte SearchFilters y lo convierta a DiscoveryArtistFilters
-    const handleFiltersChange = (newFilters) => {
-      setFilters({
-        city: newFilters.city || 'all',
-        genre: newFilters.genre || [],
-        priceMin: newFilters.priceMin,
-        priceMax: newFilters.priceMax,
-      });
-    };
+
     // Mapear DiscoveryArtist a ArtistCard (rellenar campos mínimos)
     const mapToArtistCard = (artist) => ({
       id: String(artist.id),
       userId: String(artist.id),
       name: artist.name,
-      nickName: artist.name,
+      nickName: artist.nickName || artist.name,
       avatar: artist.avatar || '',
       banner: '',
       bio: artist.bio || '',
@@ -64,14 +72,24 @@ export default function Discovery({ type }: DiscoveryProps) {
       basePrice: artist.basePrice || 0,
       priceVariants: [],
       socialLinks: {},
-      gallery: [],
+      gallery: artist.gallery || [],
       videos: [],
       managerId: '',
       rating: artist.rating || 0,
       totalShows: 0,
       verified: artist.verified || false,
       gender: '',
+      favorite: artist.favorite || false,
+      featured: artist.featured || false,
     });
+
+    const handleVenueSearch = ({ city, type }) => {
+      setFilters({
+        city: city || 'all',
+        // type no se usa en artistas, pero se ignora
+      });
+    };
+
     return (
       <div className="w-full max-w-[1800px] mx-auto px-4 py-6">
         <div className="flex flex-col items-center justify-center mb-4 text-center">
@@ -82,7 +100,11 @@ export default function Discovery({ type }: DiscoveryProps) {
             Descubre y contacta artistas disponibles
           </p>
         </div>
-        <ArtistSearch filters={searchFilters} onFiltersChange={handleFiltersChange} />
+        <VenueSearchBar
+          onSearch={handleVenueSearch}
+          initialCity={filters.city || ''}
+          initialType={''}
+        />
         <div className="flex justify-center my-4">
           <Badge variant="secondary" className="text-sm">
             {artists.length} artistas disponibles
@@ -96,11 +118,104 @@ export default function Discovery({ type }: DiscoveryProps) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {artists.map((artist) => (
-              <ArtistCard key={artist.id} artist={mapToArtistCard(artist)} showPrice />
-            ))}
-          </div>
+          <>
+            {/* Artistas verificados */}
+            {verified.length > 0 && (
+              <div className="mb-6 relative">
+                <h2 className="text-lg font-semibold text-muted-foreground mb-2">
+                  Artistas verificados
+                </h2>
+                <div className="relative">
+                  <Carousel>
+                    <div className="flex flex-col">
+                      <div className="flex justify-center items-center gap-1 mb-3">
+                        <CarouselPrevious />
+                        <CarouselNext />
+                      </div>
+                      <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
+                        {verified.map((artist) => (
+                          <CarouselItem key={artist.id} className="basis-72 max-w-xs">
+                            <ArtistCard artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} />
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                    </div>
+                  </Carousel>
+                </div>
+              </div>
+            )}
+            {/* Artistas destacados */}
+            {featured.length > 0 && (
+              <div className="mb-6 relative">
+                <h2 className="text-lg font-semibold text-muted-foreground mb-2">
+                  Artistas destacados
+                </h2>
+                <div className="relative">
+                  <Carousel>
+                    <div className="flex flex-col">
+                      <div className="flex justify-center items-center gap-1 mb-3">
+                        <CarouselPrevious />
+                        <CarouselNext />
+                      </div>
+                      <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
+                        {featured.map((artist) => (
+                          <CarouselItem key={artist.id} className="basis-72 max-w-xs">
+                            <ArtistCard artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} />
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                    </div>
+                  </Carousel>
+                </div>
+              </div>
+            )}
+            {/* Favoritos (siempre renderizar la sección) */}
+            <div className="mb-6 relative">
+              <button
+                className="flex items-center gap-2 text-lg font-semibold text-red-500 mb-2 focus:outline-none hover:underline"
+                onClick={() => setShowFavorites((v) => !v)}
+              >
+                <Heart className="h-5 w-5" /> Favoritos
+                {showFavorites ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+              {showFavorites && (
+                <Carousel>
+                  <div className="flex flex-col">
+                    <div className="flex justify-center items-center gap-1 mb-3">
+                      <CarouselPrevious />
+                      <CarouselNext />
+                    </div>
+                    <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
+                      {favorites.length > 0 ? favorites.map((artist) => (
+                        <CarouselItem key={artist.id} className="basis-72 max-w-xs">
+                          <ArtistCard artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} />
+                        </CarouselItem>
+                      )) : (
+                        <div className="text-muted-foreground px-4 py-8">No tienes artistas favoritos.</div>
+                      )}
+                    </CarouselContent>
+                  </div>
+                </Carousel>
+              )}
+            </div>
+            {/* Otros artistas */}
+            {others.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold text-muted-foreground mb-2">
+                  Artistas
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {others.map((artist) => (
+                    <ArtistCard key={artist.id} artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     );
@@ -141,12 +256,12 @@ export default function Discovery({ type }: DiscoveryProps) {
       <VenueSearchBar
         onSearch={({ city, dateRange, type }) => {
           setFilters({
-            city: city || 'all',
+            city: city || '',
             type: type || 'all',
             // dateRange
           });
         }}
-        initialCity={filters.city !== 'all' ? filters.city : ''}
+        initialCity={filters.city || ''}
         initialType={filters.type}
       />
       <div className="flex justify-center my-4">

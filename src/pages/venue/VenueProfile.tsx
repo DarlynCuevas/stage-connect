@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,11 +65,11 @@ export default function VenueProfile() {
 
   if (!editData) {
     return (
-      <DashboardLayout>
+      <HeaderLayout>
         <div className="flex items-center justify-center h-screen">
           <p className="text-muted-foreground">No se encontró el local</p>
         </div>
-      </DashboardLayout>
+      </HeaderLayout>
     );
   }
 
@@ -189,8 +189,17 @@ export default function VenueProfile() {
     { id: 'parking', label: 'Parking', icon: MapPin },
   ];
 
+  // Navegación para el HeaderLayout
+  const localNav = [
+    { to: `/venue/${id}/discover`, label: 'Inicio' },
+    { to: '/venue/dashboard', label: 'Panel de datos' },
+    { to: `/venue/profile/${id}`, label: 'Mi perfil' },
+    { to: `/venue/calendar/${id}`, label: 'Calendario' },
+    { to: '/venue/requests', label: 'Solicitudes' },
+  ];
+
   return (
-    <DashboardLayout>
+    <HeaderLayout profileTabs={localNav}>
       <div className="space-y-6 max-w-6xl mx-auto">
         {/* Header with Edit Button */}
         <div className="flex justify-between items-start">
@@ -577,6 +586,6 @@ export default function VenueProfile() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </HeaderLayout>
   );
 }
