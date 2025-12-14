@@ -11,11 +11,15 @@ export interface DiscoveryArtist {
   featured?: boolean;
   verified?: boolean;
   favorite?: boolean;
+  basePrice?: number;
+  rating?: number;
 }
 
 export interface DiscoveryArtistFilters {
   city: string;
   genre: string;
+  priceMin?: number;
+  priceMax?: number;
 }
 
 export function useDiscoveryArtists() {
@@ -30,6 +34,8 @@ export function useDiscoveryArtists() {
         const params = new URLSearchParams();
         if (filters.city !== 'all') params.append('city', filters.city);
         if (filters.genre !== 'all') params.append('genre', filters.genre);
+        if (filters.priceMin !== undefined) params.append('priceMin', String(filters.priceMin));
+        if (filters.priceMax !== undefined) params.append('priceMax', String(filters.priceMax));
         const url = `/public/users?role=Artista${params.toString() ? '&' + params.toString() : ''}`;
         const response = await apiFetch(url);
         setArtists(response);

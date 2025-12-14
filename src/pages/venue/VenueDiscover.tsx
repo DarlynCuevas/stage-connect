@@ -14,7 +14,7 @@ export default function VenueDiscover() {
 
   return (
     <HeaderLayout profileTabs={localNav}>
-      <Discovery />
+      <Discovery type="artists" />
     </HeaderLayout>
   );
 }

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
+import { PriceRangeSlider } from '@/components/ui/PriceRangeSlider';
 import { Search, X, SlidersHorizontal } from 'lucide-react';
 import { genres, countries, cities } from '@/data/mockData';
 import { SearchFilters } from '@/types';
@@ -168,25 +168,12 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
             </div>
 
             {/* Price range */}
-            <div>
-              <label className="text-sm font-medium text-foreground mb-4 block">
-                Rango de precio (caché)
-              </label>
-              <div className="px-2">
-                <Slider
-                  value={priceRange}
-                  onValueChange={handlePriceChange}
-                  min={0}
-                  max={50000}
-                  step={500}
-                  className="mb-2"
-                />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>€{priceRange[0].toLocaleString()}</span>
-                  <span>€{priceRange[1].toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
+            <PriceRangeSlider
+              value={priceRange as [number, number]}
+              onChange={(vals) => handlePriceChange(vals)}
+              min={0}
+              max={50000}
+            />
 
             {/* Clear filters */}
             {activeFiltersCount > 0 && (

@@ -16,7 +16,7 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
   return (
     <Card 
       variant="gradient" 
-      className="group hover:shadow-lg hover-lift transition-all duration-300 !overflow-visible relative"
+      className="group hover:shadow-lg hover-lift transition-all duration-300 !overflow-visible relative min-h-[340px] flex flex-col"
     >
       <div className="relative h-28 overflow-hidden rounded-t-xl">
         {artist.banner ? (
@@ -49,7 +49,7 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
         </Badge>
       )}
 
-      <CardContent className="pt-7 pb-4 px-4">
+      <CardContent className="pt-7 pb-4 px-4 flex flex-col flex-1">
         <div className="flex items-start justify-between mb-1.5">
           <div className="min-w-0 flex-1">
             <h3 className="font-display font-semibold text-base text-foreground group-hover:text-primary transition-colors truncate">
@@ -63,30 +63,40 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-1 text-muted-foreground text-xs mb-3">
+
+        {/* Bloque ciudad siempre presente */}
+        <div className="flex items-center gap-1 text-muted-foreground text-xs mb-3 min-h-[20px]">
           <MapPin className="w-3 h-3 shrink-0" />
-          <span className="truncate">{artist.city}, {artist.country}</span>
+          <span className="truncate">{artist.city || ' '}{artist.country ? `, ${artist.country}` : ''}</span>
         </div>
 
-        <div className="flex flex-wrap gap-1 mb-3">
-          {artist.genre?.slice(0, 2).map((genre) => (
-            <Badge key={genre} variant="secondary" className="text-2xs px-2 py-0.5">
-              <Music className="w-2.5 h-2.5 mr-1" />
-              {genre}
-            </Badge>
-          ))}
-          {(artist.genre?.length || 0) > 2 && (
-            <Badge variant="secondary" className="text-2xs px-2 py-0.5">
-              +{(artist.genre?.length || 0) - 2}
-            </Badge>
+        {/* Bloque género siempre presente */}
+        <div className="flex flex-wrap gap-1 mb-3 min-h-[24px]">
+          {artist.genre && artist.genre.length > 0 ? (
+            <>
+              {artist.genre.slice(0, 2).map((genre) => (
+                <Badge key={genre} variant="secondary" className="text-2xs px-2 py-0.5">
+                  <Music className="w-2.5 h-2.5 mr-1" />
+                  {genre}
+                </Badge>
+              ))}
+              {artist.genre.length > 2 && (
+                <Badge variant="secondary" className="text-2xs px-2 py-0.5">
+                  +{artist.genre.length - 2}
+                </Badge>
+              )}
+            </>
+          ) : (
+            // Espacio vacío para igualar altura
+            <span className="invisible">-</span>
           )}
         </div>
 
         {showPrice ? (
-          <div className="flex items-center justify-between pt-3 border-t border-border/50">
+          <div className="flex items-center justify-between pt-3 border-t border-border/50 mt-auto">
             <div>
               <p className="text-2xs text-muted-foreground">Desde</p>
-              <p className="text-base font-bold text-primary">
+              <p className="text-sm font-bold text-primary leading-tight">
                 €{artist.basePrice?.toLocaleString() || '0'}
               </p>
             </div>
@@ -98,7 +108,7 @@ export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
             </Button>
           </div>
         ) : (
-          <Button asChild className="w-full h-9" variant="outline" size="sm">
+          <Button asChild className="w-full h-9 mt-auto" variant="outline" size="sm">
             <Link to={`/artist/profile/${artist.id}`}>Ver perfil</Link>
           </Button>
         )}
