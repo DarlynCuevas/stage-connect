@@ -181,15 +181,54 @@ const VenueRequests = () => {
 
         <Tabs defaultValue="pending" className="w-full">
           <TabsList className="mb-6">
-            <TabsTrigger value="pending" className="gap-2">
-              <Clock className="w-4 h-4" />
+            <TabsTrigger value="pending" className="gap-2 bg-yellow-100/80 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 data-[state=active]:bg-yellow-200/80 data-[state=active]:text-yellow-900">
+              <Clock className="w-4 h-4 text-yellow-500" />
               Pendientes ({pendingRequests.length})
             </TabsTrigger>
-            <TabsTrigger value="accepted" className="gap-2">
-              <Check className="w-4 h-4" />
+            <TabsTrigger value="accepted" className="gap-2 bg-green-100/80 dark:bg-green-900/40 text-green-700 dark:text-green-300 data-[state=active]:bg-green-200/80 data-[state=active]:text-green-900">
+              <Check className="w-4 h-4 text-green-600" />
               Aceptadas ({acceptedRequests.length})
             </TabsTrigger>
+            <TabsTrigger value="rejected" className="gap-2 bg-red-100/80 dark:bg-red-900/40 text-red-700 dark:text-red-300 data-[state=active]:bg-red-200/80 data-[state=active]:text-red-900">
+              <X className="w-4 h-4 text-red-500" />
+              Canceladas ({rejectedRequests.length})
+            </TabsTrigger>
           </TabsList>
+          <TabsContent value="rejected">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {rejectedRequests.length > 0 ? (
+                rejectedRequests.map((request) => (
+                  <div
+                    key={request.id}
+                    className="relative rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow-sm hover:shadow-lg focus-within:shadow-lg hover:bg-white/90 dark:hover:bg-zinc-900/80 ring-0 hover:ring-2 focus-within:ring-2 ring-destructive/30 border-b border-gray-300 dark:border-white/20 last:border-b-0 last:pb-0 transition-colors duration-200"
+                    tabIndex={0}
+                  >
+                    {/* Icono contextual grande */}
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-10 flex justify-center w-full">
+                      <X className="w-12 h-12 text-red-500 bg-white dark:bg-zinc-900 rounded-full shadow-lg p-2 border-4 border-red-100 dark:border-red-900" />
+                    </div>
+                    <div className="pt-8">
+                      <RequestCard
+                        request={request}
+                        isReceiver={false}
+                      />
+                      <div className="flex gap-2 mt-2">
+                        <Button size="sm" variant="primary" onClick={() => openDetailModal(request)} className="flex items-center gap-1 animate-pulse focus:animate-none">
+                          <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m6 0l-3-3m3 3l-3 3" /></svg>
+                          Ver detalles
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-2 text-center py-12 text-muted-foreground">
+                  <X className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg">No hay solicitudes canceladas</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
 
           <TabsContent value="pending">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -210,16 +249,30 @@ const VenueRequests = () => {
                         isReceiver={false}
                         onViewDetails={() => openDetailModal(request)}
                       />
-                      <div className="flex gap-2 mt-2">
-                        <Button size="sm" variant="outline" onClick={() => handleEdit(request.id)} className="transition-colors focus-visible:ring-2 focus-visible:ring-primary/60 hover:bg-primary/10">
-                          Editar
-                        </Button>
-                        <Button size="sm" variant="destructive" onClick={() => handleCancel(request.id)} disabled={isUpdating} className="transition-colors focus-visible:ring-2 focus-visible:ring-red-400/60 hover:bg-red-100 dark:hover:bg-red-900/30">
-                          Cancelar
-                        </Button>
-                        <Button size="sm" variant="secondary" onClick={() => handleResend(request.id)} className="transition-colors focus-visible:ring-2 focus-visible:ring-secondary/60 hover:bg-secondary/10">
-                          Reenviar
-                        </Button>
+                      {/* Botones en la parte inferior: Ver detalles (izquierda), Editar (al lado), Cancelar (centro), Reenviar (derecha) */}
+                      <div className="flex items-center justify-between mt-2 w-full">
+                        {/* Izquierda: Ver detalles y Editar */}
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="primary" onClick={() => openDetailModal(request)} className="flex items-center gap-1 animate-pulse focus:animate-none">
+                            <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m6 0l-3-3m3 3l-3 3" /></svg>
+                            Ver detalles
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => handleEdit(request.id)} className="transition-colors focus-visible:ring-2 focus-visible:ring-primary/60 hover:bg-primary/10">
+                            Editar
+                          </Button>
+                        </div>
+                        {/* Centro: Cancelar */}
+                        <div className="flex-1 flex justify-center">
+                          <Button size="xs" variant="destructive" onClick={() => handleCancel(request.id)} disabled={isUpdating} className="transition-colors focus-visible:ring-2 focus-visible:ring-red-400/60 hover:bg-red-100 dark:hover:bg-red-900/30 px-4 text-xs">
+                            Cancelar
+                          </Button>
+                        </div>
+                        {/* Derecha: Reenviar */}
+                        <div>
+                          <Button size="sm" variant="secondary" onClick={() => handleResend(request.id)} className="transition-colors focus-visible:ring-2 focus-visible:ring-secondary/60 hover:bg-secondary/10">
+                            Reenviar
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -253,6 +306,12 @@ const VenueRequests = () => {
                         isReceiver={false}
                         onViewDetails={() => openDetailModal(request)}
                       />
+                      <div className="flex gap-2 mt-2">
+                        <Button size="sm" variant="primary" onClick={() => openDetailModal(request)} className="flex items-center gap-1 animate-pulse focus:animate-none">
+                          <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m6 0l-3-3m3 3l-3 3" /></svg>
+                          Ver detalles
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))
