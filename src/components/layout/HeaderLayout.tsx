@@ -70,20 +70,22 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
     return 0;
   })();
 
-  // Tabs: siempre mostrar las 5 opciones para artistas
-  let nav: Array<{ to: string; label: string; icon?: React.ReactNode }> = [];
-  if (user && String(user.role).toLowerCase().includes('art')) {
-    nav = [
-      { to: user ? `/artist/${user.id}/discover` : '/login', label: 'Inicio' },
-      { to: '/artist/dashboard', label: 'Panel de datos' },
-      { to: user ? `/artist/profile/${user.id}` : '/login', label: 'Mi perfil' },
-      { to: user ? `/artist/calendar/${user.id}` : '/artist/calendar', label: 'Calendario' },
-      { to: '/artist/requests', label: 'Solicitudes' },
-    ];
-  } else {
-    nav = [
-      { to: '/', label: 'Inicio' },
-    ];
+  // Si se pasa profileTabs, usarlas. Si no, usar menú por defecto según el rol
+  let nav: Array<{ to: string; label: string; icon?: React.ReactNode }> = profileTabs ?? [];
+  if (!profileTabs) {
+    if (user && String(user.role).toLowerCase().includes('art')) {
+      nav = [
+        { to: user ? `/artist/${user.id}/discover` : '/login', label: 'Inicio' },
+        { to: '/artist/dashboard', label: 'Panel de datos' },
+        { to: user ? `/artist/profile/${user.id}` : '/login', label: 'Mi perfil' },
+        { to: user ? `/artist/calendar/${user.id}` : '/artist/calendar', label: 'Calendario' },
+        { to: '/artist/requests', label: 'Solicitudes' },
+      ];
+    } else {
+      nav = [
+        { to: '/', label: 'Inicio' },
+      ];
+    }
   }
 
   return (

@@ -23,7 +23,6 @@ import Register from "./pages/auth/Register";
 import ArtistHome from "./pages/artist/ArtistHome";
 import ArtistDiscover from "./pages/artist/ArtistDiscover";
 import ArtistProfile from "./pages/artist/ArtistProfile";
-import ArtistProfileById from "./pages/artist/ArtistProfileById";
 import ProtectedArtistDiscover from "./pages/artist/ProtectedArtistDiscover";
 import ArtistCalendar from "./pages/artist/ArtistCalendar";
 import ArtistRequests from "./pages/artist/ArtistRequests";
@@ -51,6 +50,7 @@ import PromoterProfile from "./pages/promoter/PromoterProfile";
 // Common pages
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import VenueDiscover from './pages/venue/VenueDiscover';
 
 const queryClient = new QueryClient();
 
@@ -206,11 +206,11 @@ function RoleBasedRedirect() {
 
   switch (user?.role) {
     case 'Artista':
-      return <Navigate to="/artist" replace />;
+      return <Navigate to={`/artist/${user.id}/discover`} replace />;
     case 'Manager':
       return <Navigate to="/manager" replace />;
     case 'Local':
-      return <Navigate to="/venue" replace />;
+      return <Navigate to={`/venue/${user.id}/discover`} replace />;
     case 'Promotor':
       return <Navigate to="/promoter" replace />;
     default:
@@ -240,6 +240,15 @@ function AppRoutes() {
       <Route path="/artist/settings" element={<Settings />} />
       <Route path="/artist/invite" element={<InviteFriend />} />
 
+        {/* Venue routes */}
+      <Route path="/venue/:id/discover" element={<VenueDiscover />} />
+      <Route path="/venue/profile/:id" element={<VenueProfile />} />
+      <Route path="/venue/search" element={<VenueSearch />} />
+      <Route path="/venue/requests" element={<VenueRequests />} />
+      <Route path="/venue/dashboard/" element={<VenueHome />} />
+      <Route path="/venue/settings" element={<Settings />} />
+
+
       {/* Manager routes */}
       <Route path="/manager" element={<ManagerDiscover />} />
       <Route path="/manager/dashboard" element={<ManagerHome />} />
@@ -248,14 +257,7 @@ function AppRoutes() {
       <Route path="/manager/requests" element={<ManagerRequests />} />
       <Route path="/manager/settings" element={<Settings />} />
 
-      {/* Venue routes */}
-      <Route path="/venue" element={<VenueHome />} />
-      <Route path="/venue/profile/:id" element={<VenueProfile />} />
-      <Route path="/venue/search" element={<VenueSearch />} />
-      <Route path="/venue/requests" element={<VenueRequests />} />
-      <Route path="/venue/favorites" element={<VenueHome />} />
-      <Route path="/venue/settings" element={<Settings />} />
-
+    
       {/* Promoter routes */}
       <Route path="/promoter" element={<PromoterHome />} />
       <Route path="/promoter/profile/:id" element={<PromoterProfile />} />

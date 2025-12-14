@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArtistCard } from '@/components/artists/ArtistCard';
@@ -20,6 +20,15 @@ export default function VenueHome() {
   const { data: featuredArtists = [], isLoading } = useArtists();
   const { data: sentRequests = [] } = useSentRequests();
   const topArtists = (featuredArtists || []).slice(0, 3);
+
+  // Menú personalizado para Local
+  const localNav = [
+    { to: user ? `/venue/${user.id}/discover` : '/login', label: 'Inicio' },
+    { to: '/venue/dashboard', label: 'Panel de datos' },
+    { to: user ? `/venue/profile/${user.id}` : '/login', label: 'Mi perfil' },
+    { to: user ? `/venue/calendar/${user.id}` : '/venue/calendar', label: 'Calendario' },
+    { to: '/venue/requests', label: 'Solicitudes' },
+  ];
 
   const stats = [
     {
@@ -53,7 +62,7 @@ export default function VenueHome() {
   ];
 
   return (
-    <DashboardLayout>
+    <HeaderLayout profileTabs={localNav}>
       <div className="space-y-8">
         {/* Welcome header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -115,6 +124,6 @@ export default function VenueHome() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </HeaderLayout>
   );
 }

@@ -32,10 +32,10 @@ export default function Login() {
             });
             
             // === LÓGICA DE REDIRECCIÓN CONDICIONAL CORREGIDA ===
+            const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
             switch (userRole) {
                 case 'Artista': {
                     // Redirigir a discover protegido con id
-                    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
                     if (user && user.id) {
                       navigate(`/artist/${user.id}/discover`);
                     } else {
@@ -47,7 +47,7 @@ export default function Login() {
                     navigate('/manager'); // Usar /manager según tu configuración
                     break;
                 case 'Local':
-                    navigate('/venue');
+                    navigate(`/venue/${user.id}/discover`);
                     break; // Usar /venue según tu configuración
                 case 'Promotor':
                     navigate('/promoter'); // Usar /promoter según tu configuración
