@@ -23,6 +23,8 @@ export interface User {
   gallery?: string[];
   priceVariants?: PriceVariant[];
 
+  totalReviews?: number;
+
   // Propiedades extendidas para perfil de artista
   yearsOfExperience?: number;
   achievements?: string[];

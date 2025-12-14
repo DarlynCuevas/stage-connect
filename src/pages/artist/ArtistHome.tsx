@@ -29,6 +29,7 @@ import {
   MapPin,
   Users,
   Filter,
+  Star,
 } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { format, isThisYear, isFuture, parseISO, isThisMonth } from 'date-fns';
@@ -37,11 +38,27 @@ import { mockVenues } from '@/data/mockData';
 import { VenueCard } from '@/components/venue/VenueCard';
 
 export default function ArtistHome() {
+
   const { user: artist, token } = useAuth();
   const { data: requests = [], isLoading } = useArtistRequests();
   const { data: confirmedRequests = [] } = useConfirmedRequests(artist?.id ? Number(artist.id) : undefined);
   const { data: managerRequests = [] } = useReceivedManagerRequests();
 
+  // Estado para rating y totalReviews reales
+  const [realRating, setRealRating] = useState<number | null>(null);
+  const [realTotalReviews, setRealTotalReviews] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!artist?.id) return;
+    // Obtener número de reseñas
+    apiFetch<{ totalReviews: number }>(`/reviews/artist/${artist.id}/count`).then(res => {
+      setRealTotalReviews(res.totalReviews);
+    });
+    // Obtener rating medio
+    apiFetch<{ averageRating: number }>(`/reviews/artist/${artist.id}/average`).then(res => {
+      setRealRating(res.averageRating);
+    });
+  }, [artist?.id]);
 
   const updateStatusMutation = useUpdateRequestStatus();
   const updateManagerStatusMutation = useUpdateManagerRequestStatus();
@@ -160,7 +177,56 @@ export default function ArtistHome() {
 
 
 
-  const stats = [
+
+  // Calcular fechas cerradas por artista y por manager
+
+  // Calcular ingresos totales del año
+
+  // Ingresos estimados para este año (solo solicitudes aceptadas, suma offeredPrice)
+  const estimatedIncomeThisYear = useMemo(() => {
+    const now = new Date();
+    return confirmedRequests
+      .filter((req: any) => {
+        const eventDate = typeof req.eventDate === 'string' ? parseISO(req.eventDate) : new Date(req.eventDate);
+        return isThisYear(eventDate);
+      })
+      .reduce((sum: number, req: any) => sum + (Number(req.offeredPrice) || 0), 0);
+  }, [confirmedRequests]);
+
+  const closedByArtist = useMemo(() =>
+    confirmedRequests.filter((req: any) => req.closed_by === 'artist').length
+  , [confirmedRequests]);
+  const closedByManager = useMemo(() =>
+    confirmedRequests.filter((req: any) => req.closed_by === 'manager').length
+  , [confirmedRequests]);
+
+  // Sección económica
+  const economicStats = [
+    {
+      label: 'Caché base',
+      value: `${((artist as any)?.basePrice ?? 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })} €`,
+      icon: DollarSign,
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-500/10',
+    },
+    {
+      label: 'Ingresos estimados (año)',
+      value: `${estimatedIncomeThisYear.toLocaleString('es-ES', { maximumFractionDigits: 0 })} €`,
+      icon: DollarSign,
+      color: 'text-orange-500',
+      bgColor: 'bg-orange-100',
+    },
+    {
+      label: 'Ingresos reales (año)',
+      value: "0",
+      icon: DollarSign,
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-100',
+    },
+  ];
+
+  // Sección de shows y fechas
+  const showStats = [
     {
       label: 'Solicitudes pendientes',
       value: pendingRequests.length + pendingManagerRequests.length,
@@ -176,13 +242,6 @@ export default function ArtistHome() {
       bgColor: 'bg-accent/10',
     },
     {
-      label: 'Caché base',
-      value: `${((artist as any)?.basePrice ?? 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })} €`,
-      icon: DollarSign,
-      color: 'text-emerald-400',
-      bgColor: 'bg-emerald-500/10',
-    },
-    {
       label: 'Shows confirmados (total)',
       value: showsThisYear,
       icon: Music,
@@ -195,6 +254,20 @@ export default function ArtistHome() {
       icon: TrendingUp,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
+    },
+    {
+      label: 'Fechas cerradas por artista',
+      value: closedByArtist,
+      icon: User,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-100',
+    },
+    {
+      label: 'Fechas cerradas por manager',
+      value: closedByManager,
+      icon: Users,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100',
     },
   ];
 
@@ -228,25 +301,59 @@ export default function ArtistHome() {
               </div>
             </div>
 
-            {/* Stats summary */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {stats.map((stat) => (
-                <Card key={stat.label} variant="gradient">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
-                        <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                      </div>
-                      <div>
-                        <p className={`text-2xl font-display font-bold ${stat.label === 'Solicitudes pendientes' && pendingRequests.length > 0 ? 'text-red-500' : ''}`}>
-                          {stat.value}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{stat.label}</p>
-                      </div>
+
+
+            {/* Sección Económica - estilo elegante */}
+            <div className="mb-10">
+              <h2 className="text-2xl font-semibold mb-6 tracking-tight text-yellow-400 drop-shadow-sm">Resumen Económico</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+                {economicStats.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="bg-gradient-to-br from-[#23272f] to-[#181a20] rounded-2xl shadow-lg p-7 flex items-center gap-5 border border-[#23272f]/60 hover:shadow-2xl transition-shadow duration-200 min-h-[120px]"
+                  >
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-white/5`}>
+                      <stat.icon className={`w-6 h-6 ${stat.color} opacity-80`} />
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <div>
+                      <p className="text-3xl font-light text-white mb-1">{stat.value}</p>
+                      <p className="text-sm text-[#bfc9d4] tracking-wide font-medium">{stat.label}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Tarjeta destacada de valoración media */}
+                <div className="bg-gradient-to-br from-[#23272f] to-[#181a20] rounded-2xl shadow-lg p-7 flex flex-col items-center justify-center border border-[#23272f]/60 hover:shadow-2xl transition-shadow duration-200 min-h-[120px]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-3xl font-semibold text-yellow-400">{realRating !== null ? realRating.toFixed(1) : '—'}</span>
+                    <Star className="w-7 h-7 text-yellow-400" fill="#facc15" />
+                  </div>
+                  <span className="text-xs text-[#bfc9d4] tracking-wide font-medium">{realTotalReviews !== null ? realTotalReviews : 0} reseñas</span>
+                  <span className="text-sm text-[#bfc9d4] mt-1">Valoración media</span>
+                </div>
+              </div>
+            </div>
+
+
+            {/* Sección Shows y Fechas - estilo elegante */}
+            <div className="mb-10">
+              <h2 className="text-2xl font-semibold mb-6 tracking-tight text-blue-400 drop-shadow-sm">Resumen de Shows y Fechas</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+                {showStats.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="bg-gradient-to-br from-[#23272f] to-[#181a20] rounded-2xl shadow-lg p-7 flex items-center gap-5 border border-[#23272f]/60 hover:shadow-2xl transition-shadow duration-200 min-h-[120px]"
+                  >
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-white/5`}>
+                      <stat.icon className={`w-6 h-6 ${stat.color} opacity-80`} />
+                    </div>
+                    <div>
+                      <p className={`text-3xl font-light mb-1 ${stat.label === 'Solicitudes pendientes' && pendingRequests.length > 0 ? 'text-red-400' : 'text-white'}`}>{stat.value}</p>
+                      <p className="text-sm text-[#bfc9d4] tracking-wide font-medium">{stat.label}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Two-panel layout: pending requests and upcoming dates */}

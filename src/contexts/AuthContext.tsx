@@ -46,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     gallery: u?.gallery,
     priceVariants: u?.priceVariants ?? u?.price_variants,
     createdAt: u?.created_at ? new Date(u.created_at) : u?.createdAt ? new Date(u.createdAt) : new Date(),
+    totalReviews: u?.totalReviews ?? u?.total_reviews,
   });
 
   // Sincronizar user con localStorage cuando cambie

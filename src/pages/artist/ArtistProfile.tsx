@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -994,8 +995,91 @@ export default function ArtistProfile() {
 
         <ModalSolicitudContratacion open={modalOpen && authUser?.role === 'Local'} onClose={() => setModalOpen(false)} fecha={fechaSeleccionada} cacheBase={cacheBase} onSubmit={handleEnviarSolicitud} />
       </div>
-      </DashboardLayout>
-      </HeaderLayout>
-   
+
+      {/* Sección de Reseñas */}
+      <div className="mt-12 max-w-2xl mx-auto w-full">
+        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          <Star className="w-6 h-6 text-yellow-400" fill="#facc15" />
+          Reseñas recientes
+        </h2>
+        {authUser?.role === 'Local' && (
+          <ReviewForm targetId={currentArtist.id} token={token} type="artist" />
+        )}
+        <ReviewsList artistId={currentArtist?.id} />
+      </div>
+    </DashboardLayout>
+  </HeaderLayout>
+  );
+}
+
+// Componente para mostrar las reseñas
+import { Review } from '@/types/review';
+import { apiFetch } from '@/lib/api';
+import { Star as StarIcon } from 'lucide-react';
+import { format, formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+function ReviewsList({ artistId }: { artistId: number }) {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    if (!artistId) return;
+    apiFetch<Review[]>(`/reviews/artist/${artistId}`).then(setReviews);
+  }, [artistId]);
+
+  if (!reviews.length) {
+    return <div className="text-muted-foreground text-center py-8">Este artista aún no tiene reseñas.</div>;
+  }
+
+  const reviewsToShow = showAll ? reviews : reviews.slice(0, 2);
+
+  return (
+    <div className="space-y-8">
+      {reviewsToShow.map((review) => (
+        <div key={review.id} className="flex gap-4 items-start border-b pb-6">
+          <div>
+            <img
+              src={review.reviewer.avatar || '/default-avatar.png'}
+              alt={review.reviewer.name}
+              className="w-12 h-12 rounded-full object-cover border"
+            />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-semibold">{review.reviewer.name}</span>
+              <span className="text-xs text-muted-foreground">
+                {review.reviewer.city ? review.reviewer.city + ', ' : ''}{review.reviewer.country || ''}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mb-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <StarIcon
+                  key={i}
+                  className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                  fill={i < review.rating ? '#facc15' : 'none'}
+                />
+              ))}
+              <span className="text-xs text-muted-foreground">
+                {review.eventDate
+                  ? format(new Date(review.eventDate), 'MMMM yyyy', { locale: es })
+                  : formatDistanceToNow(new Date(review.createdAt), { addSuffix: true, locale: es })}
+              </span>
+            </div>
+            <div className="mb-2 text-sm text-foreground">{review.comment}</div>
+          </div>
+        </div>
+      ))}
+      {reviews.length > 2 && (
+        <div className="text-center mt-2">
+          <button
+            className="text-blue-500 hover:underline text-sm font-medium"
+            onClick={() => setShowAll((v) => !v)}
+          >
+            {showAll ? 'Mostrar menos' : 'Mostrar más'}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
