@@ -15,7 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateProfile, useArtist, useUser } from '@/lib/users';
 import { useConfirmedRequests } from '@/lib/requests';
-import { useCreateManagerRequest, useRemoveManagerRelation, useReceivedManagerRequests } from '@/lib/manager-requests';
+import { useRemoveManagerRelation, useReceivedManagerRequests } from '@/lib/manager-requests';
+import { useCreateBookingRequest } from '@/lib/requests';
 import { Link } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { genres } from '@/data/mockData';
@@ -50,11 +51,14 @@ import CalendarComponent from '@/components/calendar/CalendarComponent';
 import ModalSolicitudContratacion from '@/components/calendar/ModalSolicitudContratacion';
 
 export default function ArtistProfile() {
-  const { id } = useParams();
+  const { id, venueId } = useParams();
   const { user: authUser, token, setUser } = useAuth();
-      if (id && authUser && String(authUser.id) !== String(id)) {
-        return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
-      }
+  // Si accede por /venue/:venueId/artist/:id/profile, es modo visitante (Local)
+  const isVisitorMode = Boolean(venueId);
+  // Control de acceso: solo denegar si NO es visitante y no es el artista ni Local
+  if (!isVisitorMode && id && authUser && String(authUser.id) !== String(id) && authUser.role !== 'Local') {
+    return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
+  }
     function renderEditButton() {
       if (!canEdit) return null;
       if (!isEditing) {
@@ -83,7 +87,7 @@ export default function ArtistProfile() {
   const updateProfileMutation = useUpdateProfile();
   const { data: freshArtist } = useArtist(artistId);
   const { data: confirmedRequests = [] } = useConfirmedRequests(artistId);
-  const createManagerRequestMutation = useCreateManagerRequest();
+  const createBookingRequestMutation = useCreateBookingRequest();
   const removeManagerRelationMutation = useRemoveManagerRelation();
   const { data: receivedRequests = [] } = useReceivedManagerRequests();
   const [showManagerDialog, setShowManagerDialog] = useState(false);
@@ -101,8 +105,8 @@ export default function ArtistProfile() {
     token as string
   );
 
-  // Solo puede editar si es artista y su id coincide con la url
-  const canEdit = authUser && authUser.role === 'Artista' && String(authUser.id) === String(id);
+  // Solo puede editar si es artista y su id coincide con la url y NO es visitante
+  const canEdit = !isVisitorMode && authUser && authUser.role === 'Artista' && String(authUser.id) === String(id);
 
   useEffect(() => {
     if (currentArtist) {
@@ -193,48 +197,66 @@ export default function ArtistProfile() {
     setModalOpen(true);
   }
 
-  function handleEnviarSolicitud(data: { fecha: Date; oferta: number; nombreLocal: string; ciudadLocal: string; }) {
-    // Aquí puedes implementar la lógica real de envío
-    console.log('Solicitud enviada:', data);
-    // Puedes mostrar un toast de éxito si quieres
+  function handleEnviarSolicitud(data: { fecha: Date; oferta: number; tipoEvento: string; ubicacion: string; nombreLocal?: string; ciudadLocal?: string; mensaje?: string }) {
+    if (!artistId) return;
+    createBookingRequestMutation.mutate({
+      artistId: artistId,
+      eventDate: data.fecha.toISOString(),
+      eventLocation: data.ubicacion,
+      eventType: data.tipoEvento,
+      offeredPrice: data.oferta,
+      message: data.mensaje || '',
+      nombreLocal: data.nombreLocal || '',
+      ciudadLocal: data.ciudadLocal || '',
+    });
   }
-      const artistNav = [
+  // Menú de artista (por defecto)
+  const artistNav = [
     { to: id ? `/artist/${id}/discover` : '/login', label: 'Inicio' },
     { to: `/artist/${id}/dashboard`, label: 'Panel de datos' },
     { to: id ? `/artist/${id}/profile` : '/login', label: 'Mi perfil' },
     { to: id ? `/artist/${id}/calendar` : '/login', label: 'Calendario' },
     { to: `/artist/${id}/requests`, label: 'Solicitudes' },
   ];
+
+  // Menú de local (si accede como Local y venueId existe)
+  const localNav = authUser && authUser.role === 'Local' && venueId ? [
+    { to: `/venue/${authUser.id}/discover`, label: 'Inicio' },
+    { to: `/venue/${authUser.id}/dashboard`, label: 'Panel de datos' },
+    { to: `/venue/${authUser.id}/profile`, label: 'Mi perfil' },
+    { to: `/venue/${authUser.id}/calendar`, label: 'Calendario' },
+    { to: `/venue/${authUser.id}/requests`, label: 'Solicitudes' },
+  ] : null;
+
   return (
-    <HeaderLayout profileTabs={artistNav}>
+    <HeaderLayout profileTabs={localNav || artistNav}>
       <DashboardLayout noSidebar>
-          {/* Header with banner */}
-          <div className="relative rounded-2xl overflow-hidden">
-            <div className="h-48 lg:h-64">
-                <img
-                  src={`https://picsum.photos/1200/400?random=${Math.random()}`}
-                  alt="Banner"
-                  className="w-full h-full object-cover"
-                />
-              
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-                <div className="flex items-end gap-4">
-                  <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                    <AvatarImage src={currentArtist?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
-                    <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                      {currentArtist?.nickName?.charAt(0) || currentArtist?.name?.charAt(0) || 'A'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      {isEditing ? (
-                        <Input
-                          value={editData?.nickName || ''}
-                          onChange={(e) => setEditData({ ...editData, nickName: e.target.value })}
-                          placeholder="Nombre artístico"
+        {/* Header with banner */}
+        <div className="relative rounded-2xl overflow-hidden">
+          <div className="h-48 lg:h-64">
+            <img
+              src={`https://picsum.photos/1200/400?random=${Math.random()}`}
+              alt="Banner"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 p-6">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+              <div className="flex items-end gap-4">
+                <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
+                  <AvatarImage src={currentArtist?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
+                  <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+                    {currentArtist?.nickName?.charAt(0) || currentArtist?.name?.charAt(0) || 'A'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    {isEditing ? (
+                      <Input
+                        value={editData?.nickName || ''}
+                        onChange={(e) => setEditData({ ...editData, nickName: e.target.value })}
+                        placeholder="Nombre artístico"
                           className="text-2xl font-display font-bold max-w-md"
                         />
                         

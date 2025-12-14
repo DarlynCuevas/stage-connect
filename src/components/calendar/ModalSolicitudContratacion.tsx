@@ -11,15 +11,21 @@ interface ModalSolicitudContratacionProps {
   onSubmit: (data: {
     fecha: Date;
     oferta: number;
+    tipoEvento: string;
+    ubicacion: string;
     nombreLocal: string;
     ciudadLocal: string;
+    mensaje?: string;
   }) => void;
 }
 
 export default function ModalSolicitudContratacion({ open, onClose, fecha, cacheBase, onSubmit }: ModalSolicitudContratacionProps) {
   const [oferta, setOferta] = useState('');
+  const [tipoEvento, setTipoEvento] = useState('');
+  const [ubicacion, setUbicacion] = useState('');
   const [nombreLocal, setNombreLocal] = useState('');
   const [ciudadLocal, setCiudadLocal] = useState('');
+  const [mensaje, setMensaje] = useState('');
   const [fechaEditable, setFechaEditable] = useState(fecha ? fecha.toISOString().slice(0, 10) : '');
 
   React.useEffect(() => {
@@ -28,12 +34,15 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fechaEditable) return;
+    if (!fechaEditable || !tipoEvento || !ubicacion) return;
     onSubmit({
       fecha: new Date(fechaEditable),
       oferta: Number(oferta),
+      tipoEvento,
+      ubicacion,
       nombreLocal,
       ciudadLocal,
+      mensaje,
     });
     onClose();
   };
@@ -58,12 +67,29 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
             <Input type="number" value={oferta} onChange={e => setOferta(e.target.value)} required min={0} />
           </div>
           <div>
+            <label className="block mb-1">Tipo de evento</label>
+            <Input value={tipoEvento} onChange={e => setTipoEvento(e.target.value)} required placeholder="Ej: Concierto, Fiesta, Festival..." />
+          </div>
+          <div>
+            <label className="block mb-1">Ubicación del evento</label>
+            <Input value={ubicacion} onChange={e => setUbicacion(e.target.value)} required placeholder="Dirección o lugar del evento" />
+          </div>
+          <div>
             <label className="block mb-1">Nombre del local</label>
             <Input value={nombreLocal} onChange={e => setNombreLocal(e.target.value)} required />
           </div>
           <div>
             <label className="block mb-1">Ciudad del local</label>
             <Input value={ciudadLocal} onChange={e => setCiudadLocal(e.target.value)} required />
+          </div>
+          <div>
+            <label className="block mb-1">Mensaje para el artista</label>
+            <textarea
+              className="w-full border rounded p-2 min-h-[60px]"
+              value={mensaje}
+              onChange={e => setMensaje(e.target.value)}
+              placeholder="Mensaje opcional para el artista"
+            />
           </div>
           <DialogFooter>
             <Button type="submit">Enviar solicitud</Button>

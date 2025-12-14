@@ -1,3 +1,53 @@
+// Mutación profesional para crear solicitud de contratación (Local → Artista)
+export function useCreateBookingRequest() {
+  const queryClient = useQueryClient();
+  const { token } = useAuth();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (data: {
+      artistId: number;
+      eventDate: string;
+      eventLocation: string;
+      eventType: string;
+      offeredPrice: number;
+      message?: string;
+      nombreLocal?: string;
+      ciudadLocal?: string;
+    }) => {
+      return apiFetch('/requests', {
+        method: 'POST',
+        body: {
+          artistId: data.artistId,
+          eventDate: data.eventDate,
+          eventLocation: data.eventLocation,
+          eventType: data.eventType,
+          offeredPrice: data.offeredPrice,
+          message: data.message,
+          nombreLocal: data.nombreLocal,
+          ciudadLocal: data.ciudadLocal,
+        },
+        token,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sent-requests'] });
+      toast({
+        title: 'Solicitud enviada',
+        description: 'La solicitud de contratación fue enviada correctamente.',
+        duration: 4000,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error?.message || 'No se pudo enviar la solicitud.',
+        variant: 'destructive',
+        duration: 4000,
+      });
+    },
+  });
+}
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import apiFetch, { ApiError } from './api';

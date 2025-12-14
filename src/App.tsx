@@ -234,6 +234,8 @@ function AppRoutes() {
       <Route path="/artist/:id/discover" element={<ProtectedArtistDiscover />} />
       <Route path="/artist/:id/dashboard" element={<ArtistHome />} />
       <Route path="/artist/:id/profile" element={<ArtistProfile />} />
+      {/* Ruta pública: venue puede ver perfil de artista */}
+      <Route path="/venue/:venueId/artist/:id/profile" element={<ArtistProfile />} />
       <Route path="/artist/:id/calendar" element={<ArtistCalendar />} />
       <Route path="/artist/:id/requests" element={<ArtistRequests />} />
       <Route path="/artist/:id/settings" element={<Settings />} />

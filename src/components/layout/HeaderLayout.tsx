@@ -18,6 +18,10 @@ export interface HeaderLayoutProps {
 export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
+
+  // Allow public access to /venue/:venueId/artist/:artistId/profile
+  const isPublicArtistProfile =
+    /^\/venue\/[^/]+\/artist\/[^/]+\/profile$/.test(location.pathname);
   const [theme, setTheme] = React.useState<'dark' | 'light'>(() => {
     const t = localStorage.getItem('theme');
     return (t === 'light' ? 'light' : 'dark');
@@ -46,7 +50,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
   // Badges: pending requests (adaptar para todos los roles)
   const { data: artistRequests = [] } = useArtistReqFromRequestsLib();
   const { data: receivedManagerRequests = [] } = useReceivedManagerRequests();
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isPublicArtistProfile) {
     return <Navigate to="/login" replace />;
   }
 
@@ -70,17 +74,43 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
     return 0;
   })();
 
-  // Si se pasa profileTabs, usarlas. Si no, usar menú por defecto según el rol
+  // Si se pasa profileTabs, usarlas. Si no, usar menú por defecto según el rol actual
   let nav: Array<{ to: string; label: string; icon?: React.ReactNode }> = profileTabs ?? [];
   if (!profileTabs) {
-    if (user && String(user.role).toLowerCase().includes('art')) {
-      nav = [
-        { to: user ? `/artist/${user.id}/discover` : '/login', label: 'Inicio' },
-        { to: '/artist/dashboard', label: 'Panel de datos' },
-        { to: user ? `/artist/profile/${user.id}` : '/login', label: 'Mi perfil' },
-        { to: user ? `/artist/calendar/${user.id}` : '/artist/calendar', label: 'Calendario' },
-        { to: '/artist/requests', label: 'Solicitudes' },
-      ];
+    if (user) {
+      const role = String(user.role).toLowerCase();
+      if (role.includes('art')) {
+        nav = [
+          { to: `/artist/${user.id}/discover`, label: 'Inicio' },
+          { to: `/artist/${user.id}/dashboard`, label: 'Panel de datos' },
+          { to: `/artist/${user.id}/profile`, label: 'Mi perfil' },
+          { to: `/artist/${user.id}/calendar`, label: 'Calendario' },
+          { to: `/artist/${user.id}/requests`, label: 'Solicitudes' },
+        ];
+      } else if (role.includes('local')) {
+        nav = [
+          { to: `/venue/${user.id}/discover`, label: 'Inicio' },
+          { to: `/venue/${user.id}/dashboard`, label: 'Panel de datos' },
+          { to: `/venue/${user.id}/profile`, label: 'Mi perfil' },
+          { to: `/venue/${user.id}/calendar`, label: 'Calendario' },
+          { to: `/venue/${user.id}/requests`, label: 'Solicitudes' },
+        ];
+      } else if (role.includes('manager')) {
+        nav = [
+          { to: `/manager`, label: 'Inicio' },
+          { to: `/manager/artists`, label: 'Mis Artistas' },
+          { to: `/manager/profile`, label: 'Mi perfil' },
+        ];
+      } else if (role.includes('promotor')) {
+        nav = [
+          { to: `/promoter`, label: 'Inicio' },
+          { to: `/promoter/profile`, label: 'Mi perfil' },
+        ];
+      } else {
+        nav = [
+          { to: '/', label: 'Inicio' },
+        ];
+      }
     } else {
       nav = [
         { to: '/', label: 'Inicio' },
@@ -93,7 +123,19 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
         <div className="w-full px-0">
           <div className="h-14 flex items-center justify-between">
-            <Link to={user ? `/artist/${user.id}/discover` : '/login'} className="flex items-center gap-3 hover:opacity-80 transition-opacity ml-8 sm:ml-16">
+            {/* Logo y botón inicio: usa la ruta de inicio según el rol */}
+            <Link
+              to={(() => {
+                if (!user) return '/login';
+                const role = String(user.role).toLowerCase();
+                if (role.includes('art')) return `/artist/${user.id}/discover`;
+                if (role.includes('local')) return `/venue/${user.id}/discover`;
+                if (role.includes('manager')) return `/manager`;
+                if (role.includes('promotor')) return `/promoter`;
+                return '/';
+              })()}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity ml-8 sm:ml-16"
+            >
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <Music className="w-4 h-4 text-primary" />
               </div>

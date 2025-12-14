@@ -8,6 +8,7 @@ import { ArtistCard } from '@/components/artists/ArtistCard';
 import { ArtistSearch } from '@/components/artists/ArtistSearch';
 import { apiFetch } from '@/lib/api';
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { ChevronDown, ChevronUp, Heart } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
 
@@ -33,6 +34,7 @@ async function updateVenueField(
 
 export default function Discovery({ type }: DiscoveryProps) {
   if (type === 'artists') {
+    const { id: venueId } = useParams();
     // Mostrar artistas para venues, pero usando VenueSearchBar como filtro visual
     const { artists, loading, setFilters, filters } = useDiscoveryArtists();
     // Mantener hooks siempre en el mismo orden
@@ -135,7 +137,7 @@ export default function Discovery({ type }: DiscoveryProps) {
                       <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
                         {verified.map((artist) => (
                           <CarouselItem key={artist.id} className="basis-72 max-w-xs">
-                            <ArtistCard artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} />
+                            <ArtistCard artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} venueId={venueId} />
                           </CarouselItem>
                         ))}
                       </CarouselContent>
@@ -160,7 +162,7 @@ export default function Discovery({ type }: DiscoveryProps) {
                       <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
                         {featured.map((artist) => (
                           <CarouselItem key={artist.id} className="basis-72 max-w-xs">
-                            <ArtistCard artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} />
+                            <ArtistCard artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} venueId={venueId} />
                           </CarouselItem>
                         ))}
                       </CarouselContent>
@@ -192,7 +194,7 @@ export default function Discovery({ type }: DiscoveryProps) {
                     <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
                       {favorites.length > 0 ? favorites.map((artist) => (
                         <CarouselItem key={artist.id} className="basis-72 max-w-xs">
-                          <ArtistCard artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} />
+                          <ArtistCard artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} venueId={venueId} />
                         </CarouselItem>
                       )) : (
                         <div className="text-muted-foreground px-4 py-8">No tienes artistas favoritos.</div>
@@ -210,7 +212,7 @@ export default function Discovery({ type }: DiscoveryProps) {
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {others.map((artist) => (
-                    <ArtistCard key={artist.id} artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} />
+                    <ArtistCard key={artist.id} artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} venueId={venueId} />
                   ))}
                 </div>
               </div>

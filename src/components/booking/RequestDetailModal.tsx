@@ -48,6 +48,9 @@ export function RequestDetailModal({ open, onOpenChange, request, onCancel, onEd
             <div className="flex items-center gap-2"><MapPin className="w-4 h-4" /> {request.eventLocation || '-'}</div>
             <div className="flex items-center gap-2"><Euro className="w-4 h-4" /> €{request.offeredPrice?.toLocaleString() || '-'}</div>
             <div className="flex items-center gap-2"><Badge>{request.status}</Badge></div>
+            <div className="col-span-2 flex items-center gap-2"><span className="font-semibold">Tipo de evento:</span> {request.eventType || '-'}</div>
+            <div className="col-span-2 flex items-center gap-2"><span className="font-semibold">Nombre del local:</span> {request.nombreLocal || '-'}</div>
+            <div className="col-span-2 flex items-center gap-2"><span className="font-semibold">Ciudad del local:</span> {request.ciudadLocal || '-'}</div>
           </div>
           {/* Mensaje */}
           {request.message && (
@@ -56,13 +59,23 @@ export function RequestDetailModal({ open, onOpenChange, request, onCancel, onEd
               <p className="bg-muted rounded p-2 text-xs whitespace-pre-line">{request.message}</p>
             </div>
           )}
-          {/* Historial simulado */}
+          {/* Historial real */}
           <div className="border-b pb-3">
             <div className="font-semibold mb-1 flex items-center gap-2"><FileText className="w-4 h-4" /> Historial:</div>
             <ul className="text-xs space-y-1">
-              <li>05/12/2025 - Solicitud creada</li>
-              <li>06/12/2025 - Mensaje enviado al artista</li>
-              <li>07/12/2025 - Estado cambiado a "{request.status}"</li>
+              {Array.isArray(request.history) && request.history.length > 0 ? (
+                request.history.map((item, idx) => (
+                  <li key={idx}>
+                    {item.date ? format(new Date(item.date), 'dd/MM/yyyy HH:mm') : '-'} - {item.description || item.event || '-'}
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li>{request.createdAt ? format(new Date(request.createdAt), 'dd/MM/yyyy HH:mm') : '-'} - Solicitud creada</li>
+                  {request.message && <li>{request.createdAt ? format(new Date(request.createdAt), 'dd/MM/yyyy HH:mm') : '-'} - Mensaje enviado al artista</li>}
+                  <li>{request.updatedAt ? format(new Date(request.updatedAt), 'dd/MM/yyyy HH:mm') : '-'} - Estado cambiado a "{request.status}"</li>
+                </>
+              )}
             </ul>
           </div>
           {/* Fechas */}

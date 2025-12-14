@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ArtistSearch } from '@/components/artists/ArtistSearch';
 import { ArtistCard } from '@/components/artists/ArtistCard';
@@ -7,9 +8,8 @@ import { SearchFilters } from '@/types';
 
 export default function VenueSearch() {
   const [filters, setFilters] = useState<SearchFilters>({});
-
+  const { id: venueId } = useParams();
   const { data: artists = [], isLoading } = useArtists(filters);
-
   // Server-side search: results are provided by the backend. Show loading state while fetching.
   const filteredArtists = artists || [];
   return (
@@ -34,7 +34,7 @@ export default function VenueSearch() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredArtists.map((artist) => (
-            <ArtistCard key={artist.id} artist={artist} showPrice />
+            <ArtistCard key={artist.id} artist={artist} showPrice venueId={venueId} />
           ))}
         </div>
 

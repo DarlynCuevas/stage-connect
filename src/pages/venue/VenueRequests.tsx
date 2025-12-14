@@ -1,7 +1,7 @@
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { useUpdateRequestStatus } from '@/lib/requests';
+import { useUpdateRequestStatus, useCreateBookingRequest } from '@/lib/requests';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { RequestCard } from '@/components/booking/RequestCard';
@@ -15,6 +15,22 @@ import { useAuth } from '@/contexts/AuthContext';
 
 
 const VenueRequests = () => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+
+
+  // Acción editar (abre modal de edición, placeholder)
+  const handleEdit = (request) => {
+    setEditRequest(request);
+    setEditModalOpen(true);
+    // Aquí puedes implementar el modal real de edición
+    alert('Funcionalidad de editar: aquí se abriría un modal para editar la solicitud.');
+  };
+
+  const openDetailModal = (request: any) => {
+    setSelectedRequest(request);
+    setModalOpen(true);
+  };
   const { user: authUser } = useAuth();
   const { data: requests = [], isLoading } = useSentRequests();
   const [search, setSearch] = useState('');
@@ -32,9 +48,12 @@ const VenueRequests = () => {
   const acceptedRequests = filterRequests(requests.filter(r => r.status === 'Accepted'));
   const rejectedRequests = filterRequests(requests.filter(r => r.status === 'Rejected'));
 
-  // Mutación para cancelar solicitud
+  // Mutaciones para cancelar y reenviar solicitud
   const { mutateAsync: updateRequestStatus } = useUpdateRequestStatus();
+  const { mutate: resendBookingRequest } = useCreateBookingRequest();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editRequest, setEditRequest] = useState<any>(null);
 
   // Acción cancelar
   const handleCancel = async (id) => {
@@ -45,29 +64,19 @@ const VenueRequests = () => {
       setIsUpdating(false);
     }
   };
-  // Estado para el modal de detalles
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
-  const [modalOpen, setModalOpen] = useState(false);
 
-  const openDetailModal = (request: any) => {
-    setSelectedRequest(request);
-    setModalOpen(true);
+  // Acción reenviar (crea una nueva solicitud con los mismos datos)
+  const handleResend = (request) => {
+    if (!request) return;
+    resendBookingRequest({
+      artistId: request.artistId,
+      eventDate: request.eventDate,
+      eventLocation: request.eventLocation,
+      eventType: request.eventType,
+      offeredPrice: request.offeredPrice,
+      message: request.message || '',
+    });
   };
-
-  // Acción reenviar (puedes personalizar la lógica)
-  const handleResend = (id) => {
-    // Aquí podrías abrir un modal o reenviar la solicitud
-    alert('Funcionalidad de reenviar aún no implementada.');
-  };
-
-  // Acción editar (puedes personalizar la lógica)
-  const handleEdit = (id) => {
-    // Aquí podrías abrir un modal de edición
-    alert('Funcionalidad de editar aún no implementada.');
-  };
-
-
-  // Navegación para el HeaderLayout (ajusta el id según sea necesario)
   const { id } = useParams();
 
   // Comprobación de seguridad: solo el dueño puede ver sus solicitudes
@@ -221,7 +230,7 @@ const VenueRequests = () => {
                         isReceiver={false}
                       />
                       <div className="flex gap-2 mt-2">
-                        <Button size="sm" variant="primary" onClick={() => openDetailModal(request)} className="flex items-center gap-1 animate-pulse focus:animate-none">
+                        <Button size="sm" variant="default" onClick={() => openDetailModal(request)} className="flex items-center gap-1 animate-pulse focus:animate-none">
                           <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m6 0l-3-3m3 3l-3 3" /></svg>
                           Ver detalles
                         </Button>
@@ -260,13 +269,13 @@ const VenueRequests = () => {
                       {/* Botones ocultos y desplegables al hover */}
                       <div className="overflow-hidden">
                         <div className="rounded-lg px-2 py-2 flex justify-center gap-2 bg-white/80 dark:bg-zinc-900/60 transform -translate-y-6 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-in-out">
-                          <Button size="sm" variant="outline" onClick={() => handleEdit(request.id)} className="transition-colors focus-visible:ring-2 focus-visible:ring-primary/60 hover:bg-primary/10 min-w-[110px]">
+                          <Button size="sm" variant="outline" onClick={() => handleEdit(request)} className="transition-colors focus-visible:ring-2 focus-visible:ring-primary/60 hover:bg-primary/10 min-w-[110px]">
                             Editar
                           </Button>
                           <Button size="sm" variant="destructive" onClick={() => handleCancel(request.id)} disabled={isUpdating} className="transition-colors focus-visible:ring-2 focus-visible:ring-red-400/60 hover:bg-red-100 dark:hover:bg-red-900/30 min-w-[110px]">
                             Cancelar
                           </Button>
-                          <Button size="sm" variant="secondary" onClick={() => handleResend(request.id)} className="transition-colors focus-visible:ring-2 focus-visible:ring-secondary/60 hover:bg-secondary/10 min-w-[110px]">
+                          <Button size="sm" variant="secondary" onClick={() => handleResend(request)} className="transition-colors focus-visible:ring-2 focus-visible:ring-secondary/60 hover:bg-secondary/10 min-w-[110px]">
                             Reenviar
                           </Button>
                         </div>
@@ -304,7 +313,7 @@ const VenueRequests = () => {
                         onViewDetails={() => openDetailModal(request)}
                       />
                       <div className="flex gap-2 mt-2">
-                        <Button size="sm" variant="primary" onClick={() => openDetailModal(request)} className="flex items-center gap-1 animate-pulse focus:animate-none">
+                        <Button size="sm" variant="default" onClick={() => openDetailModal(request)} className="flex items-center gap-1 animate-pulse focus:animate-none">
                           <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m6 0l-3-3m3 3l-3 3" /></svg>
                           Ver detalles
                         </Button>
@@ -321,17 +330,18 @@ const VenueRequests = () => {
             </div>
           </TabsContent>
         </Tabs>
+
       </div>
-        <RequestDetailModal
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-          request={selectedRequest}
-          onCancel={selectedRequest ? () => handleCancel(selectedRequest.id) : undefined}
-          onEdit={selectedRequest ? () => handleEdit(selectedRequest.id) : undefined}
-          onResend={selectedRequest ? () => handleResend(selectedRequest.id) : undefined}
-        />
+      <RequestDetailModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        request={selectedRequest}
+        onCancel={selectedRequest ? () => handleCancel(selectedRequest.id) : undefined}
+        onEdit={selectedRequest ? () => handleEdit(selectedRequest) : undefined}
+        onResend={selectedRequest ? () => handleResend(selectedRequest) : undefined}
+      />
     </HeaderLayout>
   );
-};
+}
 
 export default VenueRequests;

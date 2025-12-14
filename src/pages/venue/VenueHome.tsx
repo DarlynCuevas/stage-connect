@@ -1,7 +1,5 @@
-import { Link } from 'react-router-dom';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 import { useArtists } from '@/lib/users';
 import { useSentRequests } from '@/lib/requests';
@@ -110,7 +108,6 @@ export default function VenueHome() {
       bgColor: 'bg-indigo-100',
     },
   ];
-
   return (
     <HeaderLayout profileTabs={localNav}>
       <div className="space-y-8">

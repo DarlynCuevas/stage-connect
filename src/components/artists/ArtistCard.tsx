@@ -7,19 +7,26 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { MapPin, Users, Star, Heart, Music, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 
+
 interface ArtistCardProps {
   artist: Artist;
   showPrice?: boolean;
   onViewProfile?: () => void;
+  venueId?: string;
 }
 
-export function ArtistCard({ artist, showPrice = false }: ArtistCardProps) {
+export function ArtistCard({ artist, showPrice = false, venueId }: ArtistCardProps) {
   const [isFavorite, setIsFavorite] = useState(false); // Puedes conectar lógica real si tienes favoritos
   const location = [artist.city, artist.country].filter(Boolean).join(', ');
   const genres = artist.genre || [];
 
+  // Si venueId está presente, usar la ruta pública de visitante
+  const profileLink = venueId
+    ? `/venue/${venueId}/artist/${artist.id}/profile`
+    : `/artist/${artist.id}/profile`;
+
   return (
-    <Link to={`/artist/profile/${artist.id}`} className="group">
+    <Link to={profileLink} className="group">
       <Card className="overflow-hidden border-0 bg-transparent shadow-none transition-all duration-300">
         <div className="relative">
           {/* Banner principal */}
