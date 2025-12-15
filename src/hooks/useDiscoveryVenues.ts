@@ -15,6 +15,7 @@ export interface DiscoveryVenue {
   featured?: boolean;
   verified?: boolean;
   favorite?: boolean;
+  blockedDays?: string[];
 }
 
 export interface DiscoveryFilters {

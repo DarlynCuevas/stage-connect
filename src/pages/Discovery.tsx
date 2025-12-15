@@ -234,19 +234,48 @@ export default function Discovery({ type }: DiscoveryProps) {
     );
   }
   // ...lógica original para venues...
+
   const { venues, loading, setFilters, filters } = useDiscoveryVenues();
   const [showFavorites, setShowFavorites] = useState(false);
-  // Ahora venues ya está filtrado por el backend
-  const verified = venues.filter((v) => v.verified);
-  const featured = venues.filter((v) => v.featured && !v.verified);
-  const others = venues.filter((v) => !v.verified && !v.featured);
-  const favorites = venues.filter((v) => v.favorite);
+  const [filteredVenues, setFilteredVenues] = useState(venues);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   // Si la ruta es /artist/:artistId/venue/:venueId/profile, pasar artistId a VenueCard
   const artistId = params.artistId;
 
+  // Filtrado por fecha seleccionada
+  useEffect(() => {
+    if (!selectedDate) {
+      setFilteredVenues(venues);
+      return;
+    }
+    // Filtrar venues que NO tengan el día bloqueado usando el array blockedDays
+    setFilteredVenues(
+      venues.filter((venue: any) => {
+        if (!venue.blockedDays) return true;
+        return !venue.blockedDays.includes(selectedDate);
+      })
+    );
+  }, [selectedDate, venues]);
+
+  // VenueSearchBar: interceptar selección de fecha
+  const handleVenueSearch = ({ query, city, dateRange, type }: any) => {
+    setFilters({
+      city: city || '',
+      type: type || 'all',
+      query: query || '',
+      // dateRange
+    });
+    setSelectedDate(dateRange?.from || null);
+  };
+
+  const verified = filteredVenues.filter((v) => v.verified);
+  const featured = filteredVenues.filter((v) => v.featured && !v.verified);
+  const others = filteredVenues.filter((v) => !v.verified && !v.featured);
+  const favorites = filteredVenues.filter((v) => v.favorite);
+
   const handleFavoriteChange = (venueId: number, favorite: boolean) => {
-    setVenueList((prev) =>
+    setFilteredVenues((prev) =>
       prev.map((v) =>
         v.id === venueId ? { ...v, favorite } : v
       )
@@ -264,14 +293,7 @@ export default function Discovery({ type }: DiscoveryProps) {
         </p>
       </div>
       <VenueSearchBar
-        onSearch={({ query, city, dateRange, type }) => {
-          setFilters({
-            city: city || '',
-            type: type || 'all',
-            query: query || '',
-            // dateRange
-          });
-        }}
+        onSearch={handleVenueSearch}
         initialCity={filters.city || ''}
         initialType={filters.type}
       />
