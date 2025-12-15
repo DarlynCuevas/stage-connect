@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -16,7 +16,6 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { useState } from 'react';
-import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
@@ -52,6 +51,8 @@ const getAmenityIcon = (amenity: string) => {
 
 export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
   const { user, token } = useAuth();
+  const params = useParams();
+
   const [isFavorite, setIsFavorite] = useState(!!venue.favorite);
   const location = [venue.city, venue.province].filter(Boolean).join(', ');
   const displayAmenities = venue.amenities?.slice(0, 3) || [];
@@ -71,8 +72,15 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
 
   // Placeholder image handling deferred; keep icon fallback for now
 
+  // Si el usuario es artista y hay artistId en la URL, usar ruta cruzada para mantener layout de artista
+  const isArtist = user && String(user.role).toLowerCase().includes('art');
+  const artistId = params.id || user?.id;
+  const venueProfileUrl = isArtist
+    ? `/artist/${artistId}/venue/${venue.id}/profile`
+    : `/venue/profile/${venue.id}`;
+
   return (
-    <Link to={`/venue/profile/${venue.id}`} className="group">
+    <Link to={venueProfileUrl} className="group">
       <Card className="overflow-hidden border-0 bg-transparent shadow-none transition-all duration-300">
         <div className="relative">
           {/* Image placeholder or avatar */}

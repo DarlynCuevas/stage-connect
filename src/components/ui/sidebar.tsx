@@ -1,3 +1,6 @@
+// Este archivo ha sido eliminado porque Sidebar no se utiliza en la aplicación.
+// Eliminar este archivo ayuda a mantener el código limpio y libre de dependencias innecesarias.
+// Asegúrate de que no haya referencias a este componente en otras partes de la aplicación.
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";

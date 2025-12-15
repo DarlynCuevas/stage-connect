@@ -19,9 +19,14 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
 
-  // Allow public access to /venue/:venueId/artist/:artistId/profile
+  // Allow public access to /venue/:venueId/artist/:artistId/profile (local ve artista)
+  // y /artist/:artistId/venue/:venueId/profile (artista ve local)
   const isPublicArtistProfile =
-    /^\/venue\/[^/]+\/artist\/[^/]+\/profile$/.test(location.pathname);
+    /^\/venue\/[^/]+\/artist\/[^/]+\/profile$/.test(location.pathname) ||
+    /^\/artist\/[^/]+\/venue\/[^/]+\/profile$/.test(location.pathname);
+
+  // Si el usuario es artista y está en /artist/:artistId/venue/:venueId/profile, forzar layout de artista
+  const isArtistVenueProfile = /^\/artist\/[^/]+\/venue\/[^/]+\/profile$/.test(location.pathname);
   const [theme, setTheme] = React.useState<'dark' | 'light'>(() => {
     const t = localStorage.getItem('theme');
     return (t === 'light' ? 'light' : 'dark');
@@ -79,7 +84,8 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
   if (!profileTabs) {
     if (user) {
       const role = String(user.role).toLowerCase();
-      if (role.includes('art')) {
+      // Forzar menú de artista si está en /artist/:artistId/venue/:venueId/profile
+      if (role.includes('art') || isArtistVenueProfile) {
         nav = [
           { to: `/artist/${user.id}/discover`, label: 'Inicio' },
           { to: `/artist/${user.id}/dashboard`, label: 'Panel de datos' },
@@ -191,10 +197,21 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
               {user && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Avatar className="h-8 w-8 border border-border cursor-pointer">
-                      <AvatarImage src={user.avatar} />
-                      <AvatarFallback>{String(user.name || 'U').charAt(0)}</AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar
+                        className={
+                          'h-8 w-8 border cursor-pointer border-border'
+                        }
+                      >
+                        <AvatarImage src={user.avatar} />
+                        <AvatarFallback>{String(user.name || 'U').charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      {user?.verified && (
+                        <span className="absolute -bottom-1 -right-1 bg-white dark:bg-background rounded-full p-[2px] shadow">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        </span>
+                      )}
+                    </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem asChild>
@@ -213,7 +230,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/artist/settings" className="flex items-center gap-2">
+                      <Link to={user ? `/artist/${user.id}/settings` : '/artist/settings'} className="flex items-center gap-2">
                         <Settings className="w-4 h-4" /> Ajustes
                       </Link>
                     </DropdownMenuItem>

@@ -244,6 +244,8 @@ function AppRoutes() {
         {/* Venue routes */}
       <Route path="/venue/:id/discover" element={<VenueDiscover />} />
       <Route path="/venue/:id/profile" element={<VenueProfile />} />
+      {/* Ruta pública: artista puede ver perfil de venue */}
+      <Route path="/artist/:id/venue/:venueId/profile" element={<VenueProfile />} />
       <Route path="/venue/:id/search" element={<Discovery type="artists" />} />
       <Route path="/venue/:id/requests" element={<VenueRequests />} />
       <Route path="/venue/:id/dashboard/" element={<VenueHome />} />
