@@ -21,6 +21,19 @@ export default function ArtistCalendar() {
   return (
     <HeaderLayout profileTabs={artistNav}>
         <div className="space-y-6">
+            <div className="relative rounded-2xl overflow-hidden mb-8">
+          <div className="h-48 lg:h-64">
+            <img
+              src={`https://picsum.photos/1200/400?random=1}`}
+              alt="Banner"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+          </div>
+          {/* Rating sobre la imagen, esquina inferior derecha */}
+          <div className="absolute bottom-4 right-6 flex items-center gap-2 bg-black/70 px-3 py-1.5 rounded-full shadow-lg">
+          </div>
+        </div>
           <div>
             <h1 className="text-3xl font-display font-bold mb-2">
               Mi Calendario

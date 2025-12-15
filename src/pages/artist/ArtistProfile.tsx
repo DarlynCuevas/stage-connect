@@ -231,7 +231,6 @@ export default function ArtistProfile() {
 
   return (
     <HeaderLayout profileTabs={localNav || artistNav}>
-      <DashboardLayout noSidebar>
         {/* Header with banner */}
         <div className="relative rounded-2xl overflow-hidden">
           <div className="h-48 lg:h-64">
@@ -1043,7 +1042,6 @@ export default function ArtistProfile() {
         )}
         <ReviewsList artistId={currentArtist?.id} />
       </div>
-    </DashboardLayout>
   </HeaderLayout>
   );
 }

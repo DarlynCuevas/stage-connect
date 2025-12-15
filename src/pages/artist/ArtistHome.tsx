@@ -282,7 +282,7 @@ export default function ArtistHome() {
           <div className="h-48 lg:h-64">
             <img
               src={`https://picsum.photos/1200/400?random=${artist?.id || 1}`}
-              alt="Banner"
+              alt="Banner de estadísticas"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
