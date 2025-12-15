@@ -97,7 +97,7 @@ export function VenueSearchBar({
   };
 
   const handleSearch = () => {
-    onSearch({ query, city, dateRange: selectedDate ? { from: selectedDate, to: selectedDate } : null, type: capacity || '' });
+    onSearch({ city, dateRange: selectedDate ? { from: selectedDate, to: selectedDate } : null, type: capacity || '' });
   };
 
   const hasActiveFilters = city !== '' || capacity !== '' || selectedDate !== null;
@@ -107,23 +107,40 @@ export function VenueSearchBar({
     setCity('');
     setCapacity('');
     setSelectedDate(null);
-    onSearch({ query: '', city: '', dateRange: null, type: '' });
+    onSearch({ city: '', dateRange: null, type: '' });
   };
 
   return (
-    <form className="w-full flex flex-col items-center my-6 gap-2" onSubmit={e => { e.preventDefault(); handleSearch(); }}>
-      {/* Buscador principal */}
-      <Input
-        placeholder="Buscar por nombre, ciudad o local..."
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-        className="w-full max-w-xl h-14 text-lg px-6 py-3 rounded-full shadow border border-border/20 bg-white/95 focus:ring-2 focus:ring-primary/30 focus:outline-none font-medium text-black placeholder:text-black/60 mb-1"
-        autoComplete="off"
-      />
-      {/* Filtros secundarios */}
-      <div className="flex flex-row flex-wrap items-center justify-center gap-2 w-full max-w-xl bg-white/80 rounded-2xl shadow border border-border/20 px-2 py-2 transition-all">
+    <form
+      className="w-full flex flex-col items-center my-2 gap-2 sm:gap-1"
+      onSubmit={e => { e.preventDefault(); handleSearch(); }}
+    >
+      {/* Buscador principal con botón dentro del input */}
+      <div className="relative w-full max-w-full sm:max-w-lg mb-2 px-2 sm:px-0 flex justify-center sticky top-0 left-0 right-0 w-full z-40 bg-background/95 backdrop-blur shadow-md sm:static sm:z-auto sm:bg-transparent sm:backdrop-blur-none sm:shadow-none">
+        <div className="w-full">
+          <div className="relative w-full">
+            <Input
+              placeholder="Empieza a buscar"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              className="w-full h-14 sm:h-16 text-base sm:text-lg px-6 pr-24 py-3 rounded-[2.5rem] bg-white shadow-lg border border-border/10 focus:ring-2 focus:ring-primary/30 focus:outline-none font-medium text-black placeholder:text-black/60 transition-all"
+              autoComplete="off"
+              style={{ boxShadow: '0 2px 16px 0 rgba(0,0,0,0.07)' }}
+            />
+            <button
+              type="submit"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white border border-border/10 text-primary rounded-full px-4 py-2 font-semibold shadow hover:bg-primary/90 hover:text-white focus:bg-primary transition-all text-[15px] flex items-center justify-center h-11 sm:h-12"
+              style={{ minWidth: 70, zIndex: 2 }}
+            >
+              Buscar
+            </button>
+          </div>
+        </div>
+      </div>
+      {/* Filtros secundarios: ocultos en móvil, visibles en sm+ */}
+      <div className="hidden sm:flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-2 sm:gap-0 w-full max-w-full sm:max-w-xs bg-white/80 rounded-md shadow border border-border/20 px-2 sm:px-0.5 py-2 sm:py-0 transition-all text-[13px] sm:text-[12px] min-h-0">
         {/* Ciudad */}
-        <div className="relative flex-1 min-w-[120px]">
+        <div className="relative flex-1 min-w-0 flex items-center mb-2 sm:mb-0">
           <Input
             placeholder="Ciudad..."
             value={city === 'all' ? '' : city}
@@ -133,9 +150,10 @@ export function VenueSearchBar({
               setCity(e.target.value);
               setShowCityDropdown(true);
             }}
-            className="w-full min-w-0 bg-transparent border-none focus:ring-0 focus:outline-none text-center text-[15px] font-medium text-black placeholder:text-black/60 px-2 py-1 rounded-full"
+            className="w-full min-w-0 bg-transparent border-none focus:ring-0 focus:outline-none text-center text-[13px] sm:text-[11px] font-medium text-black placeholder:text-black/60 px-1 py-1 rounded-full"
             autoComplete="off"
           />
+          <span className="mx-1 h-4 w-px bg-border/60 hidden sm:inline-block" />
           {showCityDropdown && (
             <div className="absolute left-0 right-0 top-12 z-30 bg-white rounded-2xl shadow-lg border border-border/20 max-h-64 overflow-y-auto text-left animate-fade-in">
               <ul>
@@ -163,49 +181,52 @@ export function VenueSearchBar({
           )}
         </div>
         {/* Fecha */}
-        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              className="flex-1 min-w-[120px] bg-transparent border-none focus:ring-0 focus:outline-none text-center text-[15px] font-medium text-black placeholder:text-black/60 px-2 py-1 rounded-full cursor-pointer"
-              onClick={() => setCalendarOpen(true)}
-            >
-              <span className={selectedDate ? 'text-black' : 'text-black/60'}>
-                {formatDate(selectedDate)}
-              </span>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent sideOffset={8} align="center" className="z-50 bg-white rounded-2xl shadow-lg p-2 border border-border/20">
-            <div className="text-black">
-              <Calendar
-                mode="single"
-                selected={selectedDate ? new Date(selectedDate) : undefined}
-                onSelect={date => {
-                  if (date) {
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    setSelectedDate(`${year}-${month}-${day}`);
-                    setCalendarOpen(false);
-                  }
-                }}
-                numberOfMonths={1}
-                locale={es}
-                showOutsideDays
-                className="min-w-[220px] rounded-2xl text-black"
-                modifiers={{ today: [new Date()] }}
-                modifiersStyles={{ today: { border: '2px solid #2563eb', borderRadius: '50%' } }}
-                today={new Date()}
-                disabled={date => isBefore(date, startOfDay(new Date()))}
-              />
-            </div>
-          </PopoverContent>
-        </Popover>
+        <div className="flex-1 min-w-0 flex items-center mb-2 sm:mb-0">
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-center text-[13px] sm:text-[11px] font-medium text-black placeholder:text-black/60 px-1 py-1 rounded-full cursor-pointer"
+                onClick={() => setCalendarOpen(true)}
+              >
+                <span className={selectedDate ? 'text-black' : 'text-black/60'}>
+                  {formatDate(selectedDate)}
+                </span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent sideOffset={8} align="center" className="z-50 bg-white rounded-2xl shadow-lg p-2 border border-border/20">
+              <div className="text-black">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate ? new Date(selectedDate) : undefined}
+                  onSelect={date => {
+                    if (date) {
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setSelectedDate(`${year}-${month}-${day}`);
+                      setCalendarOpen(false);
+                    }
+                  }}
+                  numberOfMonths={1}
+                  locale={es}
+                  showOutsideDays
+                  className="min-w-[220px] rounded-2xl text-black"
+                  modifiers={{ today: [new Date()] }}
+                  modifiersStyles={{ today: { border: '2px solid #2563eb', borderRadius: '50%' } }}
+                  today={new Date()}
+                  disabled={date => isBefore(date, startOfDay(new Date()))}
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
+          <span className="mx-1 h-4 w-px bg-border/60 hidden sm:inline-block" />
+        </div>
         {/* Capacidad */}
-        <div className="relative flex-1 min-w-[120px]">
+        <div className="relative flex-1 min-w-0 flex items-center mb-2 sm:mb-0">
           <button
             type="button"
-            className={`w-full min-w-0 bg-transparent border-none focus:ring-0 focus:outline-none text-center text-[15px] font-medium px-2 py-1 rounded-full cursor-pointer border border-transparent hover:border-primary/30 transition ${capacity ? 'text-black' : 'text-black/60'}`}
+            className={`w-full min-w-0 bg-transparent border-none focus:ring-0 focus:outline-none text-center text-[13px] sm:text-[11px] font-medium px-1 py-1 rounded-full cursor-pointer border border-transparent hover:border-primary/30 transition ${capacity ? 'text-black' : 'text-black/60'}`}
             onClick={() => { setShowCapacityDropdown(true); setShowCityDropdown(false); }}
             onBlur={() => setTimeout(() => setShowCapacityDropdown(false), 120)}
           >
@@ -241,14 +262,7 @@ export function VenueSearchBar({
             <CleaningServicesIcon fontSize="small" className="w-5 h-5" />
           </Button>
         )}
-        <Button
-          variant="soft"
-          size="sm"
-          className="rounded-full px-4 py-2 font-semibold shadow-none bg-primary/90 hover:bg-primary focus:bg-primary text-primary-foreground transition-all text-[15px] flex items-center justify-center"
-          type="submit"
-        >
-          Buscar
-        </Button>
+        {/* Botón de buscar eliminado de aquí, ahora está dentro del input principal */}
       </div>
     </form>
   );

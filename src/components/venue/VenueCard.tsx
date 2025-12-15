@@ -176,12 +176,7 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
 
           {/* Horario oculto en esta vista */}
 
-          {/* Descripción corta (2 líneas con puntos suspensivos) */}
-          {venue.bio && (
-            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-              {venue.bio}
-            </p>
-          )}
+          {/* Descripción eliminada por requerimiento */}
 
           {/* Aforo y reseñas en la misma línea */}
           {(cap > 0 || reviewsDisplay) && (
@@ -194,6 +189,7 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
               ) : null}
             </div>
           )}
+
         </CardContent>
       </Card>
     </Link>

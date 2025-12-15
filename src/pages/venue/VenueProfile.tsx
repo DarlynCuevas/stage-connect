@@ -30,27 +30,19 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-// Default venue photos
-const DEFAULT_VENUE_PHOTOS = [
-  'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80', // Club interior with lights
-  'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80', // Concert/DJ setup
-  'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80', // Crowd at concert
-  'https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=800&q=80', // DJ setup closeup
-  'https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=800&q=80', // Club lights and stage
-  'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=800&q=80', // Sound equipment
-  'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=800&q=80', // VIP lounge area
-  'https://images.unsplash.com/photo-1576328077645-2dd68934d2b7?w=800&q=80', // Bar and drinks
-];
 
 export default function VenueProfile() {
-  const { id } = useParams();
+  // Soporta ambas rutas: /venue/:id/profile y /artist/:artistId/venue/:venueId/profile
+  const params = useParams();
+  // venueId puede venir como 'id' o 'venueId' según la ruta
+  const venueIdParam = params.venueId || params.id;
   const { user: authUser, token, setUser } = useAuth();
-  // Comprobación de seguridad: solo el dueño puede ver su perfil
-  if (id && authUser && String(authUser.id) !== String(id)) {
+  // Comprobación de seguridad: solo el dueño puede ver su perfil en /venue/:id/profile
+  const isOwnProfile = authUser && venueIdParam && String(authUser.id) === String(venueIdParam);
+  if (!params.venueId && venueIdParam && authUser && String(authUser.id) !== String(venueIdParam)) {
     return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
   }
-  const isOwnProfile = authUser && id && String(authUser.id) === String(id);
-  const venueId = id ? Number(id) : undefined;
+  const venueId = venueIdParam ? Number(venueIdParam) : undefined;
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
@@ -193,17 +185,39 @@ export default function VenueProfile() {
     { id: 'parking', label: 'Parking', icon: MapPin },
   ];
 
-  // Navegación para el HeaderLayout
+  // Detectar el contexto principal según el orden de la URL
+  // Si la ruta empieza por /artist/:artistId/venue/:venueId/profile => contexto artista
+  // Si la ruta empieza por /venue/:venueId/artist/:artistId/profile => contexto local
+  let mainContext: 'artist' | 'venue' = 'venue';
+  if (typeof window !== 'undefined') {
+    const path = window.location.pathname;
+    if (/^\/artist\//.test(path)) {
+      mainContext = 'artist';
+    } else if (/^\/venue\//.test(path)) {
+      mainContext = 'venue';
+    }
+  }
+
+  // Tabs de artista
+  const artistNav = params.artistId ? [
+    { to: `/artist/${params.artistId}/discover`, label: 'Inicio' },
+    { to: `/artist/${params.artistId}/dashboard`, label: 'Panel de datos' },
+    { to: `/artist/${params.artistId}/profile`, label: 'Mi perfil' },
+    { to: `/artist/${params.artistId}/calendar`, label: 'Calendario' },
+    { to: `/artist/${params.artistId}/requests`, label: 'Solicitudes' },
+  ] : [];
+
+  // Tabs de local
   const localNav = [
-    { to: `/venue/${id}/discover`, label: 'Inicio' },
-    { to: `/venue/${id}/dashboard`, label: 'Panel de datos' },
-    { to: `/venue/${id}/profile`, label: 'Mi perfil' },
-    { to: `/venue/${id}/calendar`, label: 'Calendario' },
-    { to: `/venue/${id}/requests`, label: 'Solicitudes' },
+    { to: `/venue/${venueIdParam}/discover`, label: 'Inicio' },
+    { to: `/venue/${venueIdParam}/dashboard`, label: 'Panel de datos' },
+    { to: `/venue/${venueIdParam}/profile`, label: 'Mi perfil' },
+    { to: `/venue/${venueIdParam}/calendar`, label: 'Calendario' },
+    { to: `/venue/${venueIdParam}/requests`, label: 'Solicitudes' },
   ];
 
   return (
-    <HeaderLayout profileTabs={localNav}>
+    <HeaderLayout profileTabs={mainContext === 'artist' ? artistNav : localNav}>
       <div className="space-y-6 max-w-6xl mx-auto">
         {/* Header with Edit Button */}
         <div className="flex justify-between items-start">

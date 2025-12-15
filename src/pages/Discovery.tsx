@@ -33,6 +33,7 @@ async function updateVenueField(
 // await updateVenueField('2', { featured: true }, token);
 
 export default function Discovery({ type }: DiscoveryProps) {
+  const params = useParams();
   if (type === 'artists') {
     const { id: venueId } = useParams();
     // Mostrar artistas para venues, pero usando VenueSearchBar como filtro visual
@@ -241,6 +242,9 @@ export default function Discovery({ type }: DiscoveryProps) {
   const others = venues.filter((v) => !v.verified && !v.featured);
   const favorites = venues.filter((v) => v.favorite);
 
+  // Si la ruta es /artist/:artistId/venue/:venueId/profile, pasar artistId a VenueCard
+  const artistId = params.artistId;
+
   const handleFavoriteChange = (venueId: number, favorite: boolean) => {
     setVenueList((prev) =>
       prev.map((v) =>
@@ -302,7 +306,7 @@ export default function Discovery({ type }: DiscoveryProps) {
                       <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
                         {verified.map((venue) => (
                           <CarouselItem key={venue.id} className="basis-72 max-w-xs">
-                            <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} />
+                            <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} artistId={artistId} />
                           </CarouselItem>
                         ))}
                       </CarouselContent>
@@ -327,7 +331,7 @@ export default function Discovery({ type }: DiscoveryProps) {
                       <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
                         {featured.map((venue) => (
                           <CarouselItem key={venue.id} className="basis-72 max-w-xs">
-                            <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} />
+                            <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} artistId={artistId} />
                           </CarouselItem>
                         ))}
                       </CarouselContent>
@@ -360,7 +364,7 @@ export default function Discovery({ type }: DiscoveryProps) {
                        <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
                          {favorites.map((venue) => (
                            <CarouselItem key={venue.id} className="basis-72 max-w-xs">
-                             <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} />
+                             <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} artistId={artistId} />
                            </CarouselItem>
                          ))}
                        </CarouselContent>
@@ -377,7 +381,7 @@ export default function Discovery({ type }: DiscoveryProps) {
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {others.map((venue) => (
-                    <VenueCard key={venue.id} venue={venue} onFavoriteChange={handleFavoriteChange} />
+                    <VenueCard key={venue.id} venue={venue} onFavoriteChange={handleFavoriteChange} artistId={artistId} />
                   ))}
                 </div>
               </div>

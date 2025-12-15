@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Music, Bell, Sun, Moon, LayoutDashboard, User, Calendar, MessageSquare, Settings, LogOut } from 'lucide-react';
+import { BottomNav } from './BottomNav';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useReceivedManagerRequests, useManagerRequestsRealtime } from '@/lib/manager-requests';
@@ -126,10 +127,11 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
+      {/* Header y tabs solo en escritorio (sm+) */}
+      <header className="hidden sm:block sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
         <div className="w-full px-0">
           <div className="h-14 flex items-center justify-between">
-            {/* Logo y botón inicio: usa la ruta de inicio según el rol */}
+            {/* Logo y nombre solo visibles en escritorio (sm+) */}
             <Link
               to={(() => {
                 if (!user) return '/login';
@@ -225,7 +227,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/artist/invite" to="/artist/invite" className="flex items-center gap-2">
+                      <Link to="/artist/invite" className="flex items-center gap-2">
                         <span className="w-4 h-4 inline-block">🎉</span> Invita a un amigo
                       </Link>
                     </DropdownMenuItem>
@@ -244,9 +246,13 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
           </div>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-1 sm:px-4 py-2 sm:py-6 pb-16 sm:pb-6" style={{ paddingBottom: '4rem' }}>
         {children}
       </main>
+      {/* BottomNav solo en móvil, fijo en la parte inferior */}
+      <div className="sm:hidden fixed bottom-0 left-0 w-full z-50">
+        <BottomNav />
+      </div>
     </div>
   );
 }
