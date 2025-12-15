@@ -76,50 +76,56 @@ interface VenueSearchBarProps {
   types?: string[];
 }
 
+
 export function VenueSearchBar({
   onSearch,
   initialCity = '',
   initialDateRange = null,
 }: VenueSearchBarProps) {
-
+  const [query, setQuery] = useState('');
   const [city, setCity] = useState(initialCity);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
-  // Obtener ciudades de España (ES)
   const spainCities = useMemo(() => City.getCitiesOfCountry('ES').map(c => c.name), []);
   const [capacity, setCapacity] = useState('');
   const [showCapacityDropdown, setShowCapacityDropdown] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(initialDateRange?.from || null);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  // Helper to format the range for display
   const formatDate = (date: string | null) => {
     if (!date) return 'Introduce la fecha';
     return format(parseISO(date), 'd MMM yyyy', { locale: es });
   };
 
   const handleSearch = () => {
-    onSearch({ city, dateRange: selectedDate ? { from: selectedDate, to: selectedDate } : null, type: capacity || '' });
+    onSearch({ query, city, dateRange: selectedDate ? { from: selectedDate, to: selectedDate } : null, type: capacity || '' });
   };
 
-  // Determinar si hay filtros activos
   const hasActiveFilters = city !== '' || capacity !== '' || selectedDate !== null;
 
   const handleClearFilters = () => {
+    setQuery('');
     setCity('');
     setCapacity('');
     setSelectedDate(null);
-    onSearch({ city: '', dateRange: null, type: '' });
+    onSearch({ query: '', city: '', dateRange: null, type: '' });
   };
 
   return (
-    <form
-      className="w-full flex justify-center my-6"
-      onSubmit={e => { e.preventDefault(); handleSearch(); }}
-    >
-      <div className="flex flex-row items-center gap-2 w-full max-w-xl bg-white/90 rounded-full shadow border border-border/20 px-2 py-1 transition-all">
-        <div className="relative flex-1">
+    <form className="w-full flex flex-col items-center my-6 gap-2" onSubmit={e => { e.preventDefault(); handleSearch(); }}>
+      {/* Buscador principal */}
+      <Input
+        placeholder="Buscar por nombre, ciudad o local..."
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        className="w-full max-w-xl h-14 text-lg px-6 py-3 rounded-full shadow border border-border/20 bg-white/95 focus:ring-2 focus:ring-primary/30 focus:outline-none font-medium text-black placeholder:text-black/60 mb-1"
+        autoComplete="off"
+      />
+      {/* Filtros secundarios */}
+      <div className="flex flex-row flex-wrap items-center justify-center gap-2 w-full max-w-xl bg-white/80 rounded-2xl shadow border border-border/20 px-2 py-2 transition-all">
+        {/* Ciudad */}
+        <div className="relative flex-1 min-w-[120px]">
           <Input
-            placeholder="Ciudad o local..."
+            placeholder="Ciudad..."
             value={city === 'all' ? '' : city}
             onFocus={() => setShowCityDropdown(true)}
             onBlur={() => setTimeout(() => setShowCityDropdown(false), 120)}
@@ -156,11 +162,12 @@ export function VenueSearchBar({
             </div>
           )}
         </div>
+        {/* Fecha */}
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
           <PopoverTrigger asChild>
             <button
               type="button"
-              className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 focus:outline-none text-center text-[15px] font-medium text-black placeholder:text-black/60 px-2 py-1 rounded-full cursor-pointer"
+              className="flex-1 min-w-[120px] bg-transparent border-none focus:ring-0 focus:outline-none text-center text-[15px] font-medium text-black placeholder:text-black/60 px-2 py-1 rounded-full cursor-pointer"
               onClick={() => setCalendarOpen(true)}
             >
               <span className={selectedDate ? 'text-black' : 'text-black/60'}>
@@ -175,7 +182,6 @@ export function VenueSearchBar({
                 selected={selectedDate ? new Date(selectedDate) : undefined}
                 onSelect={date => {
                   if (date) {
-                    // Formato yyyy-MM-dd en local para evitar desfase horario
                     const year = date.getFullYear();
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const day = String(date.getDate()).padStart(2, '0');
@@ -186,23 +192,17 @@ export function VenueSearchBar({
                 numberOfMonths={1}
                 locale={es}
                 showOutsideDays
-                className="min-w-[260px] rounded-2xl text-black"
-                modifiers={{
-                  today: [new Date()],
-                }}
-                modifiersStyles={{
-                  today: {
-                    border: '2px solid #2563eb', // azul
-                    borderRadius: '50%',
-                  },
-                }}
+                className="min-w-[220px] rounded-2xl text-black"
+                modifiers={{ today: [new Date()] }}
+                modifiersStyles={{ today: { border: '2px solid #2563eb', borderRadius: '50%' } }}
                 today={new Date()}
                 disabled={date => isBefore(date, startOfDay(new Date()))}
               />
             </div>
           </PopoverContent>
         </Popover>
-        <div className="relative flex-1">
+        {/* Capacidad */}
+        <div className="relative flex-1 min-w-[120px]">
           <button
             type="button"
             className={`w-full min-w-0 bg-transparent border-none focus:ring-0 focus:outline-none text-center text-[15px] font-medium px-2 py-1 rounded-full cursor-pointer border border-transparent hover:border-primary/30 transition ${capacity ? 'text-black' : 'text-black/60'}`}
@@ -228,6 +228,7 @@ export function VenueSearchBar({
             </div>
           )}
         </div>
+        {/* Limpiar filtros y buscar */}
         {hasActiveFilters && (
           <Button
             type="button"

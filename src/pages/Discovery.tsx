@@ -45,11 +45,19 @@ export default function Discovery({ type }: DiscoveryProps) {
       setArtistList(artists);
     }, [artists]);
 
+    // Filtro por nickName si hay búsqueda
+    const searchQuery = (filters.query || '').toLowerCase();
+    const filteredArtists = searchQuery
+      ? artistList.filter((a) =>
+          (a.nickName || a.name || '').toLowerCase().includes(searchQuery)
+        )
+      : artistList;
+
     // Filtrar artistas verificados, destacados y favoritos
-    const verified = artistList.filter((a) => a.verified);
-    const featured = artistList.filter((a) => a.featured && !a.verified);
-    const others = artistList.filter((a) => !a.verified && !a.featured);
-    const favorites = artistList.filter((a) => a.favorite);
+    const verified = filteredArtists.filter((a) => a.verified);
+    const featured = filteredArtists.filter((a) => a.featured && !a.verified);
+    const others = filteredArtists.filter((a) => !a.verified && !a.featured);
+    const favorites = filteredArtists.filter((a) => a.favorite);
 
     const handleFavoriteChange = (artistId, favorite) => {
       setArtistList((prev) =>
@@ -85,11 +93,13 @@ export default function Discovery({ type }: DiscoveryProps) {
       featured: artist.featured || false,
     });
 
-    const handleVenueSearch = ({ city, type }) => {
-      setFilters({
-        city: city || '', // Si no hay ciudad, string vacío
+    const handleVenueSearch = ({ query, city, type }) => {
+      setFilters((prev) => ({
+        ...prev,
+        query: query || '',
+        city: city || '',
         // type no se usa en artistas, pero se ignora
-      });
+      }));
     };
 
     return (
@@ -225,17 +235,11 @@ export default function Discovery({ type }: DiscoveryProps) {
   // ...lógica original para venues...
   const { venues, loading, setFilters, filters } = useDiscoveryVenues();
   const [showFavorites, setShowFavorites] = useState(false);
-  const [venueList, setVenueList] = useState(venues);
-
-  useEffect(() => {
-    setVenueList(venues);
-  }, [venues]);
-
-  // Filtrar salas verificadas y destacadas, sin duplicados
-  const verified = venueList.filter((v) => v.verified);
-  const featured = venueList.filter((v) => v.featured && !v.verified);
-  const others = venueList.filter((v) => !v.verified && !v.featured);
-  const favorites = venueList.filter((v) => v.favorite);
+  // Ahora venues ya está filtrado por el backend
+  const verified = venues.filter((v) => v.verified);
+  const featured = venues.filter((v) => v.featured && !v.verified);
+  const others = venues.filter((v) => !v.verified && !v.featured);
+  const favorites = venues.filter((v) => v.favorite);
 
   const handleFavoriteChange = (venueId: number, favorite: boolean) => {
     setVenueList((prev) =>
@@ -256,10 +260,11 @@ export default function Discovery({ type }: DiscoveryProps) {
         </p>
       </div>
       <VenueSearchBar
-        onSearch={({ city, dateRange, type }) => {
+        onSearch={({ query, city, dateRange, type }) => {
           setFilters({
             city: city || '',
             type: type || 'all',
+            query: query || '',
             // dateRange
           });
         }}

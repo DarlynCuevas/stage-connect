@@ -34,6 +34,7 @@ export async function apiFetch<T = any>(path: string, opts: FetchOptions = {}): 
   try {
     const res = await fetch(`${API_BASE_URL}${path}`, {
       ...rest,
+      cache: 'no-store', // Forzar a no usar caché
       signal: controller.signal,
       headers,
       body: body !== undefined ? JSON.stringify(body) : undefined,

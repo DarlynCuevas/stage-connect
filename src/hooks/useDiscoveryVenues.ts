@@ -20,13 +20,14 @@ export interface DiscoveryVenue {
 export interface DiscoveryFilters {
   city: string;
   type: string;
+  query?: string;
   // dateRange?: { from: string; to: string };
 }
 
 export function useDiscoveryVenues() {
   const [venues, setVenues] = useState<DiscoveryVenue[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<DiscoveryFilters>({ city: 'all', type: 'all' });
+  const [filters, setFilters] = useState<DiscoveryFilters>({ city: 'all', type: 'all', query: '' });
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -35,6 +36,7 @@ export function useDiscoveryVenues() {
         const params = new URLSearchParams();
         if (filters.city !== 'all') params.append('city', filters.city);
         if (filters.type !== 'all') params.append('type', filters.type);
+        if (filters.query && filters.query.trim() !== '') params.append('query', filters.query.trim());
         // if (filters.dateRange) { ... }
         const url = `/public/venues${params.toString() ? '?' + params.toString() : ''}`;
         const response = await apiFetch(url);

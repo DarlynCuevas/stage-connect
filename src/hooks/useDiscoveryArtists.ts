@@ -15,12 +15,15 @@ export interface DiscoveryArtist {
   rating?: number;
 }
 
+
 export interface DiscoveryArtistFilters {
   city: string;
   genre: string[];
   priceMin?: number;
   priceMax?: number;
+  query?: string;
 }
+
 
 
 export function useDiscoveryArtists() {
@@ -28,6 +31,7 @@ export function useDiscoveryArtists() {
   const [loading, setLoading] = useState(true);
   // Por defecto, ciudad vacía (no 'all')
   const [filters, setFilters] = useState<DiscoveryArtistFilters>({ city: '', genre: [] });
+
 
   useEffect(() => {
     const fetchArtists = async () => {
@@ -40,6 +44,7 @@ export function useDiscoveryArtists() {
         }
         if (filters.priceMin !== undefined) params.append('priceMin', String(filters.priceMin));
         if (filters.priceMax !== undefined) params.append('priceMax', String(filters.priceMax));
+        if (filters.query && filters.query.trim() !== '') params.append('query', filters.query.trim());
         const url = `/public/users?role=Artista${params.toString() ? '&' + params.toString() : ''}`;
         const response = await apiFetch(url);
         setArtists(response);
