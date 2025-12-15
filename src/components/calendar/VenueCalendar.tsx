@@ -5,25 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CalendarDate } from '@/types';
-import { format, isSameDay, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
-import { Lock, Unlock, Calendar as CalendarIcon, Check, X } from 'lucide-react';
+import { Lock, Check, X, Calendar as CalendarIcon } from 'lucide-react';
 
-interface ArtistCalendarProps {
-  artistId?: number;
+import { useVenueBlockedDays } from '@/lib/venue-blocked-days';
+import { useConfirmedRequestsByVenue } from '@/lib/requests';
+import { useManageBlockedDays } from '@/lib/blocked-days';
+
+interface VenueCalendarProps {
+  venueId?: number;
   editable?: boolean;
-  onDateToggle?: (date: Date) => void;
   onDateSelect?: (date: Date) => void;
 }
 
-import { useBlockedDays, useManageBlockedDays } from '@/lib/blocked-days';
-import { useConfirmedRequests } from '@/lib/requests';
-
-export function ArtistCalendarComponent({ artistId, editable = false, onDateToggle, onDateSelect }: ArtistCalendarProps) {
-  // Obtener fechas y lógica a partir del artistId
-  const confirmed = artistId ? useConfirmedRequests(artistId)?.data : [];
-  const blocked = artistId ? useBlockedDays(artistId)?.data : [];
+export function VenueCalendarComponent({ venueId, editable = false, onDateSelect }: VenueCalendarProps) {
+  // Obtener fechas y lógica a partir del venueId
+  const confirmed = venueId ? useConfirmedRequestsByVenue(venueId)?.data : [];
+  const blocked = venueId ? useVenueBlockedDays(venueId)?.data : [];
   const confirmedRequests = Array.isArray(confirmed) ? confirmed : [];
   const blockedDaysData = Array.isArray(blocked) ? blocked : [];
   const { createMutation, deleteMutation } = useManageBlockedDays();
@@ -39,23 +38,22 @@ export function ArtistCalendarComponent({ artistId, editable = false, onDateTogg
     ...blockedDaysData.map(bd => ({
       date: bd.blockedDate,
       available: false,
-      note: 'Día bloqueado por el artista',
+      note: 'Día bloqueado por la sala',
       blocked: true,
     })),
   ];
+
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [localDates, setLocalDates] = useState<CalendarDate[]>(dates);
 
-  // Sincroniza localDates si cambian las props
   useEffect(() => {
     setLocalDates(dates);
   }, [dates]);
 
-  // Callback para bloquear el día cuando se acepte una solicitud
+  // Callback para bloquear el día cuando se acepte una solicitud (puedes personalizarlo para venue)
   const handleRequestAccepted = useCallback((payload: { eventDate: string }) => {
     setLocalDates(prev => {
       const dateStr = payload.eventDate.split('T')[0];
-      // Si ya está bloqueado, no hacer nada
       if (prev.some(d => d.date === dateStr && d.blocked)) return prev;
       return [
         ...prev,
@@ -74,25 +72,12 @@ export function ArtistCalendarComponent({ artistId, editable = false, onDateTogg
   const handleDateClick = (date: Date | undefined) => {
     if (!date) return;
     setSelectedDate(date);
-
-    // Log para depuración
-    console.log('[ArtistCalendar] handleDateClick', { date, editable, onDateSelectExists: !!onDateSelect });
-
-    // If not editable (public/promoter/venue view) and date is unavailable, block selection
-    const status = getDateStatus(date);
-    if (!editable && status && !status.available) {
-      return;
-    }
-
     if (!editable && onDateSelect) {
-      console.log('[ArtistCalendar] Llamando a onDateSelect', { date });
       onDateSelect(date);
     }
   };
 
   const selectedDateInfo = selectedDate ? getDateStatus(selectedDate) : null;
-
-  // Obtener la fecha de hoy (sin hora)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -102,7 +87,7 @@ export function ArtistCalendarComponent({ artistId, editable = false, onDateTogg
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 text-primary" />
-            Calendario de Disponibilidad
+            Calendario de Disponibilidad (Local)
           </CardTitle>
           <div className="flex items-center gap-3 text-sm">
             <div className="flex items-center gap-1.5">
@@ -159,7 +144,7 @@ export function ArtistCalendarComponent({ artistId, editable = false, onDateTogg
                 borderRadius: '50%',
               },
               past: {
-                backgroundColor: 'rgba(156,163,175,0.15)', // gris transparente
+                backgroundColor: 'rgba(156,163,175,0.15)',
                 color: '#d1d5db',
                 pointerEvents: 'none',
                 opacity: 1,
@@ -171,20 +156,17 @@ export function ArtistCalendarComponent({ artistId, editable = false, onDateTogg
                 borderRadius: '50%',
               },
               today: {
-                border: '2px solid #2563eb', // azul
+                border: '2px solid #2563eb',
                 borderRadius: '50%',
               },
             }}
           />
-
-          {/* Selected date info */}
           <div className="flex-1 min-w-[250px]">
             {selectedDate ? (
               <div className="p-4 rounded-lg bg-secondary/50 border border-border">
                 <p className="text-lg font-display font-semibold mb-2">
                   {format(selectedDate, "d 'de' MMMM, yyyy", { locale: es })}
                 </p>
-                
                 {selectedDateInfo ? (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
@@ -205,35 +187,10 @@ export function ArtistCalendarComponent({ artistId, editable = false, onDateTogg
                         </Badge>
                       )}
                     </div>
-                    
                     {selectedDateInfo.note && (
                       <p className="text-sm text-muted-foreground">
                         {selectedDateInfo.note}
                       </p>
-                    )}
-
-                    {editable && !(selectedDateInfo as any).confirmed && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          console.log('[ArtistCalendar] Click botón bloquear/desbloquear', selectedDate);
-                          onDateToggle?.(selectedDate);
-                        }}
-                        className={selectedDateInfo.available ? '' : 'border-destructive text-destructive hover:bg-destructive/10'}
-                      >
-                        {selectedDateInfo.available ? (
-                          <>
-                            <Lock className="w-4 h-4 mr-2" />
-                            Bloquear día
-                          </>
-                        ) : (
-                          <>
-                            <Unlock className="w-4 h-4 mr-2" />
-                            Desbloquear día
-                          </>
-                        )}
-                      </Button>
                     )}
                   </div>
                 ) : (
@@ -241,16 +198,6 @@ export function ArtistCalendarComponent({ artistId, editable = false, onDateTogg
                     <p className="text-sm text-muted-foreground">
                       Disponible
                     </p>
-                    {editable && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onDateToggle?.(selectedDate)}
-                      >
-                        <Lock className="w-4 h-4 mr-2" />
-                        Bloquear día
-                      </Button>
-                    )}
                   </div>
                 )}
               </div>

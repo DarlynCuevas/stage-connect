@@ -1,8 +1,7 @@
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
-import { CalendarComponent } from '@/components/calendar/CalendarComponent';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { ArtistCalendarComponent } from '@/components/calendar/ArtistCalendar';
 
 export default function ArtistCalendar() {
   const { id } = useParams();
@@ -42,7 +41,7 @@ export default function ArtistCalendar() {
               Gestiona tu disponibilidad para que los locales y promotores puedan ver cuándo estás libre. Bloquea días en los que no estés disponible.
             </p>
           </div>
-          <CalendarComponent artistId={artistId} />
+          <ArtistCalendarComponent artistId={artistId} />
         </div>
     </HeaderLayout>
   );

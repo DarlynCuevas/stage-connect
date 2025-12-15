@@ -2,6 +2,7 @@ import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { CalendarComponent } from '@/components/calendar/CalendarComponent';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { VenueCalendarComponent } from '@/components/calendar/VenueCalendar';
 
 export default function VenueCalendar() {
   const { id } = useParams();
@@ -28,7 +29,7 @@ export default function VenueCalendar() {
               Gestiona la disponibilidad de tu sala para que los artistas y promotores puedan ver cuándo está libre. Bloquea días en los que no esté disponible.
             </p>
           </div>
-          <CalendarComponent venueId={venueId} editable={true} />
+          <VenueCalendarComponent venueId={venueId} editable={true} />
         </div>
     </HeaderLayout>
   );
