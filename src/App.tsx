@@ -21,12 +21,10 @@ import Register from "./pages/auth/Register";
 
 // Artist pages
 import ArtistHome from "./pages/artist/ArtistHome";
-import ArtistDiscover from "./pages/artist/ArtistDiscover";
 import ArtistProfile from "./pages/artist/ArtistProfile";
 import ProtectedArtistDiscover from "./pages/artist/ProtectedArtistDiscover";
 import ArtistCalendar from "./pages/artist/ArtistCalendar";
 import ArtistRequests from "./pages/artist/ArtistRequests";
-import ArtistManagerRequests from "./pages/artist/ArtistManagerRequests";
 
 // Manager pages
 import ManagerHome from "./pages/manager/ManagerHome";

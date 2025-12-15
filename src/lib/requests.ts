@@ -1,3 +1,18 @@
+async function fetchConfirmedRequestsByVenueApi(venueId: number, token: string | null) {
+  return apiFetch<BookingRequest[]>(`/requests/confirmed-venue/${venueId}`, {
+    method: 'GET',
+    token,
+  });
+}
+
+export function useConfirmedRequestsByVenue(venueId: number | undefined) {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['confirmed-requests-venue', venueId],
+    queryFn: () => fetchConfirmedRequestsByVenueApi(venueId!, token ?? null),
+    enabled: !!venueId,
+  });
+}
 // Mutación profesional para crear solicitud de contratación (Local → Artista)
 export function useCreateBookingRequest() {
   const queryClient = useQueryClient();

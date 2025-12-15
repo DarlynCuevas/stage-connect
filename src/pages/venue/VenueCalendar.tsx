@@ -1,5 +1,5 @@
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
-import CalendarComponent from '@/components/calendar/CalendarComponent';
+import { CalendarComponent } from '@/components/calendar/CalendarComponent';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 

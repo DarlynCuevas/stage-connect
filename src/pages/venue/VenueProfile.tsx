@@ -7,8 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateProfile, useUser } from '@/lib/users';
@@ -29,7 +27,7 @@ import {
   MapPinned
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import CalendarComponent from '@/components/calendar/CalendarComponent';
+import { CalendarComponent } from '@/components/calendar/CalendarComponent';
 
 
 export default function VenueProfile() {
@@ -349,7 +347,7 @@ export default function VenueProfile() {
         <div className="my-8">
           <h2 className="text-2xl font-bold mb-2">Calendario de la sala</h2>
           <p className="text-muted-foreground mb-4">Consulta y gestiona la disponibilidad de este local.</p>
-          <CalendarComponent artistId={venueId} />
+          <CalendarComponent venueId={venueId} />
         </div>
 
         {/* Description */}

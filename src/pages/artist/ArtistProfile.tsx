@@ -47,7 +47,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import CalendarComponent from '@/components/calendar/CalendarComponent';
+import { CalendarComponent } from '@/components/calendar/CalendarComponent';
 import ModalSolicitudContratacion from '@/components/calendar/ModalSolicitudContratacion';
 
 export default function ArtistProfile() {

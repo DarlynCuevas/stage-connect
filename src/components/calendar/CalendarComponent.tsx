@@ -1,24 +1,46 @@
-import { useMemo } from 'react';
-import { ArtistCalendar } from '@/components/calendar/ArtistCalendar';
-import { CalendarDate } from '@/types';
-import { format, isBefore, startOfDay } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { useConfirmedRequests } from '@/lib/requests';
-import { useBlockedDays, useManageBlockedDays } from '@/lib/blocked-days';
 
-interface CalendarComponentProps {
-  artistId: number;
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useBlockedDays, useManageBlockedDays } from "@/lib/blocked-days";
+import { useConfirmedRequests, useConfirmedRequestsByVenue } from "@/lib/requests";
+import { useVenueBlockedDays } from "@/lib/venue-blocked-days";
+import { CalendarDate } from "@/types";
+
+import { format, startOfDay, isBefore } from 'date-fns';
+import { useMemo } from "react";
+import { ArtistCalendar } from './ArtistCalendar';
+
+
+export type CalendarType = 'artist' | 'venue';
+export interface CalendarComponentProps {
+  artistId?: number;
+  venueId?: number;
+  tipo?: CalendarType;
   editable?: boolean;
   onDateSelect?: (date: Date) => void;
 }
 
-export default function CalendarComponent({ artistId, editable = true, onDateSelect }: CalendarComponentProps) {
+export function CalendarComponent({ artistId, venueId, tipo: tipoProp, editable, onDateSelect }: CalendarComponentProps) {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { data: confirmedRequests = [] } = useConfirmedRequests(artistId);
-  const { data: blockedDaysData = [] } = useBlockedDays(artistId);
-  const { createMutation, deleteMutation } = useManageBlockedDays();
+  // Decidir por tipo
+  let confirmedRequests: any[] = [];
+  let blockedDaysData: any[] = [];
+  let createMutation: any = { mutate: () => {} };
+  let deleteMutation: any = { mutate: () => {} };
+
+  // Usar el prop tipo si está definido, si no, deducirlo
+  const tipo: CalendarType = tipoProp ? tipoProp : (typeof venueId !== 'undefined' ? 'venue' : 'artist');
+
+  if ((tipo === 'venue' && typeof venueId !== 'undefined')) {
+    ({ data: confirmedRequests = [] } = useConfirmedRequestsByVenue(venueId));
+    ({ data: blockedDaysData = [] } = useVenueBlockedDays(venueId));
+    // No permitir bloquear desde el frontend para venues (solo lectura)
+  } else if (artistId) {
+    ({ data: confirmedRequests = [] } = useConfirmedRequests(artistId));
+    ({ data: blockedDaysData = [] } = useBlockedDays(artistId));
+    ({ createMutation, deleteMutation } = useManageBlockedDays());
+  }
 
   const toDateStr = (value: string | Date) =>
     typeof value === 'string' ? value.slice(0, 10) : format(value, 'yyyy-MM-dd');
@@ -47,7 +69,9 @@ export default function CalendarComponent({ artistId, editable = true, onDateSel
   }, [confirmedRequests, blockedDaysData]);
 
   const handleBlockDate = (date: Date) => {
-    if (!editable) return; // No permitir bloquear si no es editable
+    if (!editable) return;
+    // Solo permitir bloquear días si es calendario de artista
+    if (tipo !== 'artist' || !artistId) return;
     const dateStr = format(date, 'yyyy-MM-dd');
     const isConfirmedBooking = confirmedRequests.some(
       req => toDateStr(req.eventDate) === dateStr
@@ -77,10 +101,11 @@ export default function CalendarComponent({ artistId, editable = true, onDateSel
     }
   };
 
+
   // Evitar selección de días pasados
-  const handleDateSelect = (date: string) => {
+  const handleDateSelect = (date: Date) => {
     const today = startOfDay(new Date());
-    const selected = startOfDay(new Date(date));
+    const selected = startOfDay(date);
     if (isBefore(selected, today)) return; // No permitir seleccionar días pasados
     if (onDateSelect) onDateSelect(date);
   };
@@ -88,7 +113,7 @@ export default function CalendarComponent({ artistId, editable = true, onDateSel
   return (
     <ArtistCalendar
       dates={dates}
-      editable={editable}
+      editable={editable && !!artistId}
       onDateToggle={handleBlockDate}
       onDateSelect={handleDateSelect}
     />
