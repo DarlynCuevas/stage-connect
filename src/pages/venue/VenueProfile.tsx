@@ -29,6 +29,7 @@ import {
   MapPinned
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import CalendarComponent from '@/components/calendar/CalendarComponent';
 
 
 export default function VenueProfile() {
@@ -343,6 +344,13 @@ export default function VenueProfile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Calendar debajo de galería */}
+        <div className="my-8">
+          <h2 className="text-2xl font-bold mb-2">Calendario de la sala</h2>
+          <p className="text-muted-foreground mb-4">Consulta y gestiona la disponibilidad de este local.</p>
+          <CalendarComponent artistId={venueId} />
+        </div>
 
         {/* Description */}
         <Card>

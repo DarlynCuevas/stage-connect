@@ -41,6 +41,7 @@ import VenueHome from "./pages/venue/VenueHome";
 import Discovery from "./pages/Discovery";
 import VenueRequests from "./pages/venue/VenueRequests";
 import VenueProfile from "./pages/venue/VenueProfile";
+import VenueCalendar from "./pages/venue/VenueCalendar";
 
 // Promoter pages
 import PromoterHome from "./pages/promoter/PromoterHome";
@@ -225,31 +226,28 @@ function AppRoutes() {
       <Route path="/" element={<RoleBasedRedirect />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      {/* <Route path="/artist/:id" element={<ArtistPublicProfile />} /> */}
-      {/* <Route path="/manager/:id" element={<ManagerPublicProfile />} /> */}
-      {/* <Route path="/promoter/:id" element={<PromoterPublicProfile />} /> */}
-      {/* <Route path="/venue/:id" element={<VenuePublicProfile />} /> */}
 
       {/* Artist routes */}
       <Route path="/artist/:id/discover" element={<ProtectedArtistDiscover />} />
       <Route path="/artist/:id/dashboard" element={<ArtistHome />} />
       <Route path="/artist/:id/profile" element={<ArtistProfile />} />
-      {/* Ruta pública: venue puede ver perfil de artista */}
-      <Route path="/venue/:venueId/artist/:id/profile" element={<ArtistProfile />} />
       <Route path="/artist/:id/calendar" element={<ArtistCalendar />} />
       <Route path="/artist/:id/requests" element={<ArtistRequests />} />
       <Route path="/artist/:id/settings" element={<Settings />} />
       <Route path="/artist/:id/invite" element={<InviteFriend />} />
+      {/* Ruta pública: venue puede ver perfil de artista */}
+      <Route path="/venue/:venueId/artist/:id/profile" element={<ArtistProfile />} />
 
         {/* Venue routes */}
       <Route path="/venue/:id/discover" element={<VenueDiscover />} />
       <Route path="/venue/:id/profile" element={<VenueProfile />} />
-      {/* Ruta pública: artista puede ver perfil de venue */}
-      <Route path="/artist/:id/venue/:venueId/profile" element={<VenueProfile />} />
+      <Route path="/venue/:id/calendar" element={<VenueCalendar />} />
       <Route path="/venue/:id/search" element={<Discovery type="artists" />} />
       <Route path="/venue/:id/requests" element={<VenueRequests />} />
       <Route path="/venue/:id/dashboard/" element={<VenueHome />} />
-      <Route path="/venue/:idsettings" element={<Settings />} />
+      <Route path="/venue/:id/settings" element={<Settings />} />
+        {/* Ruta pública: artista puede ver perfil de venue */}
+      <Route path="/artist/:id/venue/:venueId/profile" element={<VenueProfile />} />
 
 
       {/* Manager routes */}
