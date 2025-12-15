@@ -87,7 +87,7 @@ export default function Discovery({ type }: DiscoveryProps) {
 
     const handleVenueSearch = ({ city, type }) => {
       setFilters({
-        city: city || 'all',
+        city: city || '', // Si no hay ciudad, string vacío
         // type no se usa en artistas, pero se ignora
       });
     };

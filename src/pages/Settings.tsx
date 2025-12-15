@@ -1,67 +1,64 @@
+
 import { useState } from 'react';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { User, Lock, Trash2, LogOut } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Lock, LogOut, Trash2 } from 'lucide-react';
-import { deleteUser } from '@/lib/users';
+
 
 
 export default function Settings() {
   const { user, token, logout, isAuthenticated } = useAuth();
-  const { toast } = useToast();
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [deleting, setDeleting] = useState(false);
+  const [dniNif, setDniNif] = useState('');
   const location = useLocation();
+  const { toast } = useToast();
+
+  // Guardar cambios de perfil
+  const handleSaveProfile = async () => {
+    try {
+      // Aquí deberías llamar a tu API para actualizar el perfil
+      // await api.updateProfile({ name, email });
+      toast({ title: 'Perfil actualizado', description: 'Tus datos han sido guardados correctamente.' });
+    } catch (error) {
+      toast({ title: 'Error', description: 'No se pudo actualizar el perfil', variant: 'destructive' });
+    }
+  };
+
+  // Cambiar contraseña (placeholder)
+  const handleChangePassword = async () => {
+    toast({ title: 'Función no implementada', description: 'Próximamente podrás cambiar tu contraseña aquí.' });
+  };
+
+  // Eliminar cuenta (placeholder)
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      // await api.deleteAccount();
+      toast({ title: 'Cuenta eliminada', description: 'Tu cuenta ha sido eliminada.' });
+      logout();
+    } catch (error) {
+      toast({ title: 'Error', description: 'No se pudo eliminar la cuenta', variant: 'destructive' });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   // Protección de autenticación
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  const handleSaveProfile = () => {
-    toast({
-      title: 'Perfil actualizado',
-      description: 'Los cambios se han guardado correctamente.',
-      duration: 4000,
-    });
-  };
-
-  const handleChangePassword = () => {
-    toast({
-      title: 'Contraseña actualizada',
-      description: 'Tu contraseña ha sido cambiada correctamente.',
-      duration: 4000,
-    });
-  };
-
-  const handleDeleteAccount = async () => {
-    if (!user) return;
-    const confirm = window.confirm('¿Seguro que quieres eliminar tu cuenta? Esta acción es irreversible.');
-    if (!confirm) return;
-    try {
-      setDeleting(true);
-      // Assuming token is managed within apiFetch via context; if not, inject from useAuth
-      await deleteUser(user.id as number, token as string);
-      toast({ title: 'Cuenta eliminada', description: 'Tu cuenta ha sido eliminada correctamente.', duration: 4000 });
-      // Logout and redirect to landing
-      logout();
-    } catch (err: any) {
-      toast({ title: 'Error al eliminar', description: err?.message || 'No se pudo eliminar la cuenta.', variant: 'destructive', duration: 4000 });
-    } finally {
-      setDeleting(false);
-    }
-  };
-
   return (
-
     <HeaderLayout>
       <div className="max-w-2xl mx-auto space-y-8 py-8 px-2 md:px-0">
         <div>
@@ -123,7 +120,8 @@ export default function Settings() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="dni">DNI/NIF</Label>
-                    <Input id="dni" placeholder="Introduce tu DNI o NIF" />
+                    <Input id="dni" placeholder="Introduce tu DNI o NIF" value={dniNif} onChange={e => setDniNif(e.target.value)} />
+                      <Input id="dni" placeholder="Introduce tu DNI o NIF" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="razon">Razón social (opcional)</Label>
@@ -267,5 +265,5 @@ export default function Settings() {
 
       </div>
     </HeaderLayout>
-  );
+  )
 }

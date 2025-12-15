@@ -62,7 +62,6 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { format, isValid, parseISO, isBefore, startOfDay } from 'date-fns';
-import { addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 interface VenueSearchBarProps {
@@ -81,8 +80,6 @@ export function VenueSearchBar({
   onSearch,
   initialCity = '',
   initialDateRange = null,
-  initialType = 'all',
-  types = ['all', 'club', 'concert', 'rooftop', 'bar', 'festival', 'theater', 'private'],
 }: VenueSearchBarProps) {
 
   const [city, setCity] = useState(initialCity);
@@ -123,7 +120,7 @@ export function VenueSearchBar({
         <div className="relative flex-1">
           <Input
             placeholder="Ciudad o local..."
-            value={city}
+            value={city === 'all' ? '' : city}
             onFocus={() => setShowCityDropdown(true)}
             onBlur={() => setTimeout(() => setShowCityDropdown(false), 120)}
             onChange={e => {

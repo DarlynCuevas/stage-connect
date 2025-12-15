@@ -22,10 +22,12 @@ export interface DiscoveryArtistFilters {
   priceMax?: number;
 }
 
+
 export function useDiscoveryArtists() {
   const [artists, setArtists] = useState<DiscoveryArtist[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<DiscoveryArtistFilters>({ city: 'all', genre: [] });
+  // Por defecto, ciudad vacía (no 'all')
+  const [filters, setFilters] = useState<DiscoveryArtistFilters>({ city: '', genre: [] });
 
   useEffect(() => {
     const fetchArtists = async () => {
