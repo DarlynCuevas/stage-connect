@@ -32,13 +32,29 @@ export function CalendarComponent({ artistId, venueId, tipo: tipoProp, editable,
   // Usar el prop tipo si está definido, si no, deducirlo
   const tipo: CalendarType = tipoProp ? tipoProp : (typeof venueId !== 'undefined' ? 'venue' : 'artist');
 
+  // Permitir bloquear días si:
+  // - Es artista (como antes)
+  // - Es venue y el usuario autenticado es el dueño del venue
+  let allowBlock = false;
+  if (tipo === 'artist' && artistId) {
+    allowBlock = true;
+  } else if (tipo === 'venue' && venueId && user && String(user.id) === String(venueId)) {
+    allowBlock = true;
+  }
+
   if ((tipo === 'venue' && typeof venueId !== 'undefined')) {
-    ({ data: confirmedRequests = [] } = useConfirmedRequestsByVenue(venueId));
-    ({ data: blockedDaysData = [] } = useVenueBlockedDays(venueId));
-    // No permitir bloquear desde el frontend para venues (solo lectura)
+    const confirmed = useConfirmedRequestsByVenue(venueId)?.data;
+    const blocked = useVenueBlockedDays(venueId)?.data;
+    confirmedRequests = Array.isArray(confirmed) ? confirmed : [];
+    blockedDaysData = Array.isArray(blocked) ? blocked : [];
+    if (allowBlock) {
+      ({ createMutation, deleteMutation } = useManageBlockedDays());
+    }
   } else if (artistId) {
-    ({ data: confirmedRequests = [] } = useConfirmedRequests(artistId));
-    ({ data: blockedDaysData = [] } = useBlockedDays(artistId));
+    const confirmed = useConfirmedRequests(artistId)?.data;
+    const blocked = useBlockedDays(artistId)?.data;
+    confirmedRequests = Array.isArray(confirmed) ? confirmed : [];
+    blockedDaysData = Array.isArray(blocked) ? blocked : [];
     ({ createMutation, deleteMutation } = useManageBlockedDays());
   }
 
@@ -69,16 +85,20 @@ export function CalendarComponent({ artistId, venueId, tipo: tipoProp, editable,
   }, [confirmedRequests, blockedDaysData]);
 
   const handleBlockDate = (date: Date) => {
+    console.log('[handleBlockDate] editable:', editable, 'allowBlock:', allowBlock, 'date:', date);
     if (!editable) return;
-    // Solo permitir bloquear días si es calendario de artista
-    if (tipo !== 'artist' || !artistId) return;
+    if (!allowBlock) return;
     const dateStr = format(date, 'yyyy-MM-dd');
     const isConfirmedBooking = confirmedRequests.some(
       req => toDateStr(req.eventDate) === dateStr
     );
-    if (isConfirmedBooking) return;
+    if (isConfirmedBooking) {
+      console.log('[handleBlockDate] Día ya reservado, no se puede bloquear:', dateStr);
+      return;
+    }
     const existingBlocked = blockedDaysData.find(bd => bd.blockedDate === dateStr);
     if (existingBlocked) {
+      console.log('[handleBlockDate] Desbloqueando día:', dateStr, 'id:', existingBlocked.id);
       deleteMutation.mutate(existingBlocked.id, {
         onSuccess: () => {
           toast({
@@ -89,6 +109,7 @@ export function CalendarComponent({ artistId, venueId, tipo: tipoProp, editable,
         },
       });
     } else {
+      console.log('[handleBlockDate] Bloqueando día:', dateStr);
       createMutation.mutate(dateStr, {
         onSuccess: () => {
           toast({
@@ -112,8 +133,8 @@ export function CalendarComponent({ artistId, venueId, tipo: tipoProp, editable,
 
   return (
     <ArtistCalendar
-      dates={dates}
-      editable={editable && !!artistId}
+      dates={Array.isArray(dates) ? dates : []}
+      editable={editable || allowBlock}
       onDateToggle={handleBlockDate}
       onDateSelect={handleDateSelect}
     />

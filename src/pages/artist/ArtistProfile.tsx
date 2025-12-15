@@ -331,7 +331,7 @@ export default function ArtistProfile() {
             {/* Calendario encima de Biografía */}
             <CalendarComponent
               artistId={currentArtist?.id}
-              editable={false}
+              editable={authUser && currentArtist && String(authUser.id) === String(currentArtist.id)}
               onDateSelect={handleSolicitudContratacion}
             />
             {/* Bio */}

@@ -28,7 +28,7 @@ export default function VenueCalendar() {
               Gestiona la disponibilidad de tu sala para que los artistas y promotores puedan ver cuándo está libre. Bloquea días en los que no esté disponible.
             </p>
           </div>
-          <CalendarComponent artistId={venueId} />
+          <CalendarComponent venueId={venueId} editable={true} />
         </div>
     </HeaderLayout>
   );

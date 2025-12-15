@@ -187,7 +187,10 @@ export function ArtistCalendar({ dates, editable = false, onDateToggle, onDateSe
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onDateToggle?.(selectedDate)}
+                        onClick={() => {
+                          console.log('[ArtistCalendar] Click botón bloquear/desbloquear', selectedDate);
+                          onDateToggle?.(selectedDate);
+                        }}
                         className={selectedDateInfo.available ? '' : 'border-destructive text-destructive hover:bg-destructive/10'}
                       >
                         {selectedDateInfo.available ? (

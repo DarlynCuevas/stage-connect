@@ -61,28 +61,26 @@ export function useManageBlockedDays() {
   const queryClient = useQueryClient();
   const { token, user } = useAuth();
 
+  const invalidateBlockedDays = () => {
+    if (user?.id) {
+      queryClient.invalidateQueries({ queryKey: ['blocked-days', Number(user.id)] });
+      // Si el usuario es venue, también invalidar los días bloqueados del venue
+      if (user.role === 'Local') {
+        queryClient.invalidateQueries({ queryKey: ['venue-blocked-days', Number(user.id)] });
+      }
+    }
+  };
+
   const createMutation = useMutation({
     mutationFn: (blockedDate: string) =>
       createBlockedDayApi(blockedDate, token ?? null),
-    onSuccess: () => {
-      if (user?.id) {
-        queryClient.invalidateQueries({
-          queryKey: ['blocked-days', Number(user.id)],
-        });
-      }
-    },
+    onSuccess: invalidateBlockedDays,
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
       deleteBlockedDayApi(id, token ?? null),
-    onSuccess: () => {
-      if (user?.id) {
-        queryClient.invalidateQueries({
-          queryKey: ['blocked-days', Number(user.id)],
-        });
-      }
-    },
+    onSuccess: invalidateBlockedDays,
   });
 
   return { createMutation, deleteMutation };

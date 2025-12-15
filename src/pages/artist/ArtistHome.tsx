@@ -303,20 +303,7 @@ export default function ArtistHome() {
             <h1 className="text-3xl font-display font-bold mb-2">Panel de Artista</h1>
             <p className="text-muted-foreground">Bienvenido, {artist.nickName || artist.name}</p>
           </div>
-          <div className="flex gap-3">
-            <Button variant="outline" asChild>
-              <Link to={artist ? `/artist/${artist.id}/discover` : '/login'}>
-                <User className="w-4 h-4 mr-2" />
-                Inicio
-              </Link>
-            </Button>
-            <Button variant="gradient" asChild>
-              <Link to={artist ? `/artist/calendar/${artist.id}` : '/artist/calendar'}>
-                <Calendar className="w-4 h-4 mr-2" />
-                Calendario
-              </Link>
-            </Button>
-          </div>
+      
         </div>
             <div className="mb-10">
               <h2 className="text-2xl font-semibold mb-6 tracking-tight text-yellow-400 drop-shadow-sm">Resumen Económico</h2>

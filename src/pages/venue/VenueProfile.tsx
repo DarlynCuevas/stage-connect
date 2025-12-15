@@ -347,7 +347,7 @@ export default function VenueProfile() {
         <div className="my-8">
           <h2 className="text-2xl font-bold mb-2">Calendario de la sala</h2>
           <p className="text-muted-foreground mb-4">Consulta y gestiona la disponibilidad de este local.</p>
-          <CalendarComponent venueId={venueId} />
+          <CalendarComponent venueId={venueId} editable={isOwnProfile} />
         </div>
 
         {/* Description */}
