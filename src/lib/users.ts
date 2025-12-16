@@ -40,6 +40,7 @@ export async function fetchArtists(filters?: {
       params.set('priceMax', String(filters.priceMax));
     }
   }
+  // Esperamos que el backend devuelva blockedDays en cada artista
   return apiFetch(`/public/users?${params.toString()}`);
 }
 

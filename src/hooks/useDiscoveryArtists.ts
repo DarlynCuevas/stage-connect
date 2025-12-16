@@ -13,6 +13,8 @@ export interface DiscoveryArtist {
   favorite?: boolean;
   basePrice?: number;
   rating?: number;
+  blockedDays?: string[];
+  nickName?: string;
 }
 
 

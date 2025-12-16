@@ -64,6 +64,7 @@ export interface Artist {
   totalShows: number;
   verified: boolean;
   gender?: string;
+  blockedDays?: string[];
 }
 
 export interface PriceVariant {

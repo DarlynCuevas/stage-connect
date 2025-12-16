@@ -51,14 +51,30 @@ import { CalendarComponent } from '@/components/calendar/CalendarComponent';
 import ModalSolicitudContratacion from '@/components/calendar/ModalSolicitudContratacion';
 
 export default function ArtistProfile() {
-  const { id, venueId } = useParams();
+  const params = useParams();
   const { user: authUser, token, setUser } = useAuth();
-  // Si accede por /venue/:venueId/artist/:id/profile, es modo visitante (Local)
-  const isVisitorMode = Boolean(venueId);
-  // Control de acceso: solo denegar si NO es visitante y no es el artista ni Local
-  if (!isVisitorMode && id && authUser && String(authUser.id) !== String(id) && authUser.role !== 'Local') {
-    return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
+
+  // --- Detección robusta de contexto y mainContext igual que VenueProfile ---
+  let mainContext: 'artist' | 'venue' = 'venue';
+  let path = '';
+  if (typeof window !== 'undefined') {
+    path = window.location.hash ? window.location.hash.replace(/^#/, '') : window.location.pathname;
+    console.log('ArtistProfile path detectado:', path);
+    if (/^\/artist\//.test(path)) {
+      mainContext = 'artist';
+    } else if (/^\/venue\//.test(path)) {
+      mainContext = 'venue';
+    }
   }
+  // Extraer artistId de params o de la URL si no existe
+  let venueid = params.venueid;
+  if (!venueid && path) {
+    const match = path.match(/^\/artist\/(\d+)/);
+    if (match) venueid = match[1];
+  }
+  // Log para depuración
+  console.log('ArtistProfile venueid detectado:', venueid);
+
     function renderEditButton() {
       if (!canEdit) return null;
       if (!isEditing) {
@@ -77,7 +93,7 @@ export default function ArtistProfile() {
       );
     }
 
-  const artistId = id ? Number(id) : undefined;
+  const artistId = params.artistId ? Number(params.artistId) : undefined;
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const [newGenre, setNewGenre] = useState('');
@@ -107,7 +123,7 @@ export default function ArtistProfile() {
   );
 
   // Solo puede editar si es artista y su id coincide con la url y NO es visitante
-  const canEdit = !isVisitorMode && authUser && authUser.role === 'Artista' && String(authUser.id) === String(id);
+  const canEdit = !params.artistId && authUser && authUser.role === 'Artista' && String(authUser.id) === String(id);
 
   useEffect(() => {
     if (currentArtist) {
@@ -211,6 +227,7 @@ export default function ArtistProfile() {
       ciudadLocal: data.ciudadLocal || '',
     });
   }
+  const id = params.artistId
   // Menú de artista (por defecto)
   const artistNav = [
     { to: id ? `/artist/${id}/discover` : '/login', label: 'Inicio' },
@@ -221,7 +238,7 @@ export default function ArtistProfile() {
   ];
 
   // Menú de local (si accede como Local y venueId existe)
-  const localNav = authUser && authUser.role === 'Local' && venueId ? [
+  const localNav = authUser && authUser.role === 'Local' && venueid ? [
     { to: `/venue/${authUser.id}/discover`, label: 'Inicio' },
     { to: `/venue/${authUser.id}/dashboard`, label: 'Panel de datos' },
     { to: `/venue/${authUser.id}/profile`, label: 'Mi perfil' },
@@ -229,8 +246,10 @@ export default function ArtistProfile() {
     { to: `/venue/${authUser.id}/requests`, label: 'Solicitudes' },
   ] : null;
 
+  // Puedes usar mainContext para lógica condicional en el renderizado si lo necesitas
+
   return (
-    <HeaderLayout profileTabs={localNav || artistNav}>
+    <HeaderLayout profileTabs={mainContext === 'venue' ? localNav : artistNav}>
         {/* Header with banner */}
         <div className="relative rounded-2xl overflow-hidden">
           <div className="h-48 lg:h-64">

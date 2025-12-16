@@ -34,6 +34,12 @@ import { VenueCalendarComponent } from '@/components/calendar/VenueCalendar';
 export default function VenueProfile() {
   // Soporta ambas rutas: /venue/:id/profile y /artist/:artistId/venue/:venueId/profile
   const params = useParams();
+  // Log de depuración para contexto y parámetros
+  console.log('VenueProfile params:', params);
+  if (typeof window !== 'undefined') {
+    console.log('VenueProfile pathname:', window.location.pathname);
+  }
+  // Soporta ambas rutas: /venue/:id/profile y /artist/:artistId/venue/:venueId/profile
   // venueId puede venir como 'id' o 'venueId' según la ruta
   const venueIdParam = params.venueId || params.id;
   const { user: authUser, token, setUser } = useAuth();
@@ -185,12 +191,14 @@ export default function VenueProfile() {
     { id: 'parking', label: 'Parking', icon: MapPin },
   ];
 
-  // Detectar el contexto principal según el orden de la URL
+  // Detectar el contexto principal según el orden de la URL (soporte hash routing)
   // Si la ruta empieza por /artist/:artistId/venue/:venueId/profile => contexto artista
   // Si la ruta empieza por /venue/:venueId/artist/:artistId/profile => contexto local
   let mainContext: 'artist' | 'venue' = 'venue';
+  let path = '';
   if (typeof window !== 'undefined') {
-    const path = window.location.pathname;
+    path = window.location.hash ? window.location.hash.replace(/^#/, '') : window.location.pathname;
+    console.log('VenueProfile path detectado:', path);
     if (/^\/artist\//.test(path)) {
       mainContext = 'artist';
     } else if (/^\/venue\//.test(path)) {
@@ -198,13 +206,18 @@ export default function VenueProfile() {
     }
   }
 
-  // Tabs de artista
-  const artistNav = params.artistId ? [
-    { to: `/artist/${params.artistId}/discover`, label: 'Inicio' },
-    { to: `/artist/${params.artistId}/dashboard`, label: 'Panel de datos' },
-    { to: `/artist/${params.artistId}/profile`, label: 'Mi perfil' },
-    { to: `/artist/${params.artistId}/calendar`, label: 'Calendario' },
-    { to: `/artist/${params.artistId}/requests`, label: 'Solicitudes' },
+  // Extraer artistId de params o de la URL si no existe
+  let artistId = params.artistId;
+  if (!artistId && path) {
+    const match = path.match(/^\/artist\/(\d+)/);
+    if (match) artistId = match[1];
+  }
+  const artistNav = artistId ? [
+    { to: `/artist/${artistId}/discover`, label: 'Inicio' },
+    { to: `/artist/${artistId}/dashboard`, label: 'Panel de datos' },
+    { to: `/artist/${artistId}/profile`, label: 'Mi perfil' },
+    { to: `/artist/${artistId}/calendar`, label: 'Calendario' },
+    { to: `/artist/${artistId}/requests`, label: 'Solicitudes' },
   ] : [];
 
   // Tabs de local
@@ -216,6 +229,8 @@ export default function VenueProfile() {
     { to: `/venue/${venueIdParam}/requests`, label: 'Solicitudes' },
   ];
 
+  // Log de depuración para menú seleccionado
+  console.log('VenueProfile mainContext:', mainContext, 'artistId:', artistId, 'artistNav:', artistNav, 'localNav:', localNav);
   return (
     <HeaderLayout profileTabs={mainContext === 'artist' ? artistNav : localNav}>
       <div className="space-y-6 max-w-6xl mx-auto">

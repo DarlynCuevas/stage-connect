@@ -5,7 +5,6 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
   MapPin, 
   Users, 
-  Clock, 
   Star, 
   Heart,
   Wifi,
@@ -22,7 +21,7 @@ import apiFetch from '@/lib/api';
 
 interface VenueCardProps {
   venue: {
-    id: number;
+    user_id: number;
     name: string;
     city?: string;
     province?: string;
@@ -38,7 +37,7 @@ interface VenueCardProps {
     favorite?: boolean;
     verified?: boolean;
   };
-  onFavoriteChange?: (venueId: number, favorite: boolean) => void;
+  onFavoriteChange?: (user_id: number, favorite: boolean) => void;
 }
 
 const getAmenityIcon = (amenity: string) => {
@@ -50,7 +49,11 @@ const getAmenityIcon = (amenity: string) => {
   return <Shield className="h-3 w-3" />;
 };
 
+
 export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
+    // Log para depuración de IDs
+    console.log('VenueCard debug:', { venue, userId: (venue as any).userId, id: venue.user_id
+ });
   const { user, token } = useAuth();
   const params = useParams();
 
@@ -60,7 +63,7 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
   const cap = venue.capacity || 0;
   const reviewsDisplay = (venue.reviewsCount !== undefined)
     ? venue.reviewsCount
-    : (cap > 0 ? Math.max(50, Math.round(cap / 6)) : (venue.id % 300) + 50);
+    : (cap > 0 ? Math.max(50, Math.round(cap / 6)) : (venue.user_id % 300) + 50);
   // Infer simple venue type from bio keywords (approximation)
   const bio = (venue.bio || '').toLowerCase();
   const venueType = bio.includes('discoteca') || bio.includes('club')
@@ -71,14 +74,14 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
     ? 'Rooftop'
     : '';
 
-  // Placeholder image handling deferred; keep icon fallback for now
-
-  // Si el usuario es artista y hay artistId en la URL, usar ruta cruzada para mantener layout de artista
+  // Si el usuario es artista, usar su propio id para la ruta cruzada
   const isArtist = user && String(user.role).toLowerCase().includes('art');
-  const artistId = params.id || user?.id;
-  const venueProfileUrl = isArtist
-    ? `/artist/${artistId}/venue/${venue.id}/profile`
-    : `/venue/profile/${venue.id}`;
+  const resolvedArtistId = isArtist ? user?.id : undefined;
+  // Usar userId si existe, si no id
+  const venueId = (venue as any).userId || venue.user_id;
+  const venueProfileUrl = isArtist && resolvedArtistId
+    ? `/artist/${resolvedArtistId}/venue/${venueId}/profile`
+    : `/venue/profile/${venueId}`;
 
   return (
     <Link to={venueProfileUrl} className="group">
@@ -119,9 +122,9 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
                 e.stopPropagation();
                 const newFav = !isFavorite;
                 setIsFavorite(newFav);
-                if (onFavoriteChange) onFavoriteChange(venue.id, newFav);
+                if (onFavoriteChange) onFavoriteChange(venue.user_id, newFav);
                 try {
-                  await apiFetch(`/users/favorite/${venue.id}`, {
+                  await apiFetch(`/users/favorite/${venue.user_id}`, {
                     method: 'PATCH',
                     body: { favorite: newFav },
                     token,

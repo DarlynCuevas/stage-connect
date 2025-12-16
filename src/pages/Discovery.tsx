@@ -1,201 +1,80 @@
-import { VenueSearchBar } from '@/components/ui/VenueSearchBar';
-import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { Badge } from '@/components/ui/badge';
 import { VenueCard } from '@/components/venue/VenueCard';
-import { useDiscoveryVenues } from '@/hooks/useDiscoveryVenues';
-import { useDiscoveryArtists } from '@/hooks/useDiscoveryArtists';
 import { ArtistCard } from '@/components/artists/ArtistCard';
-import { ArtistSearch } from '@/components/artists/ArtistSearch';
-import { apiFetch } from '@/lib/api';
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import { ChevronDown, ChevronUp, Heart } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
+import { useAuth } from '@/contexts/AuthContext';
 
 type DiscoveryProps = {
   type: 'artists' | 'venues';
+  loading: boolean;
+  verified: any[];
+  featured: any[];
+  others: any[];
+  favorites: any[];
+  showFavorites: boolean;
+  setShowFavorites: (show: boolean) => void;
+  onFavoriteChange: (...args: any[]) => void;
+  mapToCard: (item: any) => any;
+  onSearchBar?: React.ReactNode;
+  totalCount: number;
+  sectionTitle: string;
+  cardType: 'artist' | 'venue';
 };
 
-// Ejemplo: actualizar una sala a verificada o destacada
-async function updateVenueField(
-  venueId: string,
-  data: { verified?: boolean; featured?: boolean },
-  token?: string
-) {
-  return apiFetch(`/venues/${venueId}`, {
-    method: 'PATCH',
-    body: data,
-    token,
-  });
-}
-// Uso:
-// await updateVenueField('1', { verified: true }, token);
-// await updateVenueField('2', { featured: true }, token);
 
-export default function Discovery({ type }: DiscoveryProps) {
-  const params = useParams();
-  if (type === 'artists') {
-    const { id: venueId } = useParams();
-    // Mostrar artistas para venues, pero usando VenueSearchBar como filtro visual
-    const { artists, loading, setFilters, filters } = useDiscoveryArtists();
-    // Mantener hooks siempre en el mismo orden
-    const [showFavorites, setShowFavorites] = useState(false);
-    const [artistList, setArtistList] = useState(artists);
-
-    useEffect(() => {
-      setArtistList(artists);
-    }, [artists]);
-
-    // Filtro por nickName si hay búsqueda
-    const searchQuery = (filters.query || '').toLowerCase();
-    const filteredArtists = searchQuery
-      ? artistList.filter((a) =>
-          (a.nickName || a.name || '').toLowerCase().includes(searchQuery)
-        )
-      : artistList;
-
-    // Filtrar artistas verificados, destacados y favoritos
-    const verified = filteredArtists.filter((a) => a.verified);
-    const featured = filteredArtists.filter((a) => a.featured && !a.verified);
-    const others = filteredArtists.filter((a) => !a.verified && !a.featured);
-    const favorites = filteredArtists.filter((a) => a.favorite);
-
-    const handleFavoriteChange = (artistId, favorite) => {
-      setArtistList((prev) =>
-        prev.map((a) =>
-          a.id === artistId ? { ...a, favorite } : a
-        )
-      );
-    };
-
-    // Mapear DiscoveryArtist a ArtistCard (rellenar campos mínimos)
-    const mapToArtistCard = (artist) => ({
-      id: String(artist.id),
-      userId: String(artist.id),
-      name: artist.name,
-      nickName: artist.nickName || artist.name,
-      avatar: artist.avatar || '',
-      banner: '',
-      bio: artist.bio || '',
-      genre: artist.genre ? (Array.isArray(artist.genre) ? artist.genre : [artist.genre]) : [],
-      country: '',
-      city: artist.city || '',
-      basePrice: artist.basePrice || 0,
-      priceVariants: [],
-      socialLinks: {},
-      gallery: artist.gallery || [],
-      videos: [],
-      managerId: '',
-      rating: artist.rating || 0,
-      totalShows: 0,
-      verified: artist.verified || false,
-      gender: '',
-      favorite: artist.favorite || false,
-      featured: artist.featured || false,
-    });
-
-    const handleVenueSearch = ({ query, city, type }) => {
-      setFilters((prev) => ({
-        ...prev,
-        query: query || '',
-        city: city || '',
-        // type no se usa en artistas, pero se ignora
-      }));
-    };
-
-    return (
-      <div className="w-full max-w-[1800px] mx-auto px-4 py-6">
-        <div className="flex flex-col items-center justify-center mb-4 text-center">
-          <h1 className="text-3xl font-display font-bold mb-1">
-            Encuentra artistas para tu evento
-          </h1>
-          <p className="text-muted-foreground mb-2">
-            Descubre y contacta artistas disponibles
+export default function Discovery({
+  loading,
+  verified,
+  featured,
+  others,
+  favorites,
+  showFavorites,
+  setShowFavorites,
+  onFavoriteChange,
+  mapToCard,
+  onSearchBar,
+  totalCount,
+  sectionTitle,
+  cardType,
+}: DiscoveryProps) {
+  const { user } = useAuth();
+  const artistId = user && user.role && String(user.role).toLowerCase().includes('art') ? user.id : undefined;
+  const venueId = user && user.role && String(user.role).toLowerCase().includes('venue') ? user.id : undefined;
+  return (
+    <div className="w-full max-w-[1800px] mx-auto px-4 py-6">
+      <div className="flex flex-col items-center justify-center mb-4 text-center">
+        <h1 className="text-3xl font-display font-bold mb-1">
+          {sectionTitle}
+        </h1>
+        <p className="text-muted-foreground mb-2">
+          {cardType === 'artist'
+            ? 'Descubre y contacta artistas disponibles'
+            : 'Descubre salas y eventos donde mostrar tu talento'}
+        </p>
+      </div>
+      {onSearchBar}
+      <div className="flex justify-center my-4">
+        <Badge variant="secondary" className="text-sm">
+          {totalCount} {cardType === 'artist' ? 'artistas' : 'salas'} disponibles
+        </Badge>
+      </div>
+      {loading ? (
+        <div className="min-h-[200px] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground ml-4">
+            {cardType === 'artist' ? 'Buscando artistas...' : 'Descubriendo salas increíbles...'}
           </p>
         </div>
-        <VenueSearchBar
-          onSearch={handleVenueSearch}
-          initialCity={filters.city || ''}
-          initialType={''}
-        />
-        <div className="flex justify-center my-4">
-          <Badge variant="secondary" className="text-sm">
-            {artists.length} artistas disponibles
-          </Badge>
-        </div>
-        {loading ? (
-          <div className="min-h-[200px] flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="text-muted-foreground ml-4">
-              Buscando artistas...
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* Artistas verificados */}
-            {verified.length > 0 && (
-              <div className="mb-6 relative">
-                <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                  Artistas verificados
-                </h2>
-                <div className="relative">
-                  <Carousel>
-                    <div className="flex flex-col">
-                      <div className="flex justify-center items-center gap-1 mb-3">
-                        <CarouselPrevious />
-                        <CarouselNext />
-                      </div>
-                      <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
-                        {verified.map((artist) => (
-                          <CarouselItem key={artist.id} className="basis-72 max-w-xs">
-                            <ArtistCard artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} venueId={venueId} />
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                    </div>
-                  </Carousel>
-                </div>
-              </div>
-            )}
-            {/* Artistas destacados */}
-            {featured.length > 0 && (
-              <div className="mb-6 relative">
-                <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                  Artistas destacados
-                </h2>
-                <div className="relative">
-                  <Carousel>
-                    <div className="flex flex-col">
-                      <div className="flex justify-center items-center gap-1 mb-3">
-                        <CarouselPrevious />
-                        <CarouselNext />
-                      </div>
-                      <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
-                        {featured.map((artist) => (
-                          <CarouselItem key={artist.id} className="basis-72 max-w-xs">
-                            <ArtistCard artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} venueId={venueId} />
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                    </div>
-                  </Carousel>
-                </div>
-              </div>
-            )}
-            {/* Favoritos (siempre renderizar la sección) */}
+      ) : (
+        <>
+          {/* Verificados */}
+          {verified.length > 0 && (
             <div className="mb-6 relative">
-              <button
-                className="flex items-center gap-2 text-lg font-semibold text-red-500 mb-2 focus:outline-none hover:underline"
-                onClick={() => setShowFavorites((v) => !v)}
-              >
-                <Heart className="h-5 w-5" /> Favoritos
-                {showFavorites ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </button>
-              {showFavorites && (
+              <h2 className="text-lg font-semibold text-muted-foreground mb-2">
+                {cardType === 'artist' ? 'Artistas verificados' : 'Salas verificadas'}
+              </h2>
+              <div className="relative">
                 <Carousel>
                   <div className="flex flex-col">
                     <div className="flex justify-center items-center gap-1 mb-3">
@@ -203,212 +82,104 @@ export default function Discovery({ type }: DiscoveryProps) {
                       <CarouselNext />
                     </div>
                     <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
-                      {favorites.length > 0 ? favorites.map((artist) => (
-                        <CarouselItem key={artist.id} className="basis-72 max-w-xs">
-                          <ArtistCard artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} venueId={venueId} />
+                      {verified.map((item) => (
+                        <CarouselItem key={item.id} className="basis-72 max-w-xs">
+                          {cardType === 'artist' ? (
+                            <ArtistCard artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
+                          ) : (
+                            <VenueCard venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                          )}
                         </CarouselItem>
-                      )) : (
-                        <div className="text-muted-foreground px-4 py-8">No tienes artistas favoritos.</div>
-                      )}
+                      ))}
                     </CarouselContent>
                   </div>
                 </Carousel>
-              )}
+              </div>
             </div>
-            {/* Otros artistas */}
-            {others.length > 0 && (
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                  Artistas
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                  {others.map((artist) => (
-                    <ArtistCard key={artist.id} artist={mapToArtistCard(artist)} showPrice onFavoriteChange={handleFavoriteChange} venueId={venueId} />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    );
-  }
-  // ...lógica original para venues...
-
-  const { venues, loading, setFilters, filters } = useDiscoveryVenues();
-  const [showFavorites, setShowFavorites] = useState(false);
-  const [filteredVenues, setFilteredVenues] = useState(venues);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-
-  // Si la ruta es /artist/:artistId/venue/:venueId/profile, pasar artistId a VenueCard
-  const artistId = params.artistId;
-
-  // Filtrado por fecha seleccionada
-  useEffect(() => {
-    if (!selectedDate) {
-      setFilteredVenues(venues);
-      return;
-    }
-    // Filtrar venues que NO tengan el día bloqueado usando el array blockedDays
-    setFilteredVenues(
-      venues.filter((venue: any) => {
-        if (!venue.blockedDays) return true;
-        return !venue.blockedDays.includes(selectedDate);
-      })
-    );
-  }, [selectedDate, venues]);
-
-  // VenueSearchBar: interceptar selección de fecha
-  const handleVenueSearch = ({ query, city, dateRange, type }: any) => {
-    setFilters({
-      city: city || '',
-      type: type || 'all',
-      query: query || '',
-      // dateRange
-    });
-    setSelectedDate(dateRange?.from || null);
-  };
-
-  const verified = filteredVenues.filter((v) => v.verified);
-  const featured = filteredVenues.filter((v) => v.featured && !v.verified);
-  const others = filteredVenues.filter((v) => !v.verified && !v.featured);
-  const favorites = filteredVenues.filter((v) => v.favorite);
-
-  const handleFavoriteChange = (venueId: number, favorite: boolean) => {
-    setFilteredVenues((prev) =>
-      prev.map((v) =>
-        v.id === venueId ? { ...v, favorite } : v
-      )
-    );
-  };
-
-  return (
-    <div className="w-full max-w-[1800px] mx-auto px-4 py-6">
-      <div className="flex flex-col items-center justify-center mb-4 text-center">
-        <h1 className="text-3xl font-display font-bold mb-1">
-          Encuentra tu próximo escenario
-        </h1>
-        <p className="text-muted-foreground mb-2">
-          Descubre salas y eventos donde mostrar tu talento
-        </p>
-      </div>
-      <VenueSearchBar
-        onSearch={handleVenueSearch}
-        initialCity={filters.city || ''}
-        initialType={filters.type}
-      />
-      <div className="flex justify-center my-4">
-        <Badge variant="secondary" className="text-sm">
-          {venues.length} salas disponibles
-        </Badge>
-      </div>
-      {loading ? (
-        <div className="min-h-[200px] flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground ml-4">
-            Descubriendo salas increíbles...
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="w-full max-w-[1800px] mx-auto px-4 py-4">
-            {/* Primera fila: salas verificadas */}
-            {verified.length > 0 && (
-              <div className="mb-6 relative">
-                <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                  Salas verificadas
-                </h2>
-                <div className="relative">
-                  <Carousel>
-                    <div className="flex flex-col">
-                      <div className="flex justify-center items-center gap-1 mb-3">
-                        <CarouselPrevious />
-                        <CarouselNext />
-                      </div>
-                      <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
-                        {verified.map((venue) => (
-                          <CarouselItem key={venue.id} className="basis-72 max-w-xs">
-                            <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} artistId={artistId} />
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
+          )}
+          {/* Destacados */}
+          {featured.length > 0 && (
+            <div className="mb-6 relative">
+              <h2 className="text-lg font-semibold text-muted-foreground mb-2">
+                {cardType === 'artist' ? 'Artistas destacados' : 'Salas destacadas'}
+              </h2>
+              <div className="relative">
+                <Carousel>
+                  <div className="flex flex-col">
+                    <div className="flex justify-center items-center gap-1 mb-3">
+                      <CarouselPrevious />
+                      <CarouselNext />
                     </div>
-                  </Carousel>
-                </div>
+                    <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
+                      {featured.map((item) => (
+                        <CarouselItem key={item.id} className="basis-72 max-w-xs">
+                          {cardType === 'artist' ? (
+                            <ArtistCard artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
+                          ) : (
+                            <VenueCard venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                          )}
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                  </div>
+                </Carousel>
               </div>
-            )}
-            {/* Segunda fila: salas destacadas */}
-            {featured.length > 0 && (
-              <div className="mb-6 relative">
-                <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                  Salas destacadas
-                </h2>
-                <div className="relative">
-                  <Carousel>
-                    <div className="flex flex-col">
-                      <div className="flex justify-center items-center gap-1 mb-3">
-                        <CarouselPrevious />
-                        <CarouselNext />
-                      </div>
-                      <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
-                        {featured.map((venue) => (
-                          <CarouselItem key={venue.id} className="basis-72 max-w-xs">
-                            <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} artistId={artistId} />
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                    </div>
-                  </Carousel>
+            </div>
+          )}
+          {/* Favoritos */}
+          <div className="mb-6 relative">
+            <button
+              className="flex items-center gap-2 text-lg font-semibold text-red-500 mb-2 focus:outline-none hover:underline"
+              onClick={() => setShowFavorites(!showFavorites)}
+            >
+              <Heart className="h-5 w-5" /> Favoritos
+              {showFavorites ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
+            {showFavorites && (
+              <Carousel>
+                <div className="flex flex-col">
+                  <div className="flex justify-center items-center gap-1 mb-3">
+                    <CarouselPrevious />
+                    <CarouselNext />
+                  </div>
+                  <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
+                    {favorites.length > 0 ? favorites.map((item) => (
+                      <CarouselItem key={item.id} className="basis-72 max-w-xs">
+                        {cardType === 'artist' ? (
+                          <ArtistCard artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
+                        ) : (
+                          <VenueCard venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                        )}
+                      </CarouselItem>
+                    )) : (
+                      <div className="text-muted-foreground px-4 py-8">No tienes favoritos.</div>
+                    )}
+                  </CarouselContent>
                 </div>
-              </div>
-            )}
-            {/* Sección colapsable de favoritos */}
-             {favorites.length > 0 && (
-               <div className="mb-6 relative">
-                 <button
-                   className="flex items-center gap-2 text-lg font-semibold text-red-500 mb-2 focus:outline-none hover:underline"
-                   onClick={() => setShowFavorites((v) => !v)}
-                 >
-                   <Heart className="h-5 w-5" /> Favoritos
-                   {showFavorites ? (
-                     <ChevronUp className="h-4 w-4" />
-                   ) : (
-                     <ChevronDown className="h-4 w-4" />
-                   )}
-                 </button>
-                 {showFavorites && (
-                   <Carousel>
-                     <div className="flex flex-col">
-                       <div className="flex justify-center items-center gap-1 mb-3">
-                         <CarouselPrevious />
-                         <CarouselNext />
-                       </div>
-                       <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
-                         {favorites.map((venue) => (
-                           <CarouselItem key={venue.id} className="basis-72 max-w-xs">
-                             <VenueCard venue={venue} onFavoriteChange={handleFavoriteChange} artistId={artistId} />
-                           </CarouselItem>
-                         ))}
-                       </CarouselContent>
-                     </div>
-                   </Carousel>
-                 )}
-               </div>
-             )}
-            {/* Tercera fila: otras salas */}
-            {others.length > 0 && (
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                  Salas
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                  {others.map((venue) => (
-                    <VenueCard key={venue.id} venue={venue} onFavoriteChange={handleFavoriteChange} artistId={artistId} />
-                  ))}
-                </div>
-              </div>
+              </Carousel>
             )}
           </div>
+          {/* Otros */}
+          {others.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-muted-foreground mb-2">
+                {cardType === 'artist' ? 'Artistas' : 'Salas'}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                {others.map((item) => (
+                  cardType === 'artist' ? (
+                    <ArtistCard key={item.id} artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
+                  ) : (
+                    <VenueCard key={item.id} venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                  )
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

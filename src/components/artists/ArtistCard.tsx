@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { MapPin, Users, Star, Heart, Music, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 
 interface ArtistCardProps {
@@ -13,20 +14,27 @@ interface ArtistCardProps {
   showPrice?: boolean;
   onViewProfile?: () => void;
   venueId?: string;
+  onFavoriteChange?: (artistId: number, favorite: boolean) => void;
 }
 
-export function ArtistCard({ artist, showPrice = false, venueId }: ArtistCardProps) {
-  const [isFavorite, setIsFavorite] = useState(false); // Puedes conectar lógica real si tienes favoritos
+export function ArtistCard({ artist, showPrice = false, onFavoriteChange }: ArtistCardProps) {
+  const [isFavorite, setIsFavorite] = useState(!!artist.favorite);
   const location = [artist.city, artist.country].filter(Boolean).join(', ');
   const genres = artist.genre || [];
-
-  // Si venueId está presente, usar la ruta pública de visitante
-  const profileLink = venueId
-    ? `/venue/${venueId}/artist/${artist.id}/profile`
-    : `/artist/${artist.id}/profile`;
+  const { user, token } = useAuth();
+  console.log('artistaa ', artist);
+  
+  // Si el usuario es local, usar su propio id para la ruta cruzada
+  const isLocal = user && String(user.role).toLowerCase().includes('local');
+  const resolvedLocalId = isLocal ? user?.id : undefined;
+  // Usar userId si existe, si no id
+  const artistId = (artist as any).artistId || artist.id;
+  const venueProfileUrl = isLocal && resolvedLocalId
+    ? `/venue/${resolvedLocalId}/artist/${artistId}/profile`
+    : `/artist/profile/${artistId}`;
 
   return (
-    <Link to={profileLink} className="group">
+    <Link to={venueProfileUrl} className="group">
       <Card className="overflow-hidden border-0 bg-transparent shadow-none transition-all duration-300">
         <div className="relative">
           {/* Banner principal */}
@@ -57,7 +65,14 @@ export function ArtistCard({ artist, showPrice = false, venueId }: ArtistCardPro
             {/* Botón de favorito (simulado) */}
             <button
               className={`absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background transition-colors ${isFavorite ? 'text-red-500' : ''}`}
-              onClick={e => { e.preventDefault(); setIsFavorite(v => !v); }}
+              onClick={e => {
+                e.preventDefault();
+                setIsFavorite(v => {
+                  const newFav = !v;
+                  if (onFavoriteChange) onFavoriteChange(Number(artist.id), newFav);
+                  return newFav;
+                });
+              }}
               aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
             >
               <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground hover:text-red-500'}`} />
