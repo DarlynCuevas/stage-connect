@@ -49,9 +49,6 @@ const getAmenityIcon = (amenity: string) => {
 
 
 export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
-    // Log para depuración de IDs
-    console.log('VenueCard debug:', { venue, userId: (venue as any).userId, id: venue.user_id
- });
   const { user, token } = useAuth();
   const params = useParams();
 

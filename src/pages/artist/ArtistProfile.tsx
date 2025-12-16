@@ -222,14 +222,15 @@ export default function ArtistProfile() {
       ciudadLocal: data.ciudadLocal || '',
     });
   }
-  const id = params.artistId
+  // Usar el id de params si existe, si no el del usuario autenticado
+  const id = params.artistId || authUser?.id;
   // Menú de artista (por defecto)
   const artistNav = [
     { to: id ? `/artist/${id}/discover` : '/login', label: 'Inicio' },
-    { to: `/artist/${id}/dashboard`, label: 'Panel de datos' },
+    { to: id ? `/artist/${id}/dashboard` : '/login', label: 'Panel de datos' },
     { to: id ? `/artist/${id}/profile` : '/login', label: 'Mi perfil' },
     { to: id ? `/artist/${id}/calendar` : '/login', label: 'Calendario' },
-    { to: `/artist/${id}/requests`, label: 'Solicitudes' },
+    { to: id ? `/artist/${id}/requests` : '/login', label: 'Solicitudes' },
   ];
 
   // Menú de local (si accede como Local y venueId existe)
@@ -1074,7 +1075,15 @@ function ReviewsList({ artistId }: { artistId: number }) {
 
   useEffect(() => {
     if (!artistId) return;
-    apiFetch<Review[]>(`/reviews/artist/${artistId}`).then(setReviews);
+    (async () => {
+      try {
+        const data = await apiFetch<Review[]>(`/reviews/artist/${artistId}`);
+        setReviews(data);
+      } catch (error) {
+        console.error('Error al cargar reviews:', error);
+        setReviews([]); // No reviews si hay error
+      }
+    })();
   }, [artistId]);
 
   if (!reviews.length) {

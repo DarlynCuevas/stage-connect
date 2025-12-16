@@ -21,7 +21,6 @@ export function ArtistCard({ artist, showPrice = false, onFavoriteChange }: Arti
   const location = [artist.city, artist.country].filter(Boolean).join(', ');
   const genres = artist.genre || [];
   const { user, token } = useAuth();
-  console.log('artistaa ', artist);
   
   // Si el usuario es local, usar su propio id para la ruta cruzada
   const isLocal = user && String(user.role).toLowerCase().includes('local');

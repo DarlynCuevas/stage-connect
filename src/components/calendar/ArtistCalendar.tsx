@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useBookingSocket } from '@/hooks/useBookingSocket';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,8 +28,8 @@ export function ArtistCalendarComponent({ artistId, editable = false, onDateTogg
   const blockedDaysData = Array.isArray(blocked) ? blocked : [];
   const { createMutation, deleteMutation } = useManageBlockedDays();
 
-  // Unir fechas bloqueadas y reservadas
-  const dates: CalendarDate[] = [
+  // Unir fechas bloqueadas y reservadas (memorizado para evitar bucles)
+  const dates: CalendarDate[] = useMemo(() => [
     ...confirmedRequests.map(req => ({
       date: req.eventDate.slice(0, 10),
       available: false,
@@ -42,7 +42,7 @@ export function ArtistCalendarComponent({ artistId, editable = false, onDateTogg
       note: 'Día bloqueado por el artista',
       blocked: true,
     })),
-  ];
+  ], [confirmedRequests, blockedDaysData]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [localDates, setLocalDates] = useState<CalendarDate[]>(dates);
 
@@ -75,8 +75,6 @@ export function ArtistCalendarComponent({ artistId, editable = false, onDateTogg
     if (!date) return;
     setSelectedDate(date);
 
-    // Log para depuración
-    console.log('[ArtistCalendar] handleDateClick', { date, editable, onDateSelectExists: !!onDateSelect });
 
     // If not editable (public/promoter/venue view) and date is unavailable, block selection
     const status = getDateStatus(date);

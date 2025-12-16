@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useBookingSocket } from '@/hooks/useBookingSocket';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,8 +27,8 @@ export function VenueCalendarComponent({ venueId, editable = false, onDateSelect
   const blockedDaysData = Array.isArray(blocked) ? blocked : [];
   const { createMutation, deleteMutation } = useManageBlockedDays();
 
-  // Unir fechas bloqueadas y reservadas
-  const dates: CalendarDate[] = [
+  // Unir fechas bloqueadas y reservadas (memorizado para evitar bucles)
+  const dates: CalendarDate[] = useMemo(() => [
     ...confirmedRequests.map(req => ({
       date: req.eventDate.slice(0, 10),
       available: false,
@@ -41,7 +41,7 @@ export function VenueCalendarComponent({ venueId, editable = false, onDateSelect
       note: 'Día bloqueado por la sala',
       blocked: true,
     })),
-  ];
+  ], [confirmedRequests, blockedDaysData]);
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [localDates, setLocalDates] = useState<CalendarDate[]>(dates);

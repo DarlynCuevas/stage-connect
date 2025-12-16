@@ -69,7 +69,6 @@ export default function ArtistHome() {
 
   // Shows totales: all confirmed requests regardless of year
   const showsThisYear = useMemo(() => {
-    console.log('📊 Total shows (all time):', confirmedRequests.length);
     return confirmedRequests.length;
   }, [confirmedRequests]);
 

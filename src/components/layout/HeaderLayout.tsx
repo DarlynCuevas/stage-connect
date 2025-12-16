@@ -18,6 +18,9 @@ export interface HeaderLayoutProps {
 
 export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
   const { user, isAuthenticated, logout } = useAuth();
+  React.useEffect(() => {
+    console.log('[HeaderLayout] Render. user:', user, 'isAuthenticated:', isAuthenticated);
+  }, [user, isAuthenticated]);
   const location = useLocation();
 
   // Allow public access to /venue/:venueId/artist/:artistId/profile (local ve artista)
@@ -28,6 +31,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
 
   // Si el usuario es artista y está en /artist/:artistId/venue/:venueId/profile, forzar layout de artista
   const isArtistVenueProfile = /^\/artist\/[^/]+\/venue\/[^/]+\/profile$/.test(location.pathname);
+  const isVenueArtistProfile = /^\/venue\/[^/]+\/artist\/[^/]+\/profile$/.test(location.pathname);
   const [theme, setTheme] = React.useState<'dark' | 'light'>(() => {
     const t = localStorage.getItem('theme');
     return (t === 'light' ? 'light' : 'dark');
@@ -94,7 +98,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
           { to: `/artist/${user.id}/calendar`, label: 'Calendario' },
           { to: `/artist/${user.id}/requests`, label: 'Solicitudes' },
         ];
-      } else if (role.includes('local')) {
+      } else if (role.includes('local') || isVenueArtistProfile) {
         nav = [
           { to: `/venue/${user.id}/discover`, label: 'Inicio' },
           { to: `/venue/${user.id}/dashboard`, label: 'Panel de datos' },
@@ -151,13 +155,14 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
             </Link>
             {/* Profile navigation tabs integrated into header */}
             <nav className="flex items-center gap-2">
-              {nav.map((item) => {
+              {nav.map((item, idx) => {
                 const active = location.pathname === item.to;
                 // Mostrar badge solo en la pestaña de Solicitudes para Artista
                 const isArtistRequestsTab = user && String(user.role).toLowerCase().includes('art') && item.to.includes('/requests') && item.label === 'Solicitudes';
+                // Usar key única combinando ruta y el índice
                 return (
                   <Link
-                    key={item.to}
+                    key={item.to + '-' + idx}
                     to={item.to}
                     className={cn(
                       'px-5 py-2 rounded-full font-medium text-sm transition-colors relative',

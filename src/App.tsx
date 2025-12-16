@@ -240,7 +240,6 @@ function AppRoutes() {
       <Route path="/venue/:id/discover" element={<VenueDiscover />} />
       <Route path="/venue/:id/profile" element={<VenueProfile />} />
       <Route path="/venue/:id/calendar" element={<VenueCalendar />} />
-      <Route path="/venue/:id/search" element={<Discovery type="artists" />} />
       <Route path="/venue/:id/requests" element={<VenueRequests />} />
       <Route path="/venue/:id/dashboard/" element={<VenueHome />} />
       <Route path="/venue/:id/settings" element={<Settings />} />
@@ -260,7 +259,6 @@ function AppRoutes() {
       {/* Promoter routes */}
       <Route path="/promoter" element={<PromoterHome />} />
       <Route path="/promoter/profile/:id" element={<PromoterProfile />} />
-      <Route path="/promoter/search" element={<Discovery type="artists" />} />
       <Route path="/promoter/events" element={<PromoterHome />} />
       <Route path="/promoter/requests" element={<PromoterRequests />} />
       <Route path="/promoter/settings" element={<Settings />} />
