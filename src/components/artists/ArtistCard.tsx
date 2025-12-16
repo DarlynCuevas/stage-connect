@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { Artist } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { MapPin, Users, Star, Heart, Music, CheckCircle2 } from 'lucide-react';
+import { MapPin,Star, Heart, Music, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 

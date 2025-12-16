@@ -34,11 +34,7 @@ import { VenueCalendarComponent } from '@/components/calendar/VenueCalendar';
 export default function VenueProfile() {
   // Soporta ambas rutas: /venue/:id/profile y /artist/:artistId/venue/:venueId/profile
   const params = useParams();
-  // Log de depuración para contexto y parámetros
-  console.log('VenueProfile params:', params);
-  if (typeof window !== 'undefined') {
-    console.log('VenueProfile pathname:', window.location.pathname);
-  }
+
   // Soporta ambas rutas: /venue/:id/profile y /artist/:artistId/venue/:venueId/profile
   // venueId puede venir como 'id' o 'venueId' según la ruta
   const venueIdParam = params.venueId || params.id;

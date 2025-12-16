@@ -45,9 +45,7 @@ import {
   Users,
   PlayCircle,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarComponent } from '@/components/calendar/CalendarComponent';
 import ModalSolicitudContratacion from '@/components/calendar/ModalSolicitudContratacion';
 
 export default function ArtistProfile() {
@@ -59,7 +57,6 @@ export default function ArtistProfile() {
   let path = '';
   if (typeof window !== 'undefined') {
     path = window.location.hash ? window.location.hash.replace(/^#/, '') : window.location.pathname;
-    console.log('ArtistProfile path detectado:', path);
     if (/^\/artist\//.test(path)) {
       mainContext = 'artist';
     } else if (/^\/venue\//.test(path)) {
@@ -72,10 +69,8 @@ export default function ArtistProfile() {
     const match = path.match(/^\/artist\/(\d+)/);
     if (match) venueid = match[1];
   }
-  // Log para depuración
-  console.log('ArtistProfile venueid detectado:', venueid);
 
-    function renderEditButton() {
+  function renderEditButton() {
       if (!canEdit) return null;
       if (!isEditing) {
         return (
@@ -123,7 +118,7 @@ export default function ArtistProfile() {
   );
 
   // Solo puede editar si es artista y su id coincide con la url y NO es visitante
-  const canEdit = !params.artistId && authUser && authUser.role === 'Artista' && String(authUser.id) === String(id);
+  const canEdit = !params.artistId && authUser && authUser.role === 'Artista' && String(authUser.id) === String(params.id);
 
   useEffect(() => {
     if (currentArtist) {
