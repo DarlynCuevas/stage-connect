@@ -1,7 +1,7 @@
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArtistCalendarComponent } from '@/components/calendar/ArtistCalendar';
+import { ArtistCalendarComponent } from '@/components/calendar/ArtistCalendarComponent';
 
 export default function ArtistCalendar() {
   const { id } = useParams();

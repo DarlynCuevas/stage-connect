@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { io, Socket } from 'socket.io-client';
-import apiFetch from './api';
+import apiFetch, { ApiError } from './api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { API_BASE_URL } from '@/config';
@@ -18,17 +18,33 @@ export interface ManagerRequest {
 
 // API functions
 async function fetchReceivedRequests(token: string) {
-  return apiFetch<ManagerRequest[]>('/manager-requests/received', {
-    method: 'GET',
-    token,
-  });
+  try {
+    return await apiFetch<ManagerRequest[]>('/manager-requests/received', {
+      method: 'GET',
+      token,
+    });
+  } catch (err: any) {
+    if (err instanceof ApiError && err.status === 403) {
+      console.info('No tienes permisos para ver las solicitudes recibidas (403 Forbidden)');
+      return [];
+    }
+    throw err;
+  }
 }
 
 async function fetchSentRequests(token: string) {
-  return apiFetch<ManagerRequest[]>('/manager-requests/sent', {
-    method: 'GET',
-    token,
-  });
+  try {
+    return await apiFetch<ManagerRequest[]>('/manager-requests/sent', {
+      method: 'GET',
+      token,
+    });
+  } catch (err: any) {
+    if (err instanceof ApiError && err.status === 403) {
+      console.info('No tienes permisos para ver las solicitudes enviadas (403 Forbidden)');
+      return [];
+    }
+    throw err;
+  }
 }
 
 async function createManagerRequest(receiverId: number, message: string | undefined, token: string) {

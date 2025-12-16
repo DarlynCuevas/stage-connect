@@ -72,17 +72,33 @@ import { BookingRequest } from '@/types';
 type FrontendStatus = 'Accepted' | 'Rejected';
 
 async function fetchArtistRequestsApi(token: string | null) {
-  return apiFetch<BookingRequest[]>(`/requests`, {
-    method: 'GET',
-    token,
-  });
+  try {
+    return await apiFetch<BookingRequest[]>(`/requests`, {
+      method: 'GET',
+      token,
+    });
+  } catch (err: any) {
+    if (err instanceof ApiError && err.status === 403) {
+      console.info('No tienes permisos para ver las solicitudes de artista (403 Forbidden)');
+      return [];
+    }
+    throw err;
+  }
 }
 
 async function fetchSentRequestsApi(token: string | null) {
-  return apiFetch<BookingRequest[]>(`/requests/sent`, {
-    method: 'GET',
-    token,
-  });
+  try {
+    return await apiFetch<BookingRequest[]>(`/requests/sent`, {
+      method: 'GET',
+      token,
+    });
+  } catch (err: any) {
+    if (err instanceof ApiError && err.status === 403) {
+      console.info('No tienes permisos para ver las solicitudes enviadas (403 Forbidden)');
+      return [];
+    }
+    throw err;
+  }
 }
 
 async function fetchConfirmedRequestsApi(artistId: number, token: string | null) {

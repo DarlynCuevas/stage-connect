@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { CalendarComponent } from '@/components/calendar/CalendarComponent';
-import { VenueCalendarComponent } from '@/components/calendar/VenueCalendar';
+import { VenueCalendarComponent } from '@/components/calendar/VenueCalendarComponent';
 
 
 export default function VenueProfile() {

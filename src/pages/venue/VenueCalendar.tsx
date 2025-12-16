@@ -2,7 +2,7 @@ import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { CalendarComponent } from '@/components/calendar/CalendarComponent';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { VenueCalendarComponent } from '@/components/calendar/VenueCalendar';
+import { VenueCalendarComponent } from '@/components/calendar/VenueCalendarComponent';
 
 export default function VenueCalendar() {
   const { id } = useParams();

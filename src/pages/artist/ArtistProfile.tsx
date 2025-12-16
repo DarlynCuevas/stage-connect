@@ -346,7 +346,7 @@ export default function ArtistProfile() {
             <ArtistCalendarComponent
               artistId={currentArtist?.id}
               editable={authUser && currentArtist && String(authUser.id) === String(currentArtist.id)}
-              onDateSelect={handleSolicitudContratacion}
+              onDateToggle={handleSolicitudContratacion}
             />
             {/* Bio */}
             <Card variant="gradient">
@@ -1067,7 +1067,7 @@ import { apiFetch } from '@/lib/api';
 import { Star as StarIcon } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ArtistCalendarComponent } from '@/components/calendar/ArtistCalendar';
+import { ArtistCalendarComponent } from '@/components/calendar/ArtistCalendarComponent';
 
 function ReviewsList({ artistId }: { artistId: number }) {
   const [reviews, setReviews] = useState<Review[]>([]);

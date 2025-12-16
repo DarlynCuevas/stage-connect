@@ -46,9 +46,7 @@ export function VenueCalendarComponent({ venueId, editable = false, onDateSelect
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [localDates, setLocalDates] = useState<CalendarDate[]>(dates);
 
-  useEffect(() => {
-    setLocalDates(dates);
-  }, [dates]);
+
 
   // Callback para bloquear el día cuando se acepte una solicitud (puedes personalizarlo para venue)
   const handleRequestAccepted = useCallback((payload: { eventDate: string }) => {

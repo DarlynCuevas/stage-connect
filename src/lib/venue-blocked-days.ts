@@ -5,9 +5,17 @@ import { BlockedDay } from './blocked-days';
 
 // API para días bloqueados de un venue
 async function fetchVenueBlockedDaysApi(venueId: number) {
-  return apiFetch<BlockedDay[]>(`/blocked-days/venue/${venueId}`, {
-    method: 'GET',
-  });
+  try {
+    return await apiFetch<BlockedDay[]>(`/blocked-days/venue/${venueId}`, {
+      method: 'GET',
+    });
+  } catch (err: any) {
+    if (err.status === 404) {
+      console.info(`[VenueCalendar] No hay días bloqueados para el venue ${venueId}`);
+      return [];
+    }
+    throw err;
+  }
 }
 
 // Hook para obtener días bloqueados de un venue

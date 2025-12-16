@@ -19,7 +19,6 @@ export interface HeaderLayoutProps {
 export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
   const { user, isAuthenticated, logout } = useAuth();
   React.useEffect(() => {
-    console.log('[HeaderLayout] Render. user:', user, 'isAuthenticated:', isAuthenticated);
   }, [user, isAuthenticated]);
   const location = useLocation();
 
