@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Megaphone,
 } from 'lucide-react';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 
 export default function PromoterHome() {
   const { user } = useAuth();
@@ -53,7 +54,7 @@ export default function PromoterHome() {
   ];
 
   return (
-    <DashboardLayout>
+    <HeaderLayout>
       <div className="space-y-8">
         {/* Welcome header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -139,6 +140,6 @@ export default function PromoterHome() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </HeaderLayout>
   );
 }

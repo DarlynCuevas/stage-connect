@@ -7,6 +7,7 @@ import { useManagerRequests, useUpdateRequestStatus } from '@/lib/requests';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Clock, CheckCircle, XCircle, Mail, Calendar, MapPin, DollarSign } from 'lucide-react';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 
 export default function ManagerRequests() {
   const { data: managerRequests = [], isLoading } = useManagerRequests();
@@ -30,7 +31,7 @@ export default function ManagerRequests() {
   };
 
   return (
-    <DashboardLayout>
+    <HeaderLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-display font-bold mb-2">Solicitudes de contratación</h1>
@@ -110,6 +111,6 @@ export default function ManagerRequests() {
           ))
         )}
       </div>
-    </DashboardLayout>
+    </HeaderLayout>
   );
 }

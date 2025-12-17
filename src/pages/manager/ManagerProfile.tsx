@@ -11,17 +11,37 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateProfile, useUser } from '@/lib/users';
 import { Edit, Save, X, MapPin, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 
 export default function ManagerProfile() {
-  const { id } = useParams();
+  const { id, managerId } = useParams();
+  const resolvedManagerId = managerId || id;
   const { user: authUser, token, setUser } = useAuth();
-  const isOwnProfile = authUser && id && String(authUser.id) === String(id);
-  const managerId = id ? Number(id) : undefined;
+  const managerIdNumber = resolvedManagerId ? Number(resolvedManagerId) : undefined;
+  const { data: manager } = useUser(managerIdNumber);
+
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
-  const { data: manager } = useUser(managerId);
+
+
+  let mainContext: 'manager' | 'artist' | 'promoter' | 'venue' = 'manager';
+  let path = '';
+  if (typeof window !== 'undefined') {
+    path = window.location.hash ? window.location.hash.replace(/^#/, '') : window.location.pathname;
+    if (/^\/manager\//.test(path)) {
+      mainContext = 'manager';
+    } else if (/^\/venue\//.test(path)) {
+      mainContext = 'venue';
+    } else if (/^\/promoter\//.test(path)) {
+      mainContext = 'promoter';
+    } else if (/^\/artist\//.test(path)) {
+      mainContext = 'artist';
+    }
+  }
+  
+  const isOwnProfile = authUser && resolvedManagerId && String(authUser.id) === String(resolvedManagerId);
 
   useEffect(() => {
     if (isOwnProfile && authUser) {
@@ -84,7 +104,7 @@ export default function ManagerProfile() {
   };
 
   return (
-    <DashboardLayout>
+    <HeaderLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-role-manager/20 to-role-manager/5 p-8">
@@ -191,6 +211,6 @@ export default function ManagerProfile() {
           </Card>
         </div>
       </div>
-    </DashboardLayout>
+    </HeaderLayout>
   );
 }

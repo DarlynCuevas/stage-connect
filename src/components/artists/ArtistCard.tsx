@@ -22,17 +22,29 @@ export function ArtistCard({ artist, showPrice = false, onFavoriteChange }: Arti
   const genres = artist.genre || [];
   const { user, token } = useAuth();
   
-  // Si el usuario es local, usar su propio id para la ruta cruzada
-  const isLocal = user && String(user.role).toLowerCase().includes('local');
-  const resolvedLocalId = isLocal ? user?.id : undefined;
-  // Usar userId si existe, si no id
-  const artistId = (artist as any).artistId || artist.id;
-  const venueProfileUrl = isLocal && resolvedLocalId
-    ? `/venue/${resolvedLocalId}/artist/${artistId}/profile`
-    : `/artist/profile/${artistId}`;
 
+  // Si el usuario es local, promotor o manager, usar su propio id para la ruta cruzada
+  const isLocal = user && String(user.role).toLowerCase().includes('local');
+  const isPromoter = user && String(user.role).toLowerCase().includes('promotor');
+  const isManager = user && String(user.role).toLowerCase().includes('manager');
+  const resolvedLocalId = isLocal ? user?.id : undefined;
+  const resolvedPromoterId = isPromoter ? user?.id : undefined;
+  const resolvedManagerId = isManager ? user?.id : undefined;
+  // Usar artistId si existe, si no id
+  const artistId = (artist as any).artistId || artist.id;
+  // URL correcta para el perfil de artista según contexto
+  let artistProfileUrl = `/artist/profile/${artistId}`;
+  if (isLocal && resolvedLocalId) {
+    artistProfileUrl = `/venue/${resolvedLocalId}/artist/${artistId}/profile`;
+  } else if (isPromoter && resolvedPromoterId) {
+    artistProfileUrl = `/promoter/${resolvedPromoterId}/artist/${artistId}/profile`;
+  } else if (isManager && resolvedManagerId) {
+    artistProfileUrl = `/manager/${resolvedManagerId}/artist/${artistId}/profile`;
+  }
+
+  // Usar siempre artistProfileUrl para navegar al perfil correcto
   return (
-    <Link to={venueProfileUrl} className="group">
+    <Link to={artistProfileUrl} className="group">
       <Card className="overflow-hidden border-0 bg-transparent shadow-none transition-all duration-300">
         <div className="relative">
           {/* Banner principal */}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Calendar, User, Settings, Music } from 'lucide-react';
+import { Home, Calendar, User, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
@@ -9,8 +9,8 @@ const navItems = [
     const role = String(user.role).toLowerCase();
     if (role.includes('art')) return `/artist/${user.id}/discover`;
     if (role.includes('local')) return `/venue/${user.id}/discover`;
-    if (role.includes('manager')) return `/manager`;
-    if (role.includes('promotor')) return `/promoter`;
+    if (role.includes('manager')) return `/manager/${user.id}/discover`;
+    if (role.includes('promoter')) return `/promoter/${user.id}/discover`;
     return '/';
   } },
   { key: 'calendar', icon: <Calendar className="w-6 h-6" />, label: 'Calendario', getPath: (user: any) => {
@@ -18,6 +18,8 @@ const navItems = [
     const role = String(user.role).toLowerCase();
     if (role.includes('art')) return `/artist/${user.id}/calendar`;
     if (role.includes('local')) return `/venue/${user.id}/calendar`;
+    if (role.includes('manager')) return `/manager/${user.id}/calendar`;
+    if (role.includes('promoter')) return `/promoter/${user.id}/calendar`;
     return '/';
   } },
   { key: 'profile', icon: <User className="w-6 h-6" />, label: 'Perfil', getPath: (user: any) => {
@@ -25,13 +27,17 @@ const navItems = [
     const role = String(user.role).toLowerCase();
     if (role.includes('art')) return `/artist/${user.id}/profile`;
     if (role.includes('local')) return `/venue/${user.id}/profile`;
+    if (role.includes('manager')) return `/manager/${user.id}/profile`;
+    if (role.includes('promoter')) return `/promoter/${user.id}/profile`;
     return '/';
   } },
   { key: 'settings', icon: <Settings className="w-6 h-6" />, label: 'Ajustes', getPath: (user: any) => {
     if (!user) return '/';
     const role = String(user.role).toLowerCase();
     if (role.includes('art')) return `/artist/${user.id}/settings`;
-    if (role.includes('local')) return `/venue/${user.id}/settings`;
+    if (role.includes('local')) return `/venue/${user.id}/settings`; 
+    if (role.includes('manager')) return `/manager/${user.id}/settings`;
+    if (role.includes('promoter')) return `/promoter/${user.id}/settings`;
     return '/';
   } },
 ];

@@ -48,14 +48,6 @@ export default function ArtistHome() {
   const { data: confirmedRequests = [] } = useConfirmedRequests(artist?.id ? Number(artist.id) : undefined);
   const { data: managerRequests = [] } = useReceivedManagerRequests();
 
-   const artistNav = [
-    { to: artist ? `/artist/${artist.id}/discover` : '/login', label: 'Inicio' },
-    { to: `/artist/${artist.id}/dashboard`, label: 'Panel de datos' },
-    { to: artist ? `/artist/${artist.id}/profile` : '/login', label: 'Mi perfil' },
-    { to: artist ? `/artist/${artist.id}/calendar` : '/login', label: 'Calendario' },
-    { to: `/artist/${artist.id}/requests`, label: 'Solicitudes' },
-  ];
-
   // Obtener rating y totalReviews con el custom hook
   const { averageRating, totalReviews, loading: ratingLoading } = useArtistRating(artist?.id);
 
@@ -274,7 +266,7 @@ export default function ArtistHome() {
     
   return (
 
-    <HeaderLayout profileTabs={artistNav}>
+    <HeaderLayout>
       <div>
         {/* Banner con rating sobre la imagen */}
         <div className="relative rounded-2xl overflow-hidden mb-8">

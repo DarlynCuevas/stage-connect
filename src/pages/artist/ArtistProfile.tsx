@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useArtistRating } from '@/hooks/useArtistRating';
 import { useParams } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -53,7 +53,7 @@ export default function ArtistProfile() {
   const { user: authUser, token, setUser } = useAuth();
 
   // --- Detección robusta de contexto y mainContext igual que VenueProfile ---
-  let mainContext: 'artist' | 'venue' = 'venue';
+  let mainContext: 'artist' | 'venue' = 'artist';
   let path = '';
   if (typeof window !== 'undefined') {
     path = window.location.hash ? window.location.hash.replace(/^#/, '') : window.location.pathname;
@@ -64,11 +64,12 @@ export default function ArtistProfile() {
     }
   }
   // Extraer artistId de params o de la URL si no existe
-  let venueid = params.venueid;
-  if (!venueid && path) {
+  let artistId = params.artistId;
+  if (!artistId && path) {
     const match = path.match(/^\/artist\/(\d+)/);
-    if (match) venueid = match[1];
+    if (match) artistId = match[1];
   }
+
 
   function renderEditButton() {
       if (!canEdit) return null;
@@ -88,7 +89,7 @@ export default function ArtistProfile() {
       );
     }
 
-  const artistId = params.artistId ? Number(params.artistId) : undefined;
+  //const artistId = params.id ? Number(params.id) : undefined;
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const [newGenre, setNewGenre] = useState('');
@@ -101,12 +102,21 @@ export default function ArtistProfile() {
   const createBookingRequestMutation = useCreateBookingRequest();
   const createManagerRequestMutation = useCreateManagerRequest();
   const removeManagerRelationMutation = useRemoveManagerRelation();
-  const { data: receivedRequests = [] } = useReceivedManagerRequests();
   const [showManagerDialog, setShowManagerDialog] = useState(false);
   const [managerIdToAdd, setManagerIdToAdd] = useState('');
 
-  // prefer server data when available
-  const currentArtist = freshArtist || authUser;
+  // prefer server data when available, memoizado para evitar renders innecesarios
+  // Normaliza el id para que siempre sea number y se llame id
+  const currentArtist = useMemo(() => {
+    const base = freshArtist || authUser;
+    
+    if (!base) return undefined;
+    // Si viene como user_id, lo mapeamos a id
+    let id = base.id ?? base.user_id;
+    // Si es string, lo convertimos a number
+    if (typeof id === 'string') id = Number(id);
+    return { ...base, id };
+  }, [freshArtist, authUser]);
   const cacheBase = currentArtist?.basePrice ?? 0;
   // Obtener rating y totalReviews con el custom hook
   const { averageRating, totalReviews, loading: ratingLoading } = useArtistRating(currentArtist?.id);
@@ -203,11 +213,11 @@ export default function ArtistProfile() {
     setIsEditing(false);
   };
 
-  function handleSolicitudContratacion(date: Date) {
+  const handleSolicitudContratacion = useCallback((date: Date) => {
     if (authUser?.role !== 'Local') return;
     setFechaSeleccionada(date);
     setModalOpen(true);
-  }
+  }, [authUser, setFechaSeleccionada, setModalOpen]);
 
   function handleEnviarSolicitud(data: { fecha: Date; oferta: number; tipoEvento: string; ubicacion: string; nombreLocal?: string; ciudadLocal?: string; mensaje?: string }) {
     if (!artistId) return;
@@ -222,30 +232,10 @@ export default function ArtistProfile() {
       ciudadLocal: data.ciudadLocal || '',
     });
   }
-  // Usar el id de params si existe, si no el del usuario autenticado
-  const id = params.artistId || authUser?.id;
-  // Menú de artista (por defecto)
-  const artistNav = [
-    { to: id ? `/artist/${id}/discover` : '/login', label: 'Inicio' },
-    { to: id ? `/artist/${id}/dashboard` : '/login', label: 'Panel de datos' },
-    { to: id ? `/artist/${id}/profile` : '/login', label: 'Mi perfil' },
-    { to: id ? `/artist/${id}/calendar` : '/login', label: 'Calendario' },
-    { to: id ? `/artist/${id}/requests` : '/login', label: 'Solicitudes' },
-  ];
-
-  // Menú de local (si accede como Local y venueId existe)
-  const localNav = authUser && authUser.role === 'Local' && venueid ? [
-    { to: `/venue/${authUser.id}/discover`, label: 'Inicio' },
-    { to: `/venue/${authUser.id}/dashboard`, label: 'Panel de datos' },
-    { to: `/venue/${authUser.id}/profile`, label: 'Mi perfil' },
-    { to: `/venue/${authUser.id}/calendar`, label: 'Calendario' },
-    { to: `/venue/${authUser.id}/requests`, label: 'Solicitudes' },
-  ] : null;
-
-  // Puedes usar mainContext para lógica condicional en el renderizado si lo necesitas
+  // Usar siempre el id normalizado de currentArtist para los menús
 
   return (
-    <HeaderLayout profileTabs={mainContext === 'venue' ? localNav : artistNav}>
+    <HeaderLayout>
         {/* Header with banner */}
         <div className="relative rounded-2xl overflow-hidden">
           <div className="h-48 lg:h-64">
@@ -262,7 +252,7 @@ export default function ArtistProfile() {
                 <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
                   <AvatarImage src={currentArtist?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
                   <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                    {currentArtist?.nickName?.charAt(0) || currentArtist?.name?.charAt(0) || 'A'}
+                    {currentArtist?.nickName?.charAt(0) || freshArtist?.name?.charAt(0) || 'A'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -338,16 +328,16 @@ export default function ArtistProfile() {
               </div>
             </div>
           </div>
+          {/* Calendario SIEMPRE visible, fuera del bloque de edición */}
+          <ArtistCalendarComponent
+            artistId={currentArtist?.id}
+            editable={authUser && currentArtist && String(authUser.id) === String(currentArtist.id)}
+            onDateToggle={handleSolicitudContratacion}
+          />
           {/* Main info and sidebar wrapper */}
           <div className="flex flex-col lg:flex-row gap-6 mt-6">
             {/* Main info */}
             <div className="lg:col-span-2 space-y-6 flex-1">
-            {/* Calendario encima de Biografía */}
-            <ArtistCalendarComponent
-              artistId={currentArtist?.id}
-              editable={authUser && currentArtist && String(authUser.id) === String(currentArtist.id)}
-              onDateToggle={handleSolicitudContratacion}
-            />
             {/* Bio */}
             <Card variant="gradient">
               <CardHeader>
@@ -374,7 +364,7 @@ export default function ArtistProfile() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {editData?.genre?.map((genre) => (
+                  {Array.isArray(editData?.genre) && editData.genre.map((genre) => (
                     <Badge key={genre} variant="secondary" className="text-sm relative">
                       <Music className="w-3 h-3 mr-1" />
                       {genre}
@@ -459,9 +449,11 @@ export default function ArtistProfile() {
                         />
                       ) : (
                         <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                          {currentArtist?.achievements?.map((achievement, i) => (
-                            <li key={i}>{achievement}</li>
-                          )) || <li>No hay logros registrados</li>}
+                          {Array.isArray(currentArtist?.achievements) && currentArtist.achievements.length > 0 ? (
+                            currentArtist.achievements.map((achievement, i) => (
+                              <li key={i}>{achievement}</li>
+                            ))
+                          ) : <li>No hay logros registrados</li>}
                         </ul>
                       )}
                     </div>
@@ -477,9 +469,11 @@ export default function ArtistProfile() {
                         />
                       ) : (
                         <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                          {currentArtist?.certifications?.map((cert, i) => (
-                            <li key={i}>{cert}</li>
-                          )) || <li>No hay certificaciones</li>}
+                          {Array.isArray(currentArtist?.certifications) && currentArtist.certifications.length > 0 ? (
+                            currentArtist.certifications.map((cert, i) => (
+                              <li key={i}>{cert}</li>
+                            ))
+                          ) : <li>No hay certificaciones</li>}
                         </ul>
                       )}
                     </div>
@@ -579,9 +573,11 @@ export default function ArtistProfile() {
                         />
                       ) : (
                         <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                          {currentArtist?.equipment?.map((item, i) => (
-                            <li key={i}>{item}</li>
-                          )) || <li>No especificado</li>}
+                          {Array.isArray(currentArtist?.equipment) && currentArtist.equipment.length > 0 ? (
+                            currentArtist.equipment.map((item, i) => (
+                              <li key={i}>{item}</li>
+                            ))
+                          ) : <li>No especificado</li>}
                         </ul>
                       )}
                     </div>
@@ -632,9 +628,11 @@ export default function ArtistProfile() {
                         />
                       ) : (
                         <div className="flex flex-wrap gap-2">
-                          {currentArtist?.languages?.map((lang, i) => (
-                            <Badge key={i} variant="secondary">{lang}</Badge>
-                          )) || <p className="text-muted-foreground">No especificado</p>}
+                          {Array.isArray(currentArtist?.languages) && currentArtist.languages.length > 0 ? (
+                            currentArtist.languages.map((lang, i) => (
+                              <Badge key={i} variant="secondary">{lang}</Badge>
+                            ))
+                          ) : <p className="text-muted-foreground">No especificado</p>}
                         </div>
                       )}
                     </div>
@@ -653,9 +651,11 @@ export default function ArtistProfile() {
                         />
                       ) : (
                         <div className="flex flex-wrap gap-2">
-                          {currentArtist?.coverageAreas?.map((area, i) => (
-                            <Badge key={i} variant="outline">{area}</Badge>
-                          )) || <p className="text-muted-foreground">No especificado</p>}
+                          {Array.isArray(currentArtist?.coverageAreas) && currentArtist.coverageAreas.length > 0 ? (
+                            currentArtist.coverageAreas.map((area, i) => (
+                              <Badge key={i} variant="outline">{area}</Badge>
+                            ))
+                          ) : <p className="text-muted-foreground">No especificado</p>}
                         </div>
                       )}
                     </div>
@@ -694,9 +694,11 @@ export default function ArtistProfile() {
                         />
                       ) : (
                         <div className="flex flex-wrap gap-2">
-                          {currentArtist?.performanceTypes?.map((type, i) => (
-                            <Badge key={i} variant="secondary">{type}</Badge>
-                          )) || <p className="text-muted-foreground">No especificado</p>}
+                          {Array.isArray(currentArtist?.performanceTypes) && currentArtist.performanceTypes.length > 0 ? (
+                            currentArtist.performanceTypes.map((type, i) => (
+                              <Badge key={i} variant="secondary">{type}</Badge>
+                            ))
+                          ) : <p className="text-muted-foreground">No especificado</p>}
                         </div>
                       )}
                     </div>
@@ -739,7 +741,7 @@ export default function ArtistProfile() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                  {currentArtist?.gallery?.map((image, index) => (
+                  {Array.isArray(currentArtist?.gallery) && currentArtist.gallery.map((image, index) => (
                     <div
                       key={index}
                       className="relative aspect-video rounded-lg overflow-hidden group"
@@ -794,7 +796,7 @@ export default function ArtistProfile() {
                   )}
                 </div>
 
-                {currentArtist?.priceVariants?.map((variant) => (
+                {Array.isArray(currentArtist?.priceVariants) && currentArtist.priceVariants.map((variant) => (
                   <div key={variant.id} className="p-3 rounded-lg bg-secondary/30">
                     <div className="flex items-center justify-between mb-1">
                       <p className="font-medium">{variant.name}</p>
@@ -1067,7 +1069,7 @@ import { apiFetch } from '@/lib/api';
 import { Star as StarIcon } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ArtistCalendarComponent } from '@/components/calendar/ArtistCalendarComponent';
+import ArtistCalendarComponent from '@/components/calendar/ArtistCalendarComponent';
 
 function ReviewsList({ artistId }: { artistId: number }) {
   const [reviews, setReviews] = useState<Review[]>([]);

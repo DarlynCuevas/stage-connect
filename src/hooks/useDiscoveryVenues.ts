@@ -39,10 +39,10 @@ export function useDiscoveryVenues() {
       try {
         const params = new URLSearchParams();
         if (filters.city && filters.city !== 'all') params.append('city', filters.city);
-        if (filters.type && filters.type !== 'all') params.append('type', filters.type);
+        // 'type' no se usa en el backend actual, se omite
         if (filters.query && filters.query.trim() !== '') params.append('query', filters.query.trim());
-        if (filters.date) params.append('date', filters.date);
-        const url = `/users/venues-search${params.toString() ? '?' + params.toString() : ''}`;
+        // 'date' tampoco se usa en el backend actual, se omite salvo que se añada soporte
+        const url = `/public/venues${params.toString() ? '?' + params.toString() : ''}`;
         const response = await apiFetch(url, token ? { token } : undefined);
         setVenues(response || []);
       } catch (error) {

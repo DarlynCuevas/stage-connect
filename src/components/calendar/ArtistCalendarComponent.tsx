@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, memo } from 'react';
 import { useBookingSocket } from '@/hooks/useBookingSocket';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,10 +20,14 @@ interface ArtistCalendarProps {
 import { useBlockedDays, useManageBlockedDays } from '@/lib/blocked-days';
 import { useConfirmedRequests } from '@/lib/requests';
 
-export function ArtistCalendarComponent({ artistId, editable = false, onDateToggle, onDateSelect }: ArtistCalendarProps) {
-  // Obtener fechas y lógica a partir del artistId
-  const confirmed = artistId ? useConfirmedRequests(artistId)?.data : [];
-  const blocked = artistId ? useBlockedDays(artistId)?.data : [];
+const ArtistCalendarComponent = ({ artistId, editable = false, onDateToggle, onDateSelect }: ArtistCalendarProps) => {
+  console.log('artistaaaaaaaa ', artistId);
+  
+  // Llamar siempre a los hooks, aunque artistId sea undefined
+  const confirmedQuery = useConfirmedRequests(artistId);
+  const blockedQuery = useBlockedDays(artistId);
+  const confirmed = confirmedQuery?.data || [];
+  const blocked = blockedQuery?.data || [];
   const confirmedRequests = Array.isArray(confirmed) ? confirmed : [];
   const blockedDaysData = Array.isArray(blocked) ? blocked : [];
   const { createMutation, deleteMutation } = useManageBlockedDays();
@@ -265,3 +269,5 @@ export function ArtistCalendarComponent({ artistId, editable = false, onDateTogg
     </Card>
   );
 }
+
+export default memo(ArtistCalendarComponent);

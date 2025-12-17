@@ -13,14 +13,6 @@ export default function VenueDiscover() {
   if (id && user && String(user.id) !== String(id)) {
     return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
   }
-  const localNav = [
-    { to: `/venue/${id}/discover`, label: 'Inicio' },
-    { to: `/venue/${id}/dashboard`, label: 'Panel de datos' },
-    { to: `/venue/${id}/profile`, label: 'Mi perfil' },
-    { to: `/venue/${id}/calendar`, label: 'Calendario' },
-    { to: `/venue/${id}/requests`, label: 'Solicitudes' },
-  ];
-
   // Lógica de búsqueda de artistas
   const { artists, loading, setFilters, filters } = useDiscoveryArtists();
   const [showFavorites, setShowFavorites] = useState(false);
@@ -53,7 +45,7 @@ export default function VenueDiscover() {
   };
 
   return (
-    <HeaderLayout profileTabs={localNav}>
+    <HeaderLayout>
       <Discovery
         type="artists"
         loading={loading}

@@ -109,7 +109,7 @@ export default function VenueHome() {
     },
   ];
   return (
-    <HeaderLayout profileTabs={localNav}>
+    <HeaderLayout>
       <div className="space-y-8">
         {/* Welcome header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">

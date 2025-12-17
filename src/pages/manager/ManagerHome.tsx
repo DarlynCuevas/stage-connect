@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +17,7 @@ import {
   Star,
   MapPin,
 } from 'lucide-react';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 
 export default function ManagerHome() {
   useManagerRequestsRealtime();
@@ -65,7 +65,7 @@ export default function ManagerHome() {
   ];
 
   return (
-    <DashboardLayout>
+    <HeaderLayout>
       <div className="space-y-8">
         {/* Welcome header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -225,6 +225,6 @@ export default function ManagerHome() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </HeaderLayout>
   );
 }

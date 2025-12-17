@@ -26,16 +26,9 @@ export default function InviteFriend() {
   if (id && user && String(user.id) !== String(id)) {
     return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
   }
-  const artistNav = [
-    { to: id ? `/artist/${id}/discover` : '/login', label: 'Inicio' },
-    { to: `/artist/${id}/dashboard`, label: 'Panel de datos' },
-    { to: id ? `/artist/${id}/profile` : '/login', label: 'Mi perfil' },
-    { to: id ? `/artist/${id}/calendar` : '/login', label: 'Calendario' },
-    { to: `/artist/${id}/requests`, label: 'Solicitudes' },
-  ];
 
   return (
-    <HeaderLayout profileTabs={artistNav}>
+    <HeaderLayout>
       <div className="container mx-auto px-4 py-12 flex flex-col items-center">
         <h1 className="text-3xl md:text-5xl font-display font-bold text-center mb-4">
           Invita a un amigo y recibe <span className="text-primary">beneficios exclusivos</span>

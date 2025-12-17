@@ -1,57 +1,80 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateProfile, useUser } from '@/lib/users';
 import { Edit, Save, X, Megaphone, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+
+
+
 
 export default function PromoterProfile() {
-    function renderEditButton() {
-      if (!isEditing) {
-        return (
-          <Button onClick={() => setIsEditing(true)} variant="outline">
-            <Edit className="w-4 h-4 mr-2" />
-            Editar Perfil
-          </Button>
-        );
-      }
-      return (
-        <div className="flex gap-2">
-          <Button onClick={handleSave} disabled={updateProfileMutation.isPending}>
-            <Save className="w-4 h-4 mr-2" />
-            Guardar
-          </Button>
-          <Button onClick={handleCancel} variant="ghost">
-            <X className="w-4 h-4 mr-2" />
-            Cancelar
-          </Button>
-        </div>
-      );
-    }
-  const { id } = useParams();
+  const params = useParams();
   const { user: authUser, token, setUser } = useAuth();
-  // const isOwnProfile = authUser && id && String(authUser.id) === String(id);
-  const promoterId = id ? Number(id) : undefined;
+  // --- Detección robusta de contexto y mainContext igual que ArtistProfile ---
+  let mainContext: 'promoter' | 'manager'  = 'promoter';
+  let path = '';
+  if (typeof window !== 'undefined') {
+    path = window.location.hash ? window.location.hash.replace(/^#/, '') : window.location.pathname;
+    if (/^\/promoter\//.test(path)) {
+      mainContext = 'promoter';
+    } else if (/^\/manager\//.test(path)) {
+      mainContext = 'manager';
+    }
+  }
+  // Extraer promoterId de params o de la URL si no existe
+  let resolvedPromoterId = params.promoterId || params.id;
+  if (!resolvedPromoterId && path) {
+    const match = path.match(/^\/promoter\/(\d+)/);
+    if (match) resolvedPromoterId = match[1];
+  }
+  const promoterIdNumber = resolvedPromoterId ? Number(resolvedPromoterId) : undefined;
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
-  const { data: promoter } = useUser(promoterId);
+  const { data: promoter } = useUser(promoterIdNumber);
+
+  const isOwnProfile = authUser && resolvedPromoterId && String(authUser.id) === String(resolvedPromoterId);
+
+  function renderEditButton() {
+    if (!isEditing) {
+      return (
+        <Button onClick={() => setIsEditing(true)} variant="outline">
+          <Edit className="w-4 h-4 mr-2" />
+          Editar Perfil
+        </Button>
+      );
+    }
+    return (
+      <div className="flex gap-2">
+        <Button onClick={handleSave} disabled={updateProfileMutation.isPending}>
+          <Save className="w-4 h-4 mr-2" />
+          Guardar
+        </Button>
+        <Button onClick={handleCancel} variant="ghost">
+          <X className="w-4 h-4 mr-2" />
+          Cancelar
+        </Button>
+      </div>
+    );
+  }
 
   useEffect(() => {
-    if (promoter) {
-      setEditData(promoter);
-    } else if (authUser) {
+    if (isOwnProfile && authUser) {
       setEditData(authUser);
+    } else if (promoter) {
+      setEditData(promoter);
     }
-  }, [authUser, promoter]);
+  }, [isOwnProfile, authUser, promoter]);
 
   if (!editData) {
     return (
@@ -106,7 +129,7 @@ export default function PromoterProfile() {
   };
 
   return (
-    <DashboardLayout>
+    <HeaderLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-role-promoter/20 to-role-promoter/5 p-8">
@@ -191,6 +214,6 @@ export default function PromoterProfile() {
           </Card>
         </div>
       </div>
-    </DashboardLayout>
+    </HeaderLayout>
   );
 }

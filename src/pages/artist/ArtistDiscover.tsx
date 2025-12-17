@@ -10,17 +10,9 @@ import { VenueSearchBar } from '@/components/ui/VenueSearchBar';
 export default function ArtistDiscover() {
   const { user } = useAuth();
   const { id } = useParams();
-   const artistId = user?.id || id;
   if (id && user && String(user.id) !== String(id)) {
     return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
   }
-  const artistNav = [
-    { to: user ? `/artist/${user.id}/discover` : '/login', label: 'Inicio' },
-    { to: `/artist/${user.id}/dashboard`, label: 'Panel de datos' },
-    { to: user ? `/artist/${user.id}/profile` : '/login', label: 'Mi perfil' },
-    { to: user ? `/artist/${user.id}/calendar` : '/login', label: 'Calendario' },
-    { to: `/artist/${user.id}/requests`, label: 'Solicitudes' },
-  ];
 
   // Lógica de búsqueda de venues
   const { venues, loading, setFilters, filters } = useDiscoveryVenues();
@@ -51,7 +43,7 @@ export default function ArtistDiscover() {
   };
 
   return (
-    <HeaderLayout profileTabs={artistNav}>
+    <HeaderLayout>
       <Discovery
         type="venues"
         loading={loading}

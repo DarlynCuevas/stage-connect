@@ -121,7 +121,7 @@ const VenueRequests = () => {
 
   if (isLoading) {
     return (
-      <HeaderLayout profileTabs={localNav}>
+      <HeaderLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <Loader2 className="animate-spin w-12 h-12 text-primary mb-4" />
           <p className="text-muted-foreground text-lg">Cargando solicitudes...</p>

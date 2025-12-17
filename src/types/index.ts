@@ -65,6 +65,7 @@ export interface Artist {
   verified: boolean;
   gender?: string;
   blockedDays?: string[];
+  favorite?: boolean;
 }
 
 export interface PriceVariant {
@@ -85,10 +86,13 @@ export interface SocialLinks {
 export interface Manager {
   id: string;
   userId: string;
+  city:string;
+  country:string;
   name: string;
   company?: string;
   artists: string[]; // Artist IDs
   avatar: string;
+  verified?: boolean;
 }
 
 export interface Venue {
@@ -113,6 +117,8 @@ export interface Promoter {
   country: string;
   avatar: string;
   eventsOrganized: number;
+  verified?: boolean;
+  rating?: number;
 }
 
 export interface CalendarDate {

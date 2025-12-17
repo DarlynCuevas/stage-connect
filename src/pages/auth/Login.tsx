@@ -44,13 +44,13 @@ export default function Login() {
                     break;
                 }
                 case 'Manager':
-                    navigate('/manager'); // Usar /manager según tu configuración
+                    navigate(`/manager/${user.id}/discover`); // Usar /manager según tu configuración
                     break;
                 case 'Local':
                     navigate(`/venue/${user.id}/discover`);
                     break; // Usar /venue según tu configuración
                 case 'Promotor':
-                    navigate('/promoter'); // Usar /promoter según tu configuración
+                    navigate(`/promoter/${user.id}/discover`); // Usar /promoter según tu configuración
                     break;
                 default:
                     navigate('/'); 

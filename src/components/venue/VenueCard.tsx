@@ -19,7 +19,7 @@ import apiFetch from '@/lib/api';
 
 interface VenueCardProps {
   venue: {
-    user_id: number;
+    id: number;
     name: string;
     city?: string;
     province?: string;
@@ -49,6 +49,7 @@ const getAmenityIcon = (amenity: string) => {
 
 
 export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
+  
   const { user, token } = useAuth();
   const params = useParams();
 
@@ -58,7 +59,7 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
   const cap = venue.capacity || 0;
   const reviewsDisplay = (venue.reviewsCount !== undefined)
     ? venue.reviewsCount
-    : (cap > 0 ? Math.max(50, Math.round(cap / 6)) : (venue.user_id % 300) + 50);
+    : (cap > 0 ? Math.max(50, Math.round(cap / 6)) : (venue.id % 300) + 50);
   // Infer simple venue type from bio keywords (approximation)
   const bio = (venue.bio || '').toLowerCase();
   const venueType = bio.includes('discoteca') || bio.includes('club')
@@ -69,14 +70,21 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
     ? 'Rooftop'
     : '';
 
-  // Si el usuario es artista, usar su propio id para la ruta cruzada
+  // Si el usuario es artista o manager, usar su propio id para la ruta cruzada
   const isArtist = user && String(user.role).toLowerCase().includes('art');
+  const isManager = user && String(user.role).toLowerCase().includes('manager');
   const resolvedArtistId = isArtist ? user?.id : undefined;
+  const resolvedManagerId = isManager ? user?.id : undefined;
+  
+  
   // Usar userId si existe, si no id
-  const venueId = (venue as any).userId || venue.user_id;
-  const venueProfileUrl = isArtist && resolvedArtistId
-    ? `/artist/${resolvedArtistId}/venue/${venueId}/profile`
-    : `/venue/profile/${venueId}`;
+  const venueId = (venue as any).userId || venue.id;
+  let venueProfileUrl = `/venue/profile/${venueId}`;
+  if (isArtist && resolvedArtistId) {
+    venueProfileUrl = `/artist/${resolvedArtistId}/venue/${venueId}/profile`;
+  } else if (isManager && resolvedManagerId) {
+    venueProfileUrl = `/manager/${resolvedManagerId}/venue/${venueId}/profile`;
+  }
 
   return (
     <Link to={venueProfileUrl} className="group">
@@ -117,9 +125,9 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
                 e.stopPropagation();
                 const newFav = !isFavorite;
                 setIsFavorite(newFav);
-                if (onFavoriteChange) onFavoriteChange(venue.user_id, newFav);
+                if (onFavoriteChange) onFavoriteChange(venue.id, newFav);
                 try {
-                  await apiFetch(`/users/favorite/${venue.user_id}`, {
+                  await apiFetch(`/users/favorite/${venue.id}`, {
                     method: 'PATCH',
                     body: { favorite: newFav },
                     token,

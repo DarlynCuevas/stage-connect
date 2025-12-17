@@ -1,12 +1,14 @@
 import { Badge } from '@/components/ui/badge';
 import { VenueCard } from '@/components/venue/VenueCard';
 import { ArtistCard } from '@/components/artists/ArtistCard';
+import { ManagerCard } from '@/components/manager/ManagerCard';
+import { PromotorCard } from '@/components/promoter/PromotorCard';
 import { ChevronDown, ChevronUp, Heart } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
 import { useAuth } from '@/contexts/AuthContext';
 
 type DiscoveryProps = {
-  type: 'artists' | 'venues';
+  type: 'artists' | 'venues' | 'managers' | 'promoters';
   loading: boolean;
   verified: any[];
   featured: any[];
@@ -19,7 +21,7 @@ type DiscoveryProps = {
   onSearchBar?: React.ReactNode;
   totalCount: number;
   sectionTitle: string;
-  cardType: 'artist' | 'venue';
+  cardType: 'artist' | 'venue' | 'manager' | 'promoter';
 };
 
 
@@ -56,7 +58,7 @@ export default function Discovery({
       {onSearchBar}
       <div className="flex justify-center my-4">
         <Badge variant="secondary" className="text-sm">
-          {totalCount} {cardType === 'artist' ? 'artistas' : 'salas'} disponibles
+          {totalCount} {cardType === 'artist' ? 'artistas' : cardType === 'manager' ? 'managers' : 'salas'} disponibles
         </Badge>
       </div>
       {loading ? (
@@ -86,6 +88,10 @@ export default function Discovery({
                         <CarouselItem key={item.id} className="basis-72 max-w-xs">
                           {cardType === 'artist' ? (
                             <ArtistCard artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
+                          ) : cardType === 'manager' ? (
+                            <ManagerCard manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                          ) : cardType === 'promoter' ? (
+                            <PromotorCard promoter={mapToCard(item)} />
                           ) : (
                             <VenueCard venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
                           )}
@@ -115,6 +121,10 @@ export default function Discovery({
                         <CarouselItem key={item.id} className="basis-72 max-w-xs">
                           {cardType === 'artist' ? (
                             <ArtistCard artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
+                          ) : cardType === 'manager' ? (
+                            <ManagerCard manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                          ) : cardType === 'promoter' ? (
+                            <PromotorCard promoter={mapToCard(item)} />
                           ) : (
                             <VenueCard venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
                           )}
@@ -151,6 +161,10 @@ export default function Discovery({
                       <CarouselItem key={item.id} className="basis-72 max-w-xs">
                         {cardType === 'artist' ? (
                           <ArtistCard artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
+                        ) : cardType === 'manager' ? (
+                          <ManagerCard manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                        ) : cardType === 'promoter' ? (
+                          <PromotorCard promoter={mapToCard(item)} />
                         ) : (
                           <VenueCard venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
                         )}
@@ -173,6 +187,10 @@ export default function Discovery({
                 {others.map((item) => (
                   cardType === 'artist' ? (
                     <ArtistCard key={item.id} artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
+                  ) : cardType === 'manager' ? (
+                    <ManagerCard key={item.id} manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                  ) : cardType === 'promoter' ? (
+                    <PromotorCard key={item.id} promoter={mapToCard(item)} />
                   ) : (
                     <VenueCard key={item.id} venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
                   )

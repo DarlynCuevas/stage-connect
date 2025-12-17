@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, HashRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import {  HashRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useEffect } from "react";
@@ -36,13 +36,13 @@ import ManagerProfile from "./pages/manager/ManagerProfile";
 
 // Venue pages
 import VenueHome from "./pages/venue/VenueHome";
-import Discovery from "./pages/Discovery";
 import VenueRequests from "./pages/venue/VenueRequests";
 import VenueProfile from "./pages/venue/VenueProfile";
 import VenueCalendar from "./pages/venue/VenueCalendar";
 
 // Promoter pages
 import PromoterHome from "./pages/promoter/PromoterHome";
+import PromoterDiscover from "./pages/promoter/PromoterDiscover";
 import PromoterRequests from "./pages/promoter/PromoterRequests";
 import PromoterProfile from "./pages/promoter/PromoterProfile";
 
@@ -207,17 +207,18 @@ function RoleBasedRedirect() {
     case 'Artista':
       return <Navigate to={`/artist/${user.id}/discover`} replace />;
     case 'Manager':
-      return <Navigate to="/manager" replace />;
+      return <Navigate to={`/manager/${user.id}/discover`} replace />;
     case 'Local':
       return <Navigate to={`/venue/${user.id}/discover`} replace />;
     case 'Promotor':
-      return <Navigate to="/promoter" replace />;
+      return <Navigate to={`/promoter/${user.id}/discover`} replace />;
     default:
       return <Landing />;
   }
 }
 
 function AppRoutes() {
+    
   return (
     <Routes>
       {/* Public routes */}
@@ -233,35 +234,42 @@ function AppRoutes() {
       <Route path="/artist/:id/requests" element={<ArtistRequests />} />
       <Route path="/artist/:id/settings" element={<Settings />} />
       <Route path="/artist/:id/invite" element={<InviteFriend />} />
-      {/* Ruta pública: venue puede ver perfil de artista */}
+      {/* Ruta pública: venue o promotor pueden ver perfil de artista */}
       <Route path="/venue/:venueId/artist/:id/profile" element={<ArtistProfile />} />
+      <Route path="/promoter/:id/artist/:artistId/profile" element={<ArtistProfile />} />
+      <Route path="/manager/:managerId/artist/:artistId/profile" element={<ArtistProfile />} />
 
-        {/* Venue routes */}
+      {/* Venue routes */}
       <Route path="/venue/:id/discover" element={<VenueDiscover />} />
       <Route path="/venue/:id/profile" element={<VenueProfile />} />
       <Route path="/venue/:id/calendar" element={<VenueCalendar />} />
       <Route path="/venue/:id/requests" element={<VenueRequests />} />
-      <Route path="/venue/:id/dashboard/" element={<VenueHome />} />
+      <Route path="/venue/:id/dashboard" element={<VenueHome />} />
       <Route path="/venue/:id/settings" element={<Settings />} />
-        {/* Ruta pública: artista puede ver perfil de venue */}
+      {/* Ruta pública: artista o manager pueden ver perfil de venue */}
       <Route path="/artist/:id/venue/:venueId/profile" element={<VenueProfile />} />
+      <Route path="/manager/:id/venue/:venueId/profile" element={<VenueProfile />} />
 
 
       {/* Manager routes */}
-      <Route path="/manager" element={<ManagerDiscover />} />
-      <Route path="/manager/dashboard" element={<ManagerHome />} />
-      <Route path="/manager/profile/:id" element={<ManagerProfile />} />
-      <Route path="/manager/artists" element={<ManagerArtists />} />
-      <Route path="/manager/requests" element={<ManagerRequests />} />
-      <Route path="/manager/settings" element={<Settings />} />
+      <Route path="/manager/:id/discover" element={<ManagerDiscover />} />
+      <Route path="/manager/:id/dashboard" element={<ManagerHome />} />
+      <Route path="/manager/:id/profile" element={<ManagerProfile />} />
+      <Route path="/manager/:id/artists" element={<ManagerArtists />} />
+      <Route path="/manager/:id/requests" element={<ManagerRequests />} />
+      <Route path="/manager/:id/settings" element={<Settings />} />
+      {/* Ruta pública: promotor puede ver perfil de manager */}
+      <Route path="/promoter/:id/manager/:managerId/profile" element={<ManagerProfile />} />
 
     
       {/* Promoter routes */}
-      <Route path="/promoter" element={<PromoterHome />} />
-      <Route path="/promoter/profile/:id" element={<PromoterProfile />} />
-      <Route path="/promoter/events" element={<PromoterHome />} />
-      <Route path="/promoter/requests" element={<PromoterRequests />} />
-      <Route path="/promoter/settings" element={<Settings />} />
+      <Route path="/promoter/:id/discover" element={<PromoterDiscover />} />
+      <Route path="/promoter/:id/profile" element={<PromoterProfile />} />
+      <Route path="/promoter/:id/dashboard" element={<PromoterHome />} />
+      <Route path="/promoter/:id/requests" element={<PromoterRequests />} />
+      <Route path="/promoter/:id/settings" element={<Settings />} />
+      {/* Ruta pública: manager puede ver perfil de promoter */}
+      <Route path="/manager/:managerId/promoter/:promoterId/profile" element={<PromoterProfile />} />
 
       {/* Catch all */}
       <Route path="*" element={<NotFound />} />

@@ -19,7 +19,7 @@ export default function VenueCalendar() {
     { to: `/venue/${venueId}/requests`, label: 'Solicitudes' },
   ];
   return (
-    <HeaderLayout profileTabs={venueNav}>
+    <HeaderLayout>
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-display font-bold mb-2">

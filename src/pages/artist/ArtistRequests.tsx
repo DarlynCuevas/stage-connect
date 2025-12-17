@@ -48,16 +48,10 @@ export default function ArtistRequests() {
 
   const pendingRequests = requests.filter(r => r.status === 'Pending');
   const completedRequests = requests.filter(r => ['Accepted', 'Rejected'].includes(r.status));
-    const artistNav = [
-    { to: id ? `/artist/${id}/discover` : '/login', label: 'Inicio' },
-    { to: `/artist/${id}/dashboard`, label: 'Panel de datos' },
-    { to: id ? `/artist/${id}/profile` : '/login', label: 'Mi perfil' },
-    { to: id ? `/artist/${id}/calendar` : '/login', label: 'Calendario' },
-    { to: `/artist/${id}/requests`, label: 'Solicitudes' },
-  ];
+    
   return (
     
-      <HeaderLayout profileTabs={artistNav}>
+      <HeaderLayout>
         <div className="space-y-6">
              <div className="relative rounded-2xl overflow-hidden mb-8">
           <div className="h-48 lg:h-64">

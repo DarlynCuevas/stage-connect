@@ -3,6 +3,7 @@ import { RequestCard } from '@/components/booking/RequestCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSentRequests } from '@/lib/requests';
 import { Clock, Check } from 'lucide-react';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 
 export default function PromoterRequests() {
   const { data: requests = [], isLoading } = useSentRequests();
@@ -11,7 +12,7 @@ export default function PromoterRequests() {
   const acceptedRequests = requests.filter(r => r.status === 'Accepted');
 
   return (
-    <DashboardLayout>
+    <HeaderLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-display font-bold mb-2">
@@ -73,6 +74,6 @@ export default function PromoterRequests() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </HeaderLayout>
   );
 }

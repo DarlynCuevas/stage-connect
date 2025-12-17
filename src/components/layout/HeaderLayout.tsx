@@ -3,7 +3,7 @@ import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Music, Bell, Sun, Moon, LayoutDashboard, User, Calendar, MessageSquare, Settings, LogOut } from 'lucide-react';
+import { Music, Bell, Sun, Moon,  User,Settings, LogOut } from 'lucide-react';
 import { BottomNav } from './BottomNav';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
@@ -16,21 +16,10 @@ export interface HeaderLayoutProps {
   profileTabs?: Array<{ to: string; label: string; icon?: React.ReactNode }>;
 }
 
-export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
+export function HeaderLayout({ children }: HeaderLayoutProps) {
   const { user, isAuthenticated, logout } = useAuth();
-  React.useEffect(() => {
-  }, [user, isAuthenticated]);
+  React.useEffect(() => {}, [user, isAuthenticated]);
   const location = useLocation();
-
-  // Allow public access to /venue/:venueId/artist/:artistId/profile (local ve artista)
-  // y /artist/:artistId/venue/:venueId/profile (artista ve local)
-  const isPublicArtistProfile =
-    /^\/venue\/[^/]+\/artist\/[^/]+\/profile$/.test(location.pathname) ||
-    /^\/artist\/[^/]+\/venue\/[^/]+\/profile$/.test(location.pathname);
-
-  // Si el usuario es artista y está en /artist/:artistId/venue/:venueId/profile, forzar layout de artista
-  const isArtistVenueProfile = /^\/artist\/[^/]+\/venue\/[^/]+\/profile$/.test(location.pathname);
-  const isVenueArtistProfile = /^\/venue\/[^/]+\/artist\/[^/]+\/profile$/.test(location.pathname);
   const [theme, setTheme] = React.useState<'dark' | 'light'>(() => {
     const t = localStorage.getItem('theme');
     return (t === 'light' ? 'light' : 'dark');
@@ -59,7 +48,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
   // Badges: pending requests (adaptar para todos los roles)
   const { data: artistRequests = [] } = useArtistReqFromRequestsLib();
   const { data: receivedManagerRequests = [] } = useReceivedManagerRequests();
-  if (!isAuthenticated && !isPublicArtistProfile) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
@@ -83,105 +72,149 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
     return 0;
   })();
 
-  // Si se pasa profileTabs, usarlas. Si no, usar menú por defecto según el rol actual
-  let nav: Array<{ to: string; label: string; icon?: React.ReactNode }> = profileTabs ?? [];
-  if (!profileTabs) {
-    if (user) {
-      const role = String(user.role).toLowerCase();
-      // Forzar menú de artista si está en /artist/:artistId/venue/:venueId/profile
-      if (role.includes('art') || isArtistVenueProfile) {
-        nav = [
-          { to: `/artist/${user.id}/discover`, label: 'Inicio' },
-          { to: `/artist/${user.id}/dashboard`, label: 'Panel de datos' },
-          { to: `/artist/${user.id}/profile`, label: 'Mi perfil' },
-          { to: `/artist/${user.id}/calendar`, label: 'Calendario' },
-          { to: `/artist/${user.id}/requests`, label: 'Solicitudes' },
-        ];
-      } else if (role.includes('local') || isVenueArtistProfile) {
-        nav = [
-          { to: `/venue/${user.id}/discover`, label: 'Inicio' },
-          { to: `/venue/${user.id}/dashboard`, label: 'Panel de datos' },
-          { to: `/venue/${user.id}/profile`, label: 'Mi perfil' },
-          { to: `/venue/${user.id}/calendar`, label: 'Calendario' },
-          { to: `/venue/${user.id}/requests`, label: 'Solicitudes' },
-        ];
-      } else if (role.includes('manager')) {
-        nav = [
-          { to: `/manager`, label: 'Inicio' },
-          { to: `/manager/artists`, label: 'Mis Artistas' },
-          { to: `/manager/profile`, label: 'Mi perfil' },
-        ];
-      } else if (role.includes('promotor')) {
-        nav = [
-          { to: `/promoter`, label: 'Inicio' },
-          { to: `/promoter/profile`, label: 'Mi perfil' },
-        ];
-      } else {
-        nav = [
-          { to: '/', label: 'Inicio' },
-        ];
+  // Menú por defecto según el usuario autenticado (igual que BottomNav)
+  const layoutItems = [
+    {
+      key: 'home', label: 'Inicio', getPath: (user: any) => {
+        if (!user) return '/';
+        const role = String(user.role).toLowerCase();
+        if (role.includes('art')) return `/artist/${user.id}/discover`;
+        if (role.includes('local')) return `/venue/${user.id}/discover`;
+        if (role.includes('manager')) return `/manager/${user.id}/discover`;
+        if (role.includes('promotor')) return `/promoter/${user.id}/discover`;
+        return '/';
       }
-    } else {
-      nav = [
-        { to: '/', label: 'Inicio' },
-      ];
-    }
-  }
+    },
+     {
+      key: 'dashboard', label: 'Panel de datos', getPath: (user: any) => {
+        if (!user) return '/';
+        const role = String(user.role).toLowerCase();
+        if (role.includes('art')) return `/artist/${user.id}/dashboard`;
+        if (role.includes('local')) return `/venue/${user.id}/dashboard`;
+        if (role.includes('manager')) return `/manager/${user.id}/dashboard`;
+        if (role.includes('promotor')) return `/promoter/${user.id}/dashboard`;
+        return '/';
+      }
+    },
+       {
+      key: 'profile', label: 'Perfil', getPath: (user: any) => {
+        if (!user) return '/';
+        const role = String(user.role).toLowerCase();
+        if (role.includes('art')) return `/artist/${user.id}/profile`;
+        if (role.includes('local')) return `/venue/${user.id}/profile`;
+        if (role.includes('manager')) return `/manager/${user.id}/profile`;
+        if (role.includes('promotor')) return `/promoter/${user.id}/profile`;
+        return '/';
+      }
+    },
+    // Calendario solo para artista, local y promotor
+    {
+      key: 'calendar', label: 'Calendario', getPath: (user: any) => {
+        if (!user) return '/';
+        const role = String(user.role).toLowerCase();
+        if (role.includes('art')) return `/artist/${user.id}/calendar`;
+        if (role.includes('local')) return `/venue/${user.id}/calendar`;
+        // No calendar for manager
+        return null;
+      }
+    },
+    {
+      key: 'request', label: 'Solicitudes', getPath: (user: any) => {
+        if (!user) return '/';
+        const role = String(user.role).toLowerCase();
+        if (role.includes('art')) return `/artist/${user.id}/requests`;
+        if (role.includes('local')) return `/venue/${user.id}/requests`;
+        if (role.includes('manager')) return `/manager/${user.id}/requests`;
+        if (role.includes('promotor')) return `/promoter/${user.id}/requests`;
+        return '/';
+      }
+    },
+  ];
+
+ 
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col items-center">
       {/* Header y tabs solo en escritorio (sm+) */}
-      <header className="hidden sm:block sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
-        <div className="w-full px-0">
-          <div className="h-14 flex items-center justify-between">
+      <header className="hidden sm:block sticky top-0 z-50 bg-background/95 backdrop-blur border-b w-full">
+        <div className="w-full px-0 flex flex-col items-center">
+          <div className="h-14 flex items-center justify-center w-full max-w-5xl">
             {/* Logo y nombre solo visibles en escritorio (sm+) */}
             <Link
-              to={(() => {
-                if (!user) return '/login';
-                const role = String(user.role).toLowerCase();
-                if (role.includes('art')) return `/artist/${user.id}/discover`;
-                if (role.includes('local')) return `/venue/${user.id}/discover`;
-                if (role.includes('manager')) return `/manager`;
-                if (role.includes('promotor')) return `/promoter`;
-                return '/';
-              })()}
-              className="flex items-center gap-3 hover:opacity-80 transition-opacity ml-8 sm:ml-16"
+              to={user && user.role
+                ? (String(user.role).toLowerCase().includes('art')
+                  ? `/artist/${user.id}/discover`
+                  : String(user.role).toLowerCase().includes('local')
+                  ? `/venue/${user.id}/discover`
+                  : String(user.role).toLowerCase().includes('manager')
+                  ? `/manager/${user.id}/discover`
+                  : String(user.role).toLowerCase().includes('promotor')
+                  ? `/promoter/${user.id}/discover`
+                  : '/')
+                : '/'}
+              className="flex items-center gap-2 ml-1 sm:ml-3 mr-8 sm:mr-16"
             >
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                 <Music className="w-4 h-4 text-primary" />
               </div>
               <span className="font-display font-bold">Artime</span>
             </Link>
+            {layoutItems.map((item) => {
+              const path = item.getPath(user);
+              if (!path || path === '/') return null;
+              const isActive = location.pathname.startsWith(path);
+              return (
+                <Link
+                  key={item.key}
+                  to={path}
+                  className={cn(
+                    'px-5 py-2 rounded-full font-medium text-sm transition-colors relative',
+                    isActive
+                      ? 'bg-[#232329] text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-primary'
+                  )}
+                  style={{ minWidth: 90, textAlign: 'center' }}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
             {/* Profile navigation tabs integrated into header */}
-            <nav className="flex items-center gap-2">
-              {nav.map((item, idx) => {
-                const active = location.pathname === item.to;
-                // Mostrar badge solo en la pestaña de Solicitudes para Artista
-                const isArtistRequestsTab = user && String(user.role).toLowerCase().includes('art') && item.to.includes('/requests') && item.label === 'Solicitudes';
-                // Usar key única combinando ruta y el índice
-                return (
-                  <Link
-                    key={item.to + '-' + idx}
-                    to={item.to}
-                    className={cn(
-                      'px-5 py-2 rounded-full font-medium text-sm transition-colors relative',
-                      active
-                        ? 'bg-[#232329] text-white shadow-sm'
-                        : 'text-muted-foreground hover:text-primary'
-                    )}
-                    style={{ minWidth: 90, textAlign: 'center' }}
-                  >
-                    {item.icon && <span className="mr-2 align-middle">{item.icon}</span>}
-                    {item.label}
-                    {isArtistRequestsTab && pendingCount > 0 && (
-                      <Badge variant="destructive" className="absolute -bottom-2 -right-2 h-5 min-w-5 px-1.5 text-xs">
-                        {pendingCount > 99 ? '99+' : pendingCount}
-                      </Badge>
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
+            {/** Define nav as profileTabs or empty array */}
+            {(() => {
+              const nav = [];
+              return (
+                <nav className="flex items-center gap-2">
+                  {nav.map((item, idx) => {
+                    const active = location.pathname === item.to;
+                    // Mostrar badge solo en la pestaña de Solicitudes para Artista
+                    const isArtistRequestsTab = user && String(user.role).toLowerCase().includes('art') && item.to.includes('/requests') && item.label === 'Solicitudes';
+                    // Usar key única combinando ruta y el índice
+                    return (
+                      <Link
+                        key={item.to + '-' + idx}
+                        to={item.to}
+                        className={cn(
+                          'px-5 py-2 rounded-full font-medium text-sm transition-colors relative',
+                          active
+                            ? 'bg-[#232329] text-white shadow-sm'
+                            : 'text-muted-foreground hover:text-primary'
+                        )}
+                        style={{ minWidth: 90, textAlign: 'center' }}
+                      >
+                        {item.icon && <span className="mr-2 align-middle">{item.icon}</span>}
+                        {item.label}
+                        {isArtistRequestsTab && pendingCount > 0 && (
+                          <Badge variant="destructive" className="absolute -bottom-2 -right-2 h-5 min-w-5 px-1.5 text-xs">
+                            {pendingCount > 99 ? '99+' : pendingCount}
+                          </Badge>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              );
+            })()}
             <div className="flex items-center gap-4 mr-8 sm:mr-16">
               <button
                 aria-label="Cambiar tema"
@@ -250,7 +283,7 @@ export function HeaderLayout({ children, profileTabs }: HeaderLayoutProps) {
           </div>
         </div>
       </header>
-      <main className="container mx-auto px-1 sm:px-4 py-2 sm:py-6 pb-16 sm:pb-6" style={{ paddingBottom: '4rem' }}>
+      <main className="container mx-auto px-1 sm:px-4 py-2 sm:py-6 pb-16 sm:pb-6 flex flex-col items-center" style={{ paddingBottom: '4rem' }}>
         {children}
       </main>
       {/* BottomNav solo en móvil, fijo en la parte inferior */}

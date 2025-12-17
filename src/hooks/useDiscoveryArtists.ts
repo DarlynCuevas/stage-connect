@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface DiscoveryArtist {
   id: number;
@@ -33,6 +34,7 @@ export function useDiscoveryArtists() {
   const [loading, setLoading] = useState(true);
   // Por defecto, ciudad vacía (no 'all')
   const [filters, setFilters] = useState<DiscoveryArtistFilters>({ city: '', genre: [] });
+   const { token } = useAuth();
 
 
   useEffect(() => {
@@ -47,8 +49,8 @@ export function useDiscoveryArtists() {
         if (filters.priceMin !== undefined) params.append('priceMin', String(filters.priceMin));
         if (filters.priceMax !== undefined) params.append('priceMax', String(filters.priceMax));
         if (filters.query && filters.query.trim() !== '') params.append('query', filters.query.trim());
-        const url = `/public/users?role=Artista${params.toString() ? '&' + params.toString() : ''}`;
-        const response = await apiFetch(url);
+        const url = `/public/artists${params.toString() ? '?' + params.toString() : ''}`;
+        const response = await apiFetch(url, token ? { token } : undefined);
         setArtists(response);
       } catch (error) {
         setArtists([]);

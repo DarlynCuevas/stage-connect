@@ -226,7 +226,6 @@ export default function VenueProfile() {
   ];
 
   // Log de depuración para menú seleccionado
-  console.log('VenueProfile mainContext:', mainContext, 'artistId:', artistId, 'artistNav:', artistNav, 'localNav:', localNav);
   return (
     <HeaderLayout profileTabs={mainContext === 'artist' ? artistNav : localNav}>
       <div className="space-y-6 max-w-6xl mx-auto">

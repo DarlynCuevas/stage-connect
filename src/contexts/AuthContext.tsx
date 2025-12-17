@@ -57,10 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(newUser);
     if (newUser) {
       localStorage.setItem('currentUser', JSON.stringify(newUser));
-      console.log('[AuthContext] Usuario actualizado:', newUser);
     } else {
       localStorage.removeItem('currentUser');
-      console.log('[AuthContext] Usuario eliminado');
     }
   };
 

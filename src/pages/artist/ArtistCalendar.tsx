@@ -1,7 +1,7 @@
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArtistCalendarComponent } from '@/components/calendar/ArtistCalendarComponent';
+import ArtistCalendarComponent from '@/components/calendar/ArtistCalendarComponent';
 
 export default function ArtistCalendar() {
   const { id } = useParams();
@@ -10,15 +10,9 @@ export default function ArtistCalendar() {
     return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
   }
   const artistId = id ? Number(id) : undefined;
-  const artistNav = [
-    { to: artistId ? `/artist/${artistId}/discover` : '/login', label: 'Inicio' },
-    { to: `/artist/${artistId}/dashboard`, label: 'Panel de datos' },
-    { to: artistId ? `/artist/${artistId}/profile` : '/login', label: 'Mi perfil' },
-    { to: artistId ? `/artist/${artistId}/calendar` : '/login', label: 'Calendario' },
-    { to: `/artist/${artistId}/requests`, label: 'Solicitudes' },
-  ];
+  
   return (
-    <HeaderLayout profileTabs={artistNav}>
+    <HeaderLayout>
         <div className="space-y-6">
             <div className="relative rounded-2xl overflow-hidden mb-8">
           <div className="h-48 lg:h-64">
