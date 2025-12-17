@@ -15,27 +15,26 @@ export function PromotorCard({ promoter, onViewProfile, onFavoriteChange }: Prom
   const location = [promoter.city, promoter.country].filter(Boolean).join(', ');
   // Puedes agregar lógica de favoritos si es necesario
   // Detectar si el usuario es manager para ruta cruzada
+
   let promoterProfileUrl = `/promoter/${promoter.id}/profile`;
   if (typeof window !== 'undefined') {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem('currentUser');
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
         const role = String(user.role).toLowerCase();
-        // DEPURADOR ACTIVO
-        debugger;
-        console.log('[PromotorCard][DEBUG] ROL DETECTADO:', role, 'ID:', user.id, 'Promoter:', promoter.id, promoter.name);
-        if (role === 'manager') {
+        if (role.includes('manager')) {
           promoterProfileUrl = `/manager/${user.id}/promoter/${promoter.id}/profile`;
+        } else if (role.includes('artist')) {
+          promoterProfileUrl = `/artist/${user.id}/promoter/${promoter.id}/profile`;
         }
       } catch (e) {
-        console.log('[PromotorCard][DEBUG] Error parseando user:', e);
+        // ...existing code...
       }
-    } else {
-      console.log('[PromotorCard][DEBUG] No hay user en localStorage');
+      
+      
     }
   }
-  console.log('[PromotorCard][DEBUG] URL generada:', promoterProfileUrl, 'Promoter:', promoter.id, promoter.name);
 
   return (
     

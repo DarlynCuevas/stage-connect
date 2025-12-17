@@ -292,7 +292,7 @@ export default function ArtistHome() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-display font-bold mb-2">Panel de Artista</h1>
-            <p className="text-muted-foreground">Bienvenido, {artist.nickName || artist.name}</p>
+            <p className="text-muted-foreground">Bienvenido, {artist?.nickName || artist?.name || ''}</p>
           </div>
       
         </div>

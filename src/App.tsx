@@ -236,8 +236,8 @@ function AppRoutes() {
       <Route path="/artist/:id/invite" element={<InviteFriend />} />
       {/* Ruta pública: venue o promotor pueden ver perfil de artista */}
       <Route path="/venue/:venueId/artist/:id/profile" element={<ArtistProfile />} />
-      <Route path="/promoter/:id/artist/:artistId/profile" element={<ArtistProfile />} />
-      <Route path="/manager/:managerId/artist/:artistId/profile" element={<ArtistProfile />} />
+      <Route path="/promoter/:promoterId/artist/:id/profile" element={<ArtistProfile />} />
+      <Route path="/manager/:managerId/artist/:id/profile" element={<ArtistProfile />} />
 
       {/* Venue routes */}
       <Route path="/venue/:id/discover" element={<VenueDiscover />} />
@@ -258,8 +258,9 @@ function AppRoutes() {
       <Route path="/manager/:id/artists" element={<ManagerArtists />} />
       <Route path="/manager/:id/requests" element={<ManagerRequests />} />
       <Route path="/manager/:id/settings" element={<Settings />} />
-      {/* Ruta pública: promotor puede ver perfil de manager */}
+      {/* Ruta pública: promotor o artista pueden ver perfil de manager */}
       <Route path="/promoter/:id/manager/:managerId/profile" element={<ManagerProfile />} />
+      <Route path="/artist/:artistId/manager/:id/profile" element={<ManagerProfile />} />
 
     
       {/* Promoter routes */}
@@ -268,8 +269,9 @@ function AppRoutes() {
       <Route path="/promoter/:id/dashboard" element={<PromoterHome />} />
       <Route path="/promoter/:id/requests" element={<PromoterRequests />} />
       <Route path="/promoter/:id/settings" element={<Settings />} />
-      {/* Ruta pública: manager puede ver perfil de promoter */}
+      {/* Ruta pública: manager o artista pueden ver perfil de promoter */}
       <Route path="/manager/:managerId/promoter/:promoterId/profile" element={<PromoterProfile />} />
+      <Route path="/artist/:artistId/promoter/:id/profile" element={<PromoterProfile />} />
 
       {/* Catch all */}
       <Route path="*" element={<NotFound />} />

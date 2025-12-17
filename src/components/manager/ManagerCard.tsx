@@ -19,7 +19,7 @@ export function ManagerCard({ manager, onViewProfile, onFavoriteChange }: Manage
   // Detect if user is promoter for cross-route (optional, similar to PromotorCard)
   let promoterId = undefined;
   if (typeof window !== 'undefined') {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem('currentUser');
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
@@ -37,11 +37,17 @@ export function ManagerCard({ manager, onViewProfile, onFavoriteChange }: Manage
         console.log(`isPromoter `,isPromoter);
 
 
+
+    // Si el usuario es artista, la ruta debe ser /artist/:artistId/manager/:managerId/profile
+    const isArtist = user && String(user.role).toLowerCase().includes('artista');
+    const resolvedArtistId = isArtist ? user?.id : undefined;
     let managerProfileUrl = `/manager/profile/${manager.id}`;
     if (isLocal && resolvedLocalId) {
-        managerProfileUrl = `/venue/${resolvedLocalId}/manager/${manager.id}/profile`;
+      managerProfileUrl = `/venue/${resolvedLocalId}/manager/${manager.id}/profile`;
     } else if (isPromoter && resolvedPromoterId) {
-        managerProfileUrl = `/promoter/${resolvedPromoterId}/manager/${manager.id}/profile`;
+      managerProfileUrl = `/promoter/${resolvedPromoterId}/manager/${manager.id}/profile`;
+    } else if (isArtist && resolvedArtistId) {
+      managerProfileUrl = `/artist/${resolvedArtistId}/manager/${manager.id}/profile`;
     }
 
     
