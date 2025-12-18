@@ -45,7 +45,7 @@ export async function fetchArtists(filters?: {
 }
 
 export async function updateProfile(profileData: any, token: string) {
-  return apiFetch('/users/profile', {
+  return apiFetch('/users/me', {
     method: 'PATCH',
     body: profileData,
     token,

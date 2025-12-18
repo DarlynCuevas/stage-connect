@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     id: String(u?.id ?? u?.user_id ?? ''),
     name: u?.name ?? '',
     email: u?.email ?? '',
-    role: u?.role ?? 'Artista',
+    role: u?.role ?? '',
     avatar: u?.avatar,
     nickName: u?.nickName ?? u?.nick_name,
     bio: u?.bio,

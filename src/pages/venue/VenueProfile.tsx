@@ -227,59 +227,88 @@ export default function VenueProfile() {
   // Log de depuración para menú seleccionado
   return (
     <HeaderLayout profileTabs={mainContext === 'artist' ? artistNav : localNav}>
-      <div className="space-y-6 max-w-6xl mx-auto">
-        {/* Header with Edit Button */}
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-4xl font-display font-bold mb-2">
-                {venue?.name || 'Mi Local'}
-              </h1>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="w-4 h-4" />
-                <span>{(venue as any)?.city || 'Ciudad'}, {(venue as any)?.country || 'País'}</span>
-              </div>
-            </div>
-            {/* Avatar + Eliminar */}
-            <div className="flex flex-col items-center">
-              <Avatar className="h-16 w-16 border-2 border-sidebar-border">
-                <AvatarImage src={editData?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=venue'} />
-                <AvatarFallback>{venue?.name?.charAt(0) || 'V'}</AvatarFallback>
-              </Avatar>
-              {isEditing && editData?.avatar && (
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="mt-2"
-                  onClick={() => setEditData({ ...editData, avatar: '' })}
-                >
-                  <Trash2 className="w-4 h-4 mr-1" /> Quitar foto
-                </Button>
-              )}
-            </div>
-          </div>
-          {isOwnProfile && (
-            !isEditing ? (
-              <Button onClick={() => setIsEditing(true)} variant="outline" size="lg">
-                <Edit className="w-4 h-4 mr-2" />
-                Editar Perfil
-              </Button>
-            ) : (
-              <div className="flex gap-2">
-                <Button onClick={handleSave} disabled={updateProfileMutation.isPending} size="lg">
-                  <Save className="w-4 h-4 mr-2" />
-                  Guardar Cambios
-                </Button>
-                <Button onClick={handleCancel} variant="ghost" size="lg">
-                  <X className="w-4 h-4 mr-2" />
-                  Cancelar
-                </Button>
-              </div>
-            )
-          )}
+      {/* Header con banner visual tipo ArtistProfile */}
+      <div className="relative rounded-2xl overflow-hidden mb-8">
+        <div className="h-48 lg:h-64">
+          <img
+            src={`https://picsum.photos/1200/400?random=${Math.random()}`}
+            alt="Banner"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
         </div>
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+            <div className="flex items-end gap-4">
+              <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
+                <AvatarImage src={editData?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=venue'} />
+                <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+                  {venue?.name?.charAt(0) || 'V'}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  {isEditing ? (
+                    <Input
+                      value={editData?.name || ''}
+                      onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                      placeholder="Nombre del local"
+                      className="text-2xl font-display font-bold max-w-md"
+                    />
+                  ) : (
+                    <h1 className="text-3xl font-display font-bold">{venue?.name || 'Mi Local'}</h1>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 text-muted-foreground mt-2">
+                  <MapPin className="w-4 h-4" />
+                  {isEditing ? (
+                    <div className="flex gap-2">
+                      <Input
+                        value={editData?.city || ''}
+                        onChange={(e) => setEditData({ ...editData, city: e.target.value })}
+                        placeholder="Ciudad"
+                        className="h-6 text-sm"
+                      />
+                      <Input
+                        value={editData?.country || ''}
+                        onChange={(e) => setEditData({ ...editData, country: e.target.value })}
+                        placeholder="País"
+                        className="h-6 text-sm"
+                      />
+                    </div>
+                  ) : (
+                    <span>{(venue as any)?.city || 'Ciudad'}, {(venue as any)?.country || 'País'}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            {/* Botones de edición dentro del banner */}
+            {isOwnProfile && (
+              !isEditing ? (
+                <Button onClick={() => setIsEditing(true)} variant="outline" size="lg">
+                  <Edit className="w-4 h-4 mr-2" />
+                  Editar Perfil
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button onClick={handleSave} disabled={updateProfileMutation.isPending} size="lg">
+                    <Save className="w-4 h-4 mr-2" />
+                    Guardar Cambios
+                  </Button>
+                  <Button onClick={handleCancel} variant="ghost" size="lg">
+                    <X className="w-4 h-4 mr-2" />
+                    Cancelar
+                  </Button>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+      </div>
+      {/* ...resto del contenido... */}
+      <div className="space-y-6 max-w-6xl mx-auto">
 
-        {/* Photo Gallery */}
+      {/*   {/* Photo Gallery 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -351,7 +380,7 @@ export default function VenueProfile() {
               )}
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Calendar debajo de galería */}
         <div className="my-8">

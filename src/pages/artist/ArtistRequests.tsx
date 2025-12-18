@@ -2,12 +2,14 @@ import { useCallback } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { RequestCard } from '@/components/booking/RequestCard';
+import { ManagerRequestCard } from '@/components/manager/ManagerRequestCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockArtists } from '@/data/mockData';
 import { BookingRequest } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useArtistRequests, useUpdateRequestStatus } from '@/lib/requests';
-import { MessageSquare, Clock, Check, X } from 'lucide-react';
+import { useReceivedManagerRequests, useUpdateManagerRequestStatus } from '@/lib/manager-requests';
+import { MessageSquare, Clock, Check, X, User } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -18,9 +20,11 @@ export default function ArtistRequests() {
       return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
     }
   const { data: requests = [], isLoading } = useArtistRequests();
+  const { data: managerRequests = [] } = useReceivedManagerRequests();
   const artist = mockArtists[0];
   const { toast } = useToast();
   const updateStatusMutation = useUpdateRequestStatus();
+  const updateManagerRequestStatus = useUpdateManagerRequestStatus();
 
   const handleAccept = useCallback(async (requestId: string) => {
     try {
@@ -48,6 +52,8 @@ export default function ArtistRequests() {
 
   const pendingRequests = requests.filter(r => r.status === 'Pending');
   const completedRequests = requests.filter(r => ['Accepted', 'Rejected'].includes(r.status));
+  const pendingManagerRequests = managerRequests.filter((r: any) => r.status === 'Pending');
+  const completedManagerRequests = managerRequests.filter((r: any) => ['Accepted', 'Rejected'].includes(r.status));
     
   return (
     
@@ -128,7 +134,64 @@ export default function ArtistRequests() {
               )}
             </div>
           </TabsContent>
-        </Tabs>
+
+          </Tabs>
+        {/* Sección de Solicitudes de Representación */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <User className="w-6 h-6 text-role-manager" />
+            Solicitudes de Representación
+          </h2>
+          <Tabs defaultValue="pending-manager" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="pending-manager" className="gap-2">
+                <Clock className="w-4 h-4" />
+                Pendientes ({pendingManagerRequests.length})
+              </TabsTrigger>
+              <TabsTrigger value="assigned-manager" className="gap-2">
+                <Check className="w-4 h-4" />
+                Asignada ({completedManagerRequests.filter((r: any) => r.status === 'Accepted').length})
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="pending-manager">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+                {pendingManagerRequests.length > 0 ? (
+                  pendingManagerRequests.map((request: any) => (
+                    <ManagerRequestCard
+                      key={request.id}
+                      request={request}
+                      onAccept={() => updateManagerRequestStatus.mutate({ requestId: request.id, status: 'Accepted' })}
+                      onReject={() => updateManagerRequestStatus.mutate({ requestId: request.id, status: 'Rejected' })}
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-2 text-center py-8 text-muted-foreground">
+                    <User className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p>No tienes solicitudes de representación pendientes</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+            <TabsContent value="assigned-manager">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {completedManagerRequests.filter((r: any) => r.status === 'Accepted').length > 0 ? (
+                  completedManagerRequests.filter((r: any) => r.status === 'Accepted').map((request: any) => (
+                    <ManagerRequestCard
+                      key={request.id}
+                      request={request}
+                      isAssigned={true}
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-2 text-center py-8 text-muted-foreground">
+                    <User className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p>No tienes manager asignado actualmente</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
         </div>
       </HeaderLayout>
   );
