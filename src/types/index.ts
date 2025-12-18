@@ -93,6 +93,8 @@ export interface Manager {
   artists: string[]; // Artist IDs
   avatar: string;
   verified?: boolean;
+  favorite?: boolean;
+  rating?: number;
 }
 
 export interface Venue {

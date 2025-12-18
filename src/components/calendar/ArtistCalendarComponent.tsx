@@ -21,7 +21,6 @@ import { useBlockedDays, useManageBlockedDays } from '@/lib/blocked-days';
 import { useConfirmedRequests } from '@/lib/requests';
 
 const ArtistCalendarComponent = ({ artistId, editable = false, onDateToggle, onDateSelect }: ArtistCalendarProps) => {
-  console.log('artistaaaaaaaa ', artistId);
   
   // Llamar siempre a los hooks, aunque artistId sea undefined
   const confirmedQuery = useConfirmedRequests(artistId);
@@ -221,7 +220,6 @@ const ArtistCalendarComponent = ({ artistId, editable = false, onDateToggle, onD
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          console.log('[ArtistCalendar] Click botón bloquear/desbloquear', selectedDate);
                           onDateToggle?.(selectedDate);
                         }}
                         className={selectedDateInfo.available ? '' : 'border-destructive text-destructive hover:bg-destructive/10'}

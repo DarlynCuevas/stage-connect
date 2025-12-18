@@ -111,9 +111,6 @@ export default function ArtistProfile() {
   // Normaliza el id para que siempre sea number y se llame id
   const currentArtist = useMemo(() => {
     const base = freshArtist || authUser;
-    console.log('freshArtist , ', freshArtist);
-     console.log('authUser , ', authUser);
-    
     if (!base) return undefined;
     // Si viene como user_id, lo mapeamos a id
     let id = base.id ?? base.user_id;

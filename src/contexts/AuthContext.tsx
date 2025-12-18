@@ -18,12 +18,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState<string | null>(() => {
     const t = localStorage.getItem('book_token');
-    console.log('[AuthContext] Token inicial:', t);
     return t;
   });
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('currentUser');
-    console.log('[AuthContext] Usuario inicial:', saved);
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -87,10 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Al iniciar la app, si hay token, cargar usuario desde BD
   useEffect(() => {
     if (token) {
-      console.log('[AuthContext] useEffect: token detectado, cargando usuario desde BD');
       loadUserFromDB(token);
     } else {
-      console.log('[AuthContext] useEffect: sin token, usuario no autenticado');
     }
   }, []);
 
@@ -183,7 +179,6 @@ const register = async (name: string, email: string, password: string, role: Use
     localStorage.removeItem('book_token');
     localStorage.removeItem('book_role');
     setToken(null);
-    console.log('[AuthContext] Logout ejecutado');
   };
 
   return (

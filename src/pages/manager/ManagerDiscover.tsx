@@ -11,6 +11,8 @@ import { PromotorCard } from '@/components/promoter/PromotorCard';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 import { ArtistSearch } from '@/components/artists/ArtistSearch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { handleFavorite } from "@/lib/favorite";
+import { useDiscoveryManagers } from "@/hooks/useDiscoveryManagers";
 // import { useAuth } from '@/contexts/AuthContext';
 // import { useParams } from 'react-router-dom';
 // import { useDiscoveryManagers } from '@/hooks/useDiscoveryManagers';
@@ -24,29 +26,48 @@ export default function ManagerDiscover() {
     return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
   }
 
+
   // Selector de tipo de búsqueda: 'venues' o 'promoters'
   const [searchType, setSearchType] = useState<'venues' | 'promoters' | 'artists'>('venues');
   // ARTISTS
-  const { artists, loading: loadingArtists, setFilters: setArtistFilters, filters: artistFilters } = useDiscoveryArtists();
+  const { artists,setArtists, loading: loadingArtists,  setFilters: setArtistFilters, filters: artistFilters } = useDiscoveryArtists();
   const verifiedArtists = artists.filter((a: any) => a.verified);
   const featuredArtists = artists.filter((a: any) => a.featured && !a.verified);
   const othersArtists = artists.filter((a: any) => !a.verified && !a.featured);
   const favoritesArtists = artists.filter((a: any) => a.favorite);
-  const handleFavoriteArtist = (artistId: number, favorite: boolean) => {
-    // Actualizar favoritos de artistas
+  const handleFavoriteArtist = async (artistId: number, favorite: boolean) => {
+     try {
+      await handleFavorite({ targetId: artistId, favorite });
+      setArtists((prev) =>
+        prev.map((m) =>
+          m.id === artistId ? { ...m, favorite } : m
+        )
+      );
+    } catch (e) {
+      // Manejo de error opcional
+    }
   };
   const mapToArtistCard = (artist: any) => ({ ...artist });
   const handleArtistSearch = (filtersUpdate: any) => { setArtistFilters((prev: any) => ({ ...prev, ...filtersUpdate })); };
 
   // VENUES
-  const { venues, loading, setFilters, filters } = useDiscoveryVenues();
+  const { venues, setVenues, loading, setFilters, filters } = useDiscoveryVenues();
   const [showFavorites, setShowFavorites] = useState(false);
   const verifiedVenues = venues.filter((v) => v.verified);
   const featuredVenues = venues.filter((v) => v.featured && !v.verified);
   const othersVenues = venues.filter((v) => !v.verified && !v.featured);
   const favoritesVenues = venues.filter((v) => v.favorite);
-  const handleFavoriteVenue = (venueId: number, favorite: boolean) => {
-    // Actualizar favoritos de venues
+  const handleFavoriteVenue = async (venueId: number, favorite: boolean) => {
+    try {
+      await handleFavorite({ targetId: venueId, favorite });
+      setVenues((prev) =>
+        prev.map((m) =>
+          m.id === venueId ? { ...m, favorite } : m
+        )
+      );
+    } catch (e) {
+      // Manejo de error opcional
+    }
   };
   const mapToVenueCard = (venue: any) => ({ ...venue });
   const handleVenueSearch = ({ query, city, dateRange, type }: any) => {
@@ -59,13 +80,22 @@ export default function ManagerDiscover() {
   };
 
   // PROMOTERS
-  const { promoters, loading: loadingPromoters, setFilters: setPromoterFilters, filters: promoterFilters } = useDiscoveryPromoters();
+  const { promoters,setPromoters, loading: loadingPromoters, setFilters: setPromoterFilters, filters: promoterFilters } = useDiscoveryPromoters();
   const verifiedPromoters = promoters.filter((p: any) => p.verified);
   const featuredPromoters = promoters.filter((p: any) => p.featured && !p.verified);
   const othersPromoters = promoters.filter((p: any) => !p.verified && !p.featured);
   const favoritesPromoters = promoters.filter((p: any) => p.favorite);
-  const handleFavoritePromoter = (promoterId: string, favorite: boolean) => {
-    // Actualizar favoritos de promotores
+  const handleFavoritePromoter = async (promoterId: string, favorite: boolean) => {
+    try {
+      await handleFavorite({ targetId: Number(promoterId), favorite });
+      setPromoters((prev) =>
+        prev.map((m) =>
+          m.id === Number(promoterId) ? { ...m, favorite } : m
+        )
+      );
+    } catch (e) {
+      // Manejo de error opcional
+    }
   };
   const mapToPromoterCard = (promoter: any) => ({ ...promoter });
   const handlePromoterSearch = (filtersUpdate: any) => { setPromoterFilters((prev: any) => ({ ...prev, ...filtersUpdate })); };

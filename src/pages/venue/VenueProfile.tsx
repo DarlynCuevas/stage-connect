@@ -194,7 +194,6 @@ export default function VenueProfile() {
   let path = '';
   if (typeof window !== 'undefined') {
     path = window.location.hash ? window.location.hash.replace(/^#/, '') : window.location.pathname;
-    console.log('VenueProfile path detectado:', path);
     if (/^\/artist\//.test(path)) {
       mainContext = 'artist';
     } else if (/^\/venue\//.test(path)) {

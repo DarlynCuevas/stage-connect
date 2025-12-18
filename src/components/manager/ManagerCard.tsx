@@ -34,9 +34,6 @@ export function ManagerCard({ manager, onViewProfile, onFavoriteChange }: Manage
     const isPromoter = user && String(user.role).toLowerCase().includes('promotor');
     const resolvedLocalId = isLocal ? user?.id : undefined;
     const resolvedPromoterId = isPromoter ? user?.id : undefined;
-        console.log(`isLocal `,isLocal);
-        console.log(`isPromoter `,isPromoter);
-
 
 
     // Si el usuario es artista, la ruta debe ser /artist/:artistId/manager/:managerId/profile
@@ -88,7 +85,7 @@ export function ManagerCard({ manager, onViewProfile, onFavoriteChange }: Manage
                   const newFav = !isFavorite;
                   if (onFavoriteChange) onFavoriteChange(manager.id, newFav);
                   try {
-                    await handleFavorite({ targetId: manager.id, favorite: newFav });
+                    await handleFavorite({ targetId: Number(manager.id), favorite: newFav });
                   } catch (err) {
                     // Opcional: mostrar toast de error
                   }

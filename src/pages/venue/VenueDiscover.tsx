@@ -22,7 +22,7 @@ export default function VenueDiscover() {
   const [searchType, setSearchType] = useState<'artists' | 'managers'>('artists');
 
   // ARTISTS
-  const { artists, loading, setFilters, filters } = useDiscoveryArtists();
+  const { artists, setArtists, loading, setFilters, filters } = useDiscoveryArtists();
   const [showFavorites, setShowFavorites] = useState(false);
   const searchQuery = (filters.query || '').toLowerCase();
   const filteredArtists = searchQuery
@@ -38,10 +38,7 @@ export default function VenueDiscover() {
     if (!user) return;
     try {
       await handleFavorite({ userId: user.id, targetId: artistId, favorite });
-      // Si tienes setArtists, actualiza el estado local:
-      // setArtists((prevArtists: any[]) => prevArtists.map((artist) => artist.id === artistId ? { ...artist, favorite } : artist));
-      // Si no, puedes forzar un refetch si es necesario
-      setFilters((prev: any) => ({ ...prev }));
+      setArtists((prevArtists: any[]) => prevArtists.map((artist) => artist.id === artistId ? { ...artist, favorite } : artist));
     } catch (e) {
       // Manejo de error opcional
     }
@@ -52,7 +49,7 @@ export default function VenueDiscover() {
   };
 
   // MANAGERS
-  const { managers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters } = useDiscoveryManagers();
+  const { managers, setManagers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters } = useDiscoveryManagers();
   const [showFavoritesManagers, setShowFavoritesManagers] = useState(false);
   const searchQueryManagers = (managerFilters.query || '').toLowerCase();
   const filteredManagers = searchQueryManagers
@@ -68,10 +65,7 @@ export default function VenueDiscover() {
     if (!user) return;
     try {
       await handleFavorite({ userId: user.id, targetId: managerId, favorite });
-      // Si tienes setManagers, actualiza el estado local:
-      // setManagers((prevManagers: any[]) => prevManagers.map((manager) => manager.id === managerId ? { ...manager, favorite } : manager));
-      // Si no, puedes forzar un refetch si es necesario
-      setManagerFilters((prev: any) => ({ ...prev }));
+      setManagers((prevManagers: any[]) => prevManagers.map((manager) => manager.id === managerId ? { ...manager, favorite } : manager));
     } catch (e) {
       // Manejo de error opcional
     }

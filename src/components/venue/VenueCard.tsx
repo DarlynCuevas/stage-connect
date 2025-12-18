@@ -56,7 +56,6 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
   // El estado visual depende siempre de la prop venue.favorite
   const isFavorite = !!venue.favorite;
   // Log para ver el estado de favorite recibido
-  console.log('[VenueCard] Render venue:', venue.name, 'ID:', venue.id, 'favorite:', venue.favorite);
   const location = [venue.city, venue.province].filter(Boolean).join(', ');
   const displayAmenities = venue.amenities?.slice(0, 3) || [];
   const cap = venue.capacity || 0;

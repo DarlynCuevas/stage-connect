@@ -61,5 +61,5 @@ export function useDiscoveryArtists() {
     fetchArtists();
   }, [filters]);
 
-  return { artists, loading, setFilters, filters };
+  return { artists, setArtists, loading, setFilters, filters };
 }

@@ -3,6 +3,7 @@ import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { useAuth } from "@/contexts/AuthContext";
 import { useParams } from "react-router-dom";
 import { useDiscoveryArtists } from "@/hooks/useDiscoveryArtists";
+import { handleFavorite } from "@/lib/favorite";
 import { useDiscoveryManagers } from "@/hooks/useDiscoveryManagers";
 import { useState } from "react";
 import { ArtistSearch } from "@/components/artists/ArtistSearch";
@@ -20,14 +21,19 @@ export default function PromoterDiscover() {
   const [searchType, setSearchType] = useState<'artists' | 'managers'>('artists');
 
   // ARTISTS
-  const { artists, loading, setFilters, filters } = useDiscoveryArtists();
+  const { artists, setArtists, loading, setFilters, filters } = useDiscoveryArtists();
   const [showFavorites, setShowFavorites] = useState(false);
   const verifiedArtists = artists.filter((a) => a.verified);
   const featuredArtists = artists.filter((a) => a.featured && !a.verified);
   const othersArtists = artists.filter((a) => !a.verified && !a.featured);
   const favoritesArtists = artists.filter((a) => a.favorite);
-  const handleFavoriteArtist = (artistId: number, favorite: boolean) => {
-  // Actualizar favoritos de artistas
+  const handleFavoriteArtist = async (artistId: number, favorite: boolean) => {
+    try {
+      await handleFavorite({ targetId: artistId, favorite });
+      setArtists((prevArtists: any[]) => prevArtists.map((artist) => artist.id === artistId ? { ...artist, favorite } : artist));
+    } catch (e) {
+      // Manejo de error opcional
+    }
   };
   const mapToArtistCard = (artist: any) => ({ ...artist });
   const handleArtistSearch = (filtersUpdate: any) => {
@@ -35,14 +41,19 @@ export default function PromoterDiscover() {
   };
 
   // MANAGERS
-  const { managers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters } = useDiscoveryManagers();
+  const { managers, setManagers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters } = useDiscoveryManagers();
   const [showFavoritesManagers, setShowFavoritesManagers] = useState(false);
   const verifiedManagers = managers.filter((m) => m.verified);
   const featuredManagers = managers.filter((m) => m.featured && !m.verified);
   const othersManagers = managers.filter((m) => !m.verified && !m.featured);
   const favoritesManagers = managers.filter((m) => m.favorite);
-  const handleFavoriteManager = (managerId: number, favorite: boolean) => {
-    // Actualizar favoritos de managers
+  const handleFavoriteManager = async (managerId: number, favorite: boolean) => {
+    try {
+      await handleFavorite({ targetId: managerId, favorite });
+      setManagers((prevManagers: any[]) => prevManagers.map((manager) => manager.id === managerId ? { ...manager, favorite } : manager));
+    } catch (e) {
+      // Manejo de error opcional
+    }
   };
   const mapToManagerCard = (manager: any) => ({ ...manager });
   const handleManagerSearch = (filtersUpdate: any) => {
