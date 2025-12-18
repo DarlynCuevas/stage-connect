@@ -66,7 +66,7 @@ export default function ArtistProfile() {
   // Extraer artistId de params o de la URL si no existe
   let artistId = params.artistId;
   if (!artistId && path) {
-    const match = path.match(/^\/artist\/(\d+)/);
+    const match = path.match(/artist\/(\d+)/);
     if (match) artistId = match[1];
   }
 
@@ -94,6 +94,9 @@ export default function ArtistProfile() {
   const [newGenre, setNewGenre] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(null);
+
+  // Only Promoter and Venue can send artist requests
+  const canSendRequest = authUser?.role === 'Promotor' || authUser?.role === 'Local';
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
   const { data: freshArtist } = useArtist(artistId);
@@ -108,6 +111,8 @@ export default function ArtistProfile() {
   // Normaliza el id para que siempre sea number y se llame id
   const currentArtist = useMemo(() => {
     const base = freshArtist || authUser;
+    console.log('freshArtist , ', freshArtist);
+     console.log('authUser , ', authUser);
     
     if (!base) return undefined;
     // Si viene como user_id, lo mapeamos a id
@@ -213,15 +218,15 @@ export default function ArtistProfile() {
   };
 
   const handleSolicitudContratacion = useCallback((date: Date) => {
-    if (authUser?.role !== 'Local') return;
+    if (!canSendRequest) return;
     setFechaSeleccionada(date);
     setModalOpen(true);
-  }, [authUser, setFechaSeleccionada, setModalOpen]);
+  }, [canSendRequest, setFechaSeleccionada, setModalOpen]);
 
   function handleEnviarSolicitud(data: { fecha: Date; oferta: number; tipoEvento: string; ubicacion: string; nombreLocal?: string; ciudadLocal?: string; mensaje?: string }) {
     if (!artistId) return;
     createBookingRequestMutation.mutate({
-      artistId: artistId,
+      artistId: Number(artistId),
       eventDate: data.fecha.toISOString(),
       eventLocation: data.ubicacion,
       eventType: data.tipoEvento,
@@ -331,7 +336,15 @@ export default function ArtistProfile() {
           <ArtistCalendarComponent
             artistId={currentArtist?.id}
             editable={authUser && currentArtist && String(authUser.id) === String(currentArtist.id)}
-            onDateToggle={handleSolicitudContratacion}
+            onDateToggle={authUser && currentArtist && String(authUser.id) === String(currentArtist.id) ? handleSolicitudContratacion : undefined}
+            onDateSelect={
+              authUser &&
+              currentArtist &&
+              String(authUser.id) !== String(currentArtist.id) &&
+              canSendRequest
+                ? handleSolicitudContratacion
+                : undefined
+            }
           />
           {/* Main info and sidebar wrapper */}
           <div className="flex flex-col lg:flex-row gap-6 mt-6">
@@ -1044,7 +1057,7 @@ export default function ArtistProfile() {
           </div>
         )}
 
-        <ModalSolicitudContratacion open={modalOpen && authUser?.role === 'Local'} onClose={() => setModalOpen(false)} fecha={fechaSeleccionada} cacheBase={cacheBase} onSubmit={handleEnviarSolicitud} />
+        <ModalSolicitudContratacion open={modalOpen && canSendRequest} onClose={() => setModalOpen(false)} fecha={fechaSeleccionada} cacheBase={cacheBase} onSubmit={handleEnviarSolicitud} />
       </div>
 
       {/* Sección de Reseñas */}

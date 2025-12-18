@@ -79,16 +79,18 @@ const ArtistCalendarComponent = ({ artistId, editable = false, onDateToggle, onD
     if (!date) return;
     setSelectedDate(date);
 
-
-    // If not editable (public/promoter/venue view) and date is unavailable, block selection
     const status = getDateStatus(date);
-    if (!editable && status && !status.available) {
+    // Nueva lógica: si el día NO está bloqueado NI reservado, abrir modal para roles externos
+    const isBlocked = status && (status.blocked || status.confirmed);
+    if (!editable && !isBlocked && onDateSelect) {
+      onDateSelect(date);
       return;
     }
 
-    if (!editable && onDateSelect) {
-      console.log('[ArtistCalendar] Llamando a onDateSelect', { date });
-      onDateSelect(date);
+    // Si es editable (artista dueño), mantener la lógica de edición
+    if (editable && onDateToggle) {
+      onDateToggle(date);
+      return;
     }
   };
 

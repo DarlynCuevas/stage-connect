@@ -15,7 +15,16 @@ import { HeaderLayout } from '@/components/layout/HeaderLayout';
 
 export default function ManagerProfile() {
   const { id, managerId } = useParams();
-  const resolvedManagerId = managerId || id;
+  let resolvedManagerId = managerId || id;
+  let path = '';
+  if (typeof window !== 'undefined') {
+    path = window.location.hash ? window.location.hash.replace(/^#/, '') : window.location.pathname;
+    // Si no hay id en params, intentar extraerlo de la URL con regex
+    if (!resolvedManagerId && typeof path === 'string') {
+      const match = path.match(/manager\/(\d+)/);
+      if (match) resolvedManagerId = match[1];
+    }
+  }
   const { user: authUser, token, setUser } = useAuth();
   const managerIdNumber = resolvedManagerId ? Number(resolvedManagerId) : undefined;
   const { data: manager } = useUser(managerIdNumber);
@@ -27,7 +36,6 @@ export default function ManagerProfile() {
 
 
   let mainContext: 'manager' | 'artist' | 'promoter' | 'venue' = 'manager';
-  let path = '';
   if (typeof window !== 'undefined') {
     path = window.location.hash ? window.location.hash.replace(/^#/, '') : window.location.pathname;
     if (/^\/manager\//.test(path)) {
