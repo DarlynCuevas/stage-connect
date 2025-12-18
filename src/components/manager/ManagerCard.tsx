@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Star, CheckCircle2, Users, Heart } from 'lucide-react';
 import { Manager } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { handleFavorite } from '@/lib/favorite';
 
 interface ManagerCardProps {
   manager: Manager;
@@ -82,29 +83,16 @@ export function ManagerCard({ manager, onViewProfile, onFavoriteChange }: Manage
             <button
               className={`absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background transition-colors ${isFavorite ? 'text-red-500' : ''}`}
               onClick={async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const newFav = !isFavorite;
-                if (onFavoriteChange) onFavoriteChange(manager.id, newFav);
-                try {
-                  const userId = user?.id;
-                  const managerUserId = manager.id;
-                  if (!userId || !managerUserId) return;
-                  if (newFav) {
-                    await apiFetch(`/users/${userId}/favorites/${managerUserId}`, {
-                      method: 'POST',
-                      token,
-                    });
-                  } else {
-                    await apiFetch(`/users/${userId}/favorites/${managerUserId}`, {
-                      method: 'DELETE',
-                      token,
-                    });
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const newFav = !isFavorite;
+                  if (onFavoriteChange) onFavoriteChange(manager.id, newFav);
+                  try {
+                    await handleFavorite({ targetId: manager.id, favorite: newFav });
+                  } catch (err) {
+                    // Opcional: mostrar toast de error
                   }
-                } catch (err) {
-                  // Opcional: mostrar toast de error
-                }
-              }}
+                }}
               aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
             >
               <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground hover:text-red-500'}`} />

@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 import { useDiscoveryVenues } from '@/hooks/useDiscoveryVenues';
 import { useDiscoveryManagers } from '@/hooks/useDiscoveryManagers';
 import { useState } from 'react';
+import { handleFavorite } from '@/lib/favorite';
 import { VenueSearchBar } from '@/components/ui/VenueSearchBar';
 import { ManagerCard } from '@/components/manager/ManagerCard';
 import { ManagerSearchBar } from '@/components/manager/ManagerSearchBar';
@@ -30,29 +31,34 @@ export default function ArtistDiscover() {
   const featured = venues.filter((v) => v.featured && !v.verified);
   const others = venues.filter((v) => !v.verified && !v.featured);
   const favorites = venues.filter((v) => v.favorite);
-  const handleFavoriteVenue = (venueId: number, favorite: boolean) => {
-    setVenues((prevVenues: any[]) =>
-      prevVenues.map((venue) =>
-        venue.id === venueId ? { ...venue, favorite } : venue
-      )
-    );
+  const handleFavoriteVenue = async (venueId: number, favorite: boolean) => {
+    if (!user) return;
+    try {
+      await handleFavorite({targetId: venueId, favorite });
+      setVenues((prevVenues: any[]) =>
+        prevVenues.map((venue) =>
+          venue.id === venueId ? { ...venue, favorite } : venue
+        )
+      );
+    } catch (e) {
+      // Manejo de error opcional
+    }
   };
 
  
 
-  const handleFavoritePromoter = (promoterId: number, favorite: boolean) => {
-    setPromoters && setPromoters((prevPromoters: any[]) => {
-      // If removing from favorites, filter out from favorites and update global
-      if (!favorite) {
-        return prevPromoters.map((promoter) =>
-          promoter.id === promoterId ? { ...promoter, favorite: false } : promoter
-        );
-      }
-      // If adding to favorites, just update the favorite flag
-      return prevPromoters.map((promoter) =>
-        promoter.id === promoterId ? { ...promoter, favorite: true } : promoter
+  const handleFavoritePromoter = async (promoterId: number, favorite: boolean) => {
+    if (!user) return;
+    try {
+      await handleFavorite({targetId: promoterId, favorite });
+      setPromoters && setPromoters((prevPromoters: any[]) =>
+        prevPromoters.map((promoter) =>
+          promoter.id === promoterId ? { ...promoter, favorite } : promoter
+        )
       );
-    });
+    } catch (e) {
+      // Manejo de error opcional
+    }
   };
   const mapToVenueCard = (venue: any) => ({ ...venue });
   const handleVenueSearch = ({ query, city, dateRange, type }: any) => {
@@ -70,12 +76,18 @@ export default function ArtistDiscover() {
   const featuredManagers = managers.filter((m: any) => m.featured && !m.verified);
   const othersManagers = managers.filter((m: any) => !m.verified && !m.featured);
   const favoritesManagers = managers.filter((m: any) => m.favorite);
-   const handleFavoriteManager = (managerId: number, favorite: boolean) => {
-    setManagers && setManagers((prevManagers: any[]) =>
-      prevManagers.map((manager) =>
-        manager.id === managerId ? { ...manager, favorite } : manager
-      )
-    );
+  const handleFavoriteManager = async (managerId: number, favorite: boolean) => {
+    if (!user) return;
+    try {
+      await handleFavorite({targetId: managerId, favorite });
+      setManagers && setManagers((prevManagers: any[]) =>
+        prevManagers.map((manager) =>
+          manager.id === managerId ? { ...manager, favorite } : manager
+        )
+      );
+    } catch (e) {
+      // Manejo de error opcional
+    }
   };
 
   //PROMOTERS(solo exploración)

@@ -44,6 +44,7 @@ export function useDiscoveryVenues() {
         // 'date' tampoco se usa en el backend actual, se omite salvo que se añada soporte
         const url = `/public/venues${params.toString() ? '?' + params.toString() : ''}`;
         const response = await apiFetch(url, token ? { token } : undefined);
+        console.log('[useDiscoveryVenues] Datos recibidos del backend:', response);
         setVenues(response || []);
       } catch (error) {
         setVenues([]);

@@ -16,6 +16,7 @@ import {
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import apiFetch from '@/lib/api';
+import { handleFavorite } from '@/lib/favorite';
 
 interface VenueCardProps {
   venue: {
@@ -54,6 +55,8 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
   const params = useParams();
   // El estado visual depende siempre de la prop venue.favorite
   const isFavorite = !!venue.favorite;
+  // Log para ver el estado de favorite recibido
+  console.log('[VenueCard] Render venue:', venue.name, 'ID:', venue.id, 'favorite:', venue.favorite);
   const location = [venue.city, venue.province].filter(Boolean).join(', ');
   const displayAmenities = venue.amenities?.slice(0, 3) || [];
   const cap = venue.capacity || 0;
@@ -121,29 +124,16 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
             <button 
               className={`absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background transition-colors ${isFavorite ? 'text-red-500' : ''}`}
               onClick={async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const newFav = !isFavorite;
-                if (onFavoriteChange) onFavoriteChange(venue.id, newFav);
-                try {
-                  const userId = user?.id;
-                  const venueUserId = (venue as any).userId || venue.id;
-                  if (!userId || !venueUserId) return;
-                  if (newFav) {
-                    await apiFetch(`/users/${userId}/favorites/${venueUserId}`, {
-                      method: 'POST',
-                      token,
-                    });
-                  } else {
-                    await apiFetch(`/users/${userId}/favorites/${venueUserId}`, {
-                      method: 'DELETE',
-                      token,
-                    });
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const newFav = !isFavorite;
+                  if (onFavoriteChange) onFavoriteChange(venue.id, newFav);
+                  try {
+                    await handleFavorite({ targetId: venue.id, favorite: newFav });
+                  } catch (err) {
+                    console.error('[VenueCard] Error actualizando favorito', err);
                   }
-                } catch (err) {
-                  // Opcional: mostrar toast de error
-                }
-              }}
+                }}
               aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
             >
               <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground hover:text-red-500'}`} />

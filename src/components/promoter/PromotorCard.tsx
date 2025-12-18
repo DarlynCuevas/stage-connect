@@ -12,6 +12,7 @@ interface PromotorCardProps {
 
 
 import { useAuth } from '@/contexts/AuthContext';
+import { handleFavorite } from '@/lib/favorite';
 import apiFetch from '@/lib/api';
 
 export function PromotorCard({ promoter, onViewProfile, onFavoriteChange }: PromotorCardProps) {
@@ -64,29 +65,16 @@ export function PromotorCard({ promoter, onViewProfile, onFavoriteChange }: Prom
             <button
               className={`absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background transition-colors ${isFavorite ? 'text-red-500' : ''}`}
               onClick={async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const newFav = !isFavorite;
-                if (onFavoriteChange) onFavoriteChange(promoter.id, newFav);
-                try {
-                  const userId = user?.id;
-                  const promoterUserId = promoter.id;
-                  if (!userId || !promoterUserId) return;
-                  if (newFav) {
-                    await apiFetch(`/users/${userId}/favorites/${promoterUserId}`, {
-                      method: 'POST',
-                      token,
-                    });
-                  } else {
-                    await apiFetch(`/users/${userId}/favorites/${promoterUserId}`, {
-                      method: 'DELETE',
-                      token,
-                    });
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const newFav = !isFavorite;
+                  if (onFavoriteChange) onFavoriteChange(promoter.id, newFav);
+                  try {
+                    await handleFavorite({ targetId: promoter.id, favorite: newFav });
+                  } catch (err) {
+                    // Opcional: mostrar toast de error
                   }
-                } catch (err) {
-                  // Opcional: mostrar toast de error
-                }
-              }}
+                }}
               aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
             >
               <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground hover:text-red-500'}`} />

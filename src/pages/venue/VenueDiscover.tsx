@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import { useDiscoveryArtists } from '@/hooks/useDiscoveryArtists';
 import { useDiscoveryManagers } from '@/hooks/useDiscoveryManagers';
 import { useState } from 'react';
+import { handleFavorite } from '@/lib/favorite';
 import { ArtistSearch } from '@/components/artists/ArtistSearch';
 import { ManagerSearchBar } from '@/components/manager/ManagerSearchBar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -33,8 +34,17 @@ export default function VenueDiscover() {
   const featuredArtists = filteredArtists.filter((a) => a.featured && !a.verified);
   const othersArtists = filteredArtists.filter((a) => !a.verified && !a.featured);
   const favoritesArtists = filteredArtists.filter((a) => a.favorite);
-  const handleFavoriteArtist = (artistId: number, favorite: boolean) => {
-    // Actualizar favoritos de artistas
+  const handleFavoriteArtist = async (artistId: number, favorite: boolean) => {
+    if (!user) return;
+    try {
+      await handleFavorite({ userId: user.id, targetId: artistId, favorite });
+      // Si tienes setArtists, actualiza el estado local:
+      // setArtists((prevArtists: any[]) => prevArtists.map((artist) => artist.id === artistId ? { ...artist, favorite } : artist));
+      // Si no, puedes forzar un refetch si es necesario
+      setFilters((prev: any) => ({ ...prev }));
+    } catch (e) {
+      // Manejo de error opcional
+    }
   };
   const mapToArtistCard = (artist: any) => ({ ...artist, venueId: user?.id });
   const handleArtistSearch = (filtersUpdate: any) => {
@@ -54,8 +64,17 @@ export default function VenueDiscover() {
   const featuredManagers = filteredManagers.filter((m) => m.featured && !m.verified);
   const othersManagers = filteredManagers.filter((m) => !m.verified && !m.featured);
   const favoritesManagers = filteredManagers.filter((m) => m.favorite);
-  const handleFavoriteManager = (managerId: number, favorite: boolean) => {
-    // Actualizar favoritos de managers
+  const handleFavoriteManager = async (managerId: number, favorite: boolean) => {
+    if (!user) return;
+    try {
+      await handleFavorite({ userId: user.id, targetId: managerId, favorite });
+      // Si tienes setManagers, actualiza el estado local:
+      // setManagers((prevManagers: any[]) => prevManagers.map((manager) => manager.id === managerId ? { ...manager, favorite } : manager));
+      // Si no, puedes forzar un refetch si es necesario
+      setManagerFilters((prev: any) => ({ ...prev }));
+    } catch (e) {
+      // Manejo de error opcional
+    }
   };
   const mapToManagerCard = (manager: any) => ({ ...manager });
   const handleManagerSearch = (filtersUpdate: any) => {
