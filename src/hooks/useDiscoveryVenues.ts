@@ -54,5 +54,5 @@ export function useDiscoveryVenues() {
     fetchVenues();
   }, [filters]);
 
-  return { venues, loading, filters, setFilters };
+  return { venues, setVenues, loading, filters, setFilters };
 }

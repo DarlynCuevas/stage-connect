@@ -25,14 +25,14 @@ export default function VenueHome() {
   const { data: featuredArtists = [], isLoading } = useArtists();
   const { data: sentRequests = [] } = useSentRequests();
   // Simulación de datos adicionales
-  const [receivedRequests, setReceivedRequests] = useState(3); // solicitudes recibidas
-  const [favoriteArtists, setFavoriteArtists] = useState(2); // artistas favoritos
-  const [scheduledEvents, setScheduledEvents] = useState(1); // eventos programados
-  const [hiresThisMonth, setHiresThisMonth] = useState(1); // contrataciones este mes
-  const [venueRating, setVenueRating] = useState(4.7); // valoración
-  const [estimatedIncome, setEstimatedIncome] = useState(1200); // ingresos estimados
-  const [mostHiredArtist, setMostHiredArtist] = useState({ name: 'Artista Top', avatar: '', times: 5 });
-  const [nextEvent, setNextEvent] = useState({ date: '2025-12-20', artist: 'Artista Invitado', hour: '21:00' });
+  const [receivedRequests, setReceivedRequests] = useState(); // solicitudes recibidas
+  const [favoriteArtists, setFavoriteArtists] = useState(); // artistas favoritos
+  const [scheduledEvents, setScheduledEvents] = useState(); // eventos programados
+  const [hiresThisMonth, setHiresThisMonth] = useState(); // contrataciones este mes
+  const [venueRating, setVenueRating] = useState(); // valoración
+  const [estimatedIncome, setEstimatedIncome] = useState(); // ingresos estimados
+  const [mostHiredArtist, setMostHiredArtist] = useState({ name: 'Artista Top', avatar: '', times: 0 });
+  const [nextEvent, setNextEvent] = useState({ date: '', artist: 'Artista Invitado', hour: '' });
 
   // Asegurar que las propiedades existen y tienen valores por defecto
   // (esto previene errores si los datos reales llegan undefined)

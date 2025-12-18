@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Star, CheckCircle2, Users } from 'lucide-react';
+import { MapPin, Star, CheckCircle2, Users, Heart } from 'lucide-react';
 import { Manager } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -51,18 +51,22 @@ export function ManagerCard({ manager, onViewProfile, onFavoriteChange }: Manage
     }
 
     
-    return (
-        <Link to={managerProfileUrl} className="group">
-            <Card className="overflow-hidden border-0 bg-transparent shadow-none transition-all duration-300">
-                <div className="relative">
-                    <div className="aspect-[2/1] relative overflow-hidden rounded-xl">
-                        {/* Badge de verificado (si se añade en el futuro) 
-                        {{manager.verified && (
+
+  // Estado visual depende de la prop manager.favorite
+  const isFavorite = !!manager.favorite;
+
+  return (
+    <Link to={managerProfileUrl} className="group">
+      <Card className="overflow-hidden border-0 bg-transparent shadow-none transition-all duration-300">
+        <div className="relative">
+          <div className="aspect-[2/1] relative overflow-hidden rounded-xl">
+            {/* Badge de verificado (si se añade en el futuro) */}
+            {/* {manager.verified && (
               <span className="absolute top-3 left-3 z-10">
                 <CheckCircle2 className="h-5 w-5 text-green-500 drop-shadow" />
               </span>
-            )} }*/}
-                        {manager.avatar ? (
+            )} */}
+            {manager.avatar ? (
               <img
                 src={manager.avatar}
                 alt={manager.name}
@@ -73,6 +77,38 @@ export function ManagerCard({ manager, onViewProfile, onFavoriteChange }: Manage
                 <Users className="h-12 w-12 text-primary/40" />
               </div>
             )}
+
+            {/* Heart icon for favorites */}
+            <button
+              className={`absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background transition-colors ${isFavorite ? 'text-red-500' : ''}`}
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const newFav = !isFavorite;
+                if (onFavoriteChange) onFavoriteChange(manager.id, newFav);
+                try {
+                  const userId = user?.id;
+                  const managerUserId = manager.id;
+                  if (!userId || !managerUserId) return;
+                  if (newFav) {
+                    await apiFetch(`/users/${userId}/favorites/${managerUserId}`, {
+                      method: 'POST',
+                      token,
+                    });
+                  } else {
+                    await apiFetch(`/users/${userId}/favorites/${managerUserId}`, {
+                      method: 'DELETE',
+                      token,
+                    });
+                  }
+                } catch (err) {
+                  // Opcional: mostrar toast de error
+                }
+              }}
+              aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            >
+              <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground hover:text-red-500'}`} />
+            </button>
           </div>
         </div>
         <CardContent className="px-0 py-2 space-y-2">

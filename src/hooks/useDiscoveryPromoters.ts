@@ -20,32 +20,31 @@ export interface DiscoveryPromoterFilters {
 }
 export function useDiscoveryPromoters() {
   const [promoters, setPromoters] = useState<DiscoveryPromoter[]>([]);
-   const [loading, setLoading] = useState(true);
-   // Por defecto, ciudad vacía (no 'all')
-   const [filters, setFilters] = useState<DiscoveryPromoterFilters>({ city: '' });
-    const { token } = useAuth();
- 
- 
-   useEffect(() => {
-     const fetchPromoters = async () => {
-       setLoading(true);
-       try {
-         const params = new URLSearchParams();
-         if (filters.city !== 'all') params.append('city', filters.city);
-       
-         if (filters.query && filters.query.trim() !== '') params.append('query', filters.query.trim());
-         const url = `/public/promoters${params.toString() ? '?' + params.toString() : ''}`;
-         const response = await apiFetch(url, token ? { token } : undefined);
-         setPromoters(response);
-       } catch (error) {
-         setPromoters([]);
-       } finally {
-         setLoading(false);
-       }
-     };
-     fetchPromoters();
-   }, [filters]);
- 
-   return { promoters, loading, setFilters, filters };
+  const [loading, setLoading] = useState(true);
+  // Por defecto, ciudad vacía (no 'all')
+  const [filters, setFilters] = useState<DiscoveryPromoterFilters>({ city: '' });
+  const { token } = useAuth();
+
+  useEffect(() => {
+    const fetchPromoters = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (filters.city !== 'all') params.append('city', filters.city);
+
+        if (filters.query && filters.query.trim() !== '') params.append('query', filters.query.trim());
+        const url = `/public/promoters${params.toString() ? '?' + params.toString() : ''}`;
+        const response = await apiFetch(url, token ? { token } : undefined);
+        setPromoters(response);
+      } catch (error) {
+        setPromoters([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPromoters();
+  }, [filters]);
+
+  return { promoters, setPromoters, loading, setFilters, filters };
 }
 

@@ -52,8 +52,8 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
   
   const { user, token } = useAuth();
   const params = useParams();
-
-  const [isFavorite, setIsFavorite] = useState(!!venue.favorite);
+  // El estado visual depende siempre de la prop venue.favorite
+  const isFavorite = !!venue.favorite;
   const location = [venue.city, venue.province].filter(Boolean).join(', ');
   const displayAmenities = venue.amenities?.slice(0, 3) || [];
   const cap = venue.capacity || 0;
@@ -124,14 +124,22 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
                 e.preventDefault();
                 e.stopPropagation();
                 const newFav = !isFavorite;
-                setIsFavorite(newFav);
                 if (onFavoriteChange) onFavoriteChange(venue.id, newFav);
                 try {
-                  await apiFetch(`/users/favorite/${venue.id}`, {
-                    method: 'PATCH',
-                    body: { favorite: newFav },
-                    token,
-                  });
+                  const userId = user?.id;
+                  const venueUserId = (venue as any).userId || venue.id;
+                  if (!userId || !venueUserId) return;
+                  if (newFav) {
+                    await apiFetch(`/users/${userId}/favorites/${venueUserId}`, {
+                      method: 'POST',
+                      token,
+                    });
+                  } else {
+                    await apiFetch(`/users/${userId}/favorites/${venueUserId}`, {
+                      method: 'DELETE',
+                      token,
+                    });
+                  }
                 } catch (err) {
                   // Opcional: mostrar toast de error
                 }

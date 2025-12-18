@@ -24,14 +24,35 @@ export default function ArtistDiscover() {
   const [searchType, setSearchType] = useState<'venues' | 'managers' | 'promoters'>('venues');
 
   // VENUES
-  const { venues, loading, setFilters, filters } = useDiscoveryVenues();
+  const { venues, setVenues, loading, setFilters, filters } = useDiscoveryVenues();
   const [showFavorites, setShowFavorites] = useState(false);
   const verified = venues.filter((v) => v.verified);
   const featured = venues.filter((v) => v.featured && !v.verified);
   const others = venues.filter((v) => !v.verified && !v.featured);
   const favorites = venues.filter((v) => v.favorite);
-  const handleFavoriteChange = (venueId: number, favorite: boolean) => {
-    // Aquí puedes actualizar el estado local o hacer una petición
+  const handleFavoriteVenue = (venueId: number, favorite: boolean) => {
+    setVenues((prevVenues: any[]) =>
+      prevVenues.map((venue) =>
+        venue.id === venueId ? { ...venue, favorite } : venue
+      )
+    );
+  };
+
+ 
+
+  const handleFavoritePromoter = (promoterId: number, favorite: boolean) => {
+    setPromoters && setPromoters((prevPromoters: any[]) => {
+      // If removing from favorites, filter out from favorites and update global
+      if (!favorite) {
+        return prevPromoters.map((promoter) =>
+          promoter.id === promoterId ? { ...promoter, favorite: false } : promoter
+        );
+      }
+      // If adding to favorites, just update the favorite flag
+      return prevPromoters.map((promoter) =>
+        promoter.id === promoterId ? { ...promoter, favorite: true } : promoter
+      );
+    });
   };
   const mapToVenueCard = (venue: any) => ({ ...venue });
   const handleVenueSearch = ({ query, city, dateRange, type }: any) => {
@@ -44,17 +65,21 @@ export default function ArtistDiscover() {
   };
 
   // MANAGERS
-  const { managers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters } = useDiscoveryManagers();
+  const { managers, setManagers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters } = useDiscoveryManagers();
   const verifiedManagers = managers.filter((m: any) => m.verified);
   const featuredManagers = managers.filter((m: any) => m.featured && !m.verified);
   const othersManagers = managers.filter((m: any) => !m.verified && !m.featured);
   const favoritesManagers = managers.filter((m: any) => m.favorite);
-  const handleFavoriteManager = (managerId: string, favorite: boolean) => {
-    // Actualizar favoritos de managers
+   const handleFavoriteManager = (managerId: number, favorite: boolean) => {
+    setManagers && setManagers((prevManagers: any[]) =>
+      prevManagers.map((manager) =>
+        manager.id === managerId ? { ...manager, favorite } : manager
+      )
+    );
   };
 
   //PROMOTERS(solo exploración)
-  const { promoters, loading: loadingPromoters, setFilters: setPromoterFilters, filters: promoterFilters } = useDiscoveryPromoters();
+  const { promoters, setPromoters, loading: loadingPromoters, setFilters: setPromoterFilters, filters: promoterFilters } = useDiscoveryPromoters();
   const verifiedPromoters = promoters.filter((p: any) => p.verified);
   const featuredPromoters = promoters.filter((p: any) => p.featured && !p.verified);
   const othersPromoters = promoters.filter((p: any) => !p.verified && !p.featured);
@@ -89,7 +114,7 @@ export default function ArtistDiscover() {
             favorites={favoritesPromoters}
             showFavorites={showFavorites}
             setShowFavorites={setShowFavorites}
-            onFavoriteChange={() => { }}
+            onFavoriteChange={handleFavoritePromoter}
             mapToCard={mapToPromoterCard}
             // Puedes agregar un PromoterSearchBar aquí si lo deseas
             totalCount={promoters.length}
@@ -108,8 +133,8 @@ export default function ArtistDiscover() {
           favorites={favorites}
           showFavorites={showFavorites}
           setShowFavorites={setShowFavorites}
-          onFavoriteChange={handleFavoriteChange}
           mapToCard={mapToVenueCard}
+          onFavoriteChange={handleFavoriteVenue}
           onSearchBar={
             <VenueSearchBar
               onSearch={handleVenueSearch}
