@@ -849,7 +849,7 @@ export default function ArtistProfile() {
               {currentArtist?.managerId && managerData ? (
                 <div className="space-y-3">
                   <Link
-                    to={managerData ? `/manager/profile/${managerData.id}` : '/manager/profile'}
+                    to={`/artist/${currentArtist.id}/manager/${managerData.id}/profile`}
                     className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
                   >
                     <Avatar className="h-12 w-12">

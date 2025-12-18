@@ -126,7 +126,10 @@ export default function ManagerProfile() {
               </Avatar>
               <div>
                 <h1 className="text-3xl font-display font-bold">{manager?.name || 'Manager'}</h1>
-                <p className="text-muted-foreground">{manager?.email}</p>
+                {/* Mostrar email solo si es el propio manager */}
+                {isOwnProfile ? (
+                  <p className="text-muted-foreground">{manager?.email}</p>
+                ) : null}
               </div>
             </div>
             {isOwnProfile && (
@@ -178,7 +181,12 @@ export default function ManagerProfile() {
 
               <div>
                 <Label htmlFor="email">Email</Label>
-                <p className="text-sm text-muted-foreground mt-1">{manager?.email}</p>
+                {/* Mostrar email solo si es el propio manager */}
+                {isOwnProfile ? (
+                  <p className="text-sm text-muted-foreground mt-1">{manager?.email}</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground mt-1 italic">Privado</p>
+                )}
               </div>
 
               <div>
