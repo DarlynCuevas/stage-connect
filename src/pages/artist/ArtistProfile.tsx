@@ -89,7 +89,6 @@ export default function ArtistProfile() {
       );
     }
 
-  //const artistId = params.id ? Number(params.id) : undefined;
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const [newGenre, setNewGenre] = useState('');
@@ -98,7 +97,7 @@ export default function ArtistProfile() {
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
   const { data: freshArtist } = useArtist(artistId);
-  const { data: confirmedRequests = [] } = useConfirmedRequests(artistId);
+  const { data: confirmedRequests = [] } = useConfirmedRequests(Number(artistId));
   const createBookingRequestMutation = useCreateBookingRequest();
   const createManagerRequestMutation = useCreateManagerRequest();
   const removeManagerRelationMutation = useRemoveManagerRelation();

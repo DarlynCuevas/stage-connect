@@ -258,9 +258,10 @@ function AppRoutes() {
       <Route path="/manager/:id/artists" element={<ManagerArtists />} />
       <Route path="/manager/:id/requests" element={<ManagerRequests />} />
       <Route path="/manager/:id/settings" element={<Settings />} />
-      {/* Ruta pública: promotor o artista pueden ver perfil de manager */}
+      {/* Ruta pública: promotor, locales o artista pueden ver perfil de manager */}
       <Route path="/promoter/:id/manager/:managerId/profile" element={<ManagerProfile />} />
       <Route path="/artist/:artistId/manager/:id/profile" element={<ManagerProfile />} />
+      <Route path="/venue/:venueId/manager/:id/profile" element={<ManagerProfile />} />
 
     
       {/* Promoter routes */}

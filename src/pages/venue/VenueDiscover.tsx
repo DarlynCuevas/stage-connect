@@ -4,8 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { useParams } from 'react-router-dom';
 import { useDiscoveryArtists } from '@/hooks/useDiscoveryArtists';
+import { useDiscoveryManagers } from '@/hooks/useDiscoveryManagers';
 import { useState } from 'react';
 import { ArtistSearch } from '@/components/artists/ArtistSearch';
+import { ManagerSearchBar } from '@/components/manager/ManagerSearchBar';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function VenueDiscover() {
   const { user } = useAuth();
@@ -13,60 +16,106 @@ export default function VenueDiscover() {
   if (id && user && String(user.id) !== String(id)) {
     return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
   }
-  // Lógica de búsqueda de artistas
+
+  // Selector de tipo de búsqueda: 'artists' o 'managers'
+  const [searchType, setSearchType] = useState<'artists' | 'managers'>('artists');
+
+  // ARTISTS
   const { artists, loading, setFilters, filters } = useDiscoveryArtists();
   const [showFavorites, setShowFavorites] = useState(false);
-
-  // Filtro por nickName si hay búsqueda
   const searchQuery = (filters.query || '').toLowerCase();
   const filteredArtists = searchQuery
     ? artists.filter((a) =>
         (a.nickName || a.name || '').toLowerCase().includes(searchQuery)
       )
     : artists;
-
-  // Separar artistas en verificados, destacados, otros y favoritos
-  const verified = filteredArtists.filter((a) => a.verified);
-  const featured = filteredArtists.filter((a) => a.featured && !a.verified);
-  const others = filteredArtists.filter((a) => !a.verified && !a.featured);
-  const favorites = filteredArtists.filter((a) => a.favorite);
-
-  // Handler para favoritos (puedes expandir lógica si lo necesitas)
-  const handleFavoriteChange = (artistId: number, favorite: boolean) => {
-    // Aquí puedes actualizar el estado local o hacer una petición
+  const verifiedArtists = filteredArtists.filter((a) => a.verified);
+  const featuredArtists = filteredArtists.filter((a) => a.featured && !a.verified);
+  const othersArtists = filteredArtists.filter((a) => !a.verified && !a.featured);
+  const favoritesArtists = filteredArtists.filter((a) => a.favorite);
+  const handleFavoriteArtist = (artistId: number, favorite: boolean) => {
+    // Actualizar favoritos de artistas
+  };
+  const mapToArtistCard = (artist: any) => ({ ...artist, venueId: user?.id });
+  const handleArtistSearch = (filtersUpdate: any) => {
+    setFilters((prev: any) => ({ ...prev, ...filtersUpdate }));
   };
 
-  // Mapear artista a ArtistCard (puedes expandir si necesitas props extra)
-  const mapToArtistCard = (artist: any) => ({ ...artist, venueId: user?.id });
-
-  // Handler para el search bar
-  const handleArtistSearch = (filtersUpdate: any) => {
-    setFilters((prev) => ({ ...prev, ...filtersUpdate }));
+  // MANAGERS
+  const { managers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters } = useDiscoveryManagers();
+  const [showFavoritesManagers, setShowFavoritesManagers] = useState(false);
+  const searchQueryManagers = (managerFilters.query || '').toLowerCase();
+  const filteredManagers = searchQueryManagers
+    ? managers.filter((m) =>
+        (m.name || '').toLowerCase().includes(searchQueryManagers)
+      )
+    : managers;
+  const verifiedManagers = filteredManagers.filter((m) => m.verified);
+  const featuredManagers = filteredManagers.filter((m) => m.featured && !m.verified);
+  const othersManagers = filteredManagers.filter((m) => !m.verified && !m.featured);
+  const favoritesManagers = filteredManagers.filter((m) => m.favorite);
+  const handleFavoriteManager = (managerId: number, favorite: boolean) => {
+    // Actualizar favoritos de managers
+  };
+  const mapToManagerCard = (manager: any) => ({ ...manager });
+  const handleManagerSearch = (filtersUpdate: any) => {
+    setManagerFilters((prev: any) => ({ ...prev, ...filtersUpdate }));
   };
 
   return (
     <HeaderLayout>
-      <Discovery
-        type="artists"
-        loading={loading}
-        verified={verified}
-        featured={featured}
-        others={others}
-        favorites={favorites}
-        showFavorites={showFavorites}
-        setShowFavorites={setShowFavorites}
-        onFavoriteChange={handleFavoriteChange}
-        mapToCard={mapToArtistCard}
-        onSearchBar={
-          <ArtistSearch
-            filters={filters}
-            onFiltersChange={handleArtistSearch}
-          />
-        }
-        totalCount={artists.length}
-        sectionTitle="Encuentra artistas para tu evento"
-        cardType="artist"
-      />
+      <div className="mb-6">
+        <Tabs value={searchType} onValueChange={(v) => setSearchType(v as 'artists' | 'managers')}>
+          <TabsList>
+            <TabsTrigger value="artists">Artistas</TabsTrigger>
+            <TabsTrigger value="managers">Managers</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+      {searchType === 'artists' ? (
+        <Discovery
+          type="artists"
+          loading={loading}
+          verified={verifiedArtists}
+          featured={featuredArtists}
+          others={othersArtists}
+          favorites={favoritesArtists}
+          showFavorites={showFavorites}
+          setShowFavorites={setShowFavorites}
+          onFavoriteChange={handleFavoriteArtist}
+          mapToCard={mapToArtistCard}
+          onSearchBar={
+            <ArtistSearch
+              filters={filters}
+              onFiltersChange={handleArtistSearch}
+            />
+          }
+          totalCount={artists.length}
+          sectionTitle="Encuentra artistas para tu evento"
+          cardType="artist"
+        />
+      ) : (
+        <Discovery
+          type="managers"
+          loading={loadingManagers}
+          verified={verifiedManagers}
+          featured={featuredManagers}
+          others={othersManagers}
+          favorites={favoritesManagers}
+          showFavorites={showFavoritesManagers}
+          setShowFavorites={setShowFavoritesManagers}
+          onFavoriteChange={handleFavoriteManager}
+          mapToCard={mapToManagerCard}
+          onSearchBar={
+            <ManagerSearchBar
+              onSearch={handleManagerSearch}
+            />
+          }
+          totalCount={managers.length}
+          sectionTitle="Encuentra managers para tu evento"
+          cardType="manager"
+        />
+      )}
     </HeaderLayout>
   );
 }
