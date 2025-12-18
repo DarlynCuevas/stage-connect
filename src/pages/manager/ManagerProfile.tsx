@@ -9,6 +9,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateProfile, useUser } from '@/lib/users';
+import { useCreateManagerRequest, useSentManagerRequests } from '@/lib/manager-requests';
 import { Edit, Save, X, MapPin, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
@@ -50,6 +51,14 @@ export default function ManagerProfile() {
   }
   
   const isOwnProfile = authUser && resolvedManagerId && String(authUser.id) === String(resolvedManagerId);
+
+  // ARTISTA: puede enviar solicitud de representación a este manager
+  const createManagerRequestMutation = useCreateManagerRequest();
+  const sentManagerRequests = useSentManagerRequests();
+  // Detectar si ya hay una solicitud pendiente de este artista a este manager
+  const pendingArtistRequest = sentManagerRequests?.data?.some(
+    (req: any) => req.receiver?.id === manager?.id && req.sender?.id === authUser?.id && req.status === 'Pending'
+  );
 
   useEffect(() => {
     if (isOwnProfile && authUser) {
@@ -150,6 +159,24 @@ export default function ManagerProfile() {
                   </Button>
                 </div>
               )
+            )}
+            {/* Si el usuario autenticado es ARTISTA y no es el manager, mostrar botón para enviar solicitud */}
+            {!isOwnProfile && authUser?.role === 'Artista' && manager?.id && !pendingArtistRequest && (
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  await createManagerRequestMutation.mutateAsync({
+                    receiverId: manager.id,
+                    message: 'Me gustaría que me representaras como manager',
+                  });
+                }}
+              >
+                Solicitar representación
+              </Button>
+            )}
+            {/* Si ya hay solicitud pendiente, mostrar aviso */}
+            {!isOwnProfile && authUser?.role === 'Artista' && manager?.id && pendingArtistRequest && (
+              <div className="text-xs text-center text-muted-foreground">Ya has enviado una solicitud pendiente.</div>
             )}
           </div>
         </div>

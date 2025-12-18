@@ -862,19 +862,20 @@ export default function ArtistProfile() {
                       <Badge variant="secondary" className="text-xs mt-1">Manager</Badge>
                     </div>
                   </Link>
-                  {isEditing && (
+                  {/* Ambos pueden deshacer el acuerdo: artista y manager */}
+                  {(isEditing || authUser?.role === 'Manager') && (
                     <Button
                       variant="destructive"
                       size="sm"
                       className="w-full"
                       onClick={async () => {
-                        if (window.confirm('¿Estás seguro de que quieres eliminar esta relación con tu manager? Se enviará una notificación.')) {
+                        if (window.confirm('¿Estás seguro de que quieres eliminar esta relación de representación? Se enviará una notificación.')) {
                           await removeManagerRelationMutation.mutateAsync(currentArtist.id as number);
                         }
                       }}
                     >
                       <UserMinus className="w-4 h-4 mr-2" />
-                      Eliminar Manager
+                      Deshacer acuerdo
                     </Button>
                   )}
                 </div>
