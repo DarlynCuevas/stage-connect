@@ -69,9 +69,12 @@ export function VenueCalendarComponent({ venueId, editable = false, onDateSelect
 
   const handleDateClick = (date: Date | undefined) => {
     if (!date) return;
-    setSelectedDate(date);
+    // Normalizar la hora a mediodía para evitar desfase por zona horaria
+    const safeDate = new Date(date);
+    safeDate.setHours(12, 0, 0, 0);
+    setSelectedDate(safeDate);
     if (!editable && onDateSelect) {
-      onDateSelect(date);
+      onDateSelect(safeDate);
     }
   };
 

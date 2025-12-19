@@ -33,11 +33,19 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
     selected: selectedDate ? [selectedDate] : [],
   }), [dates, selectedDate]);
 
+  // Handler para normalizar la fecha seleccionada (ajustar a mediodía)
+  const handleSelect = (date: Date | undefined) => {
+    if (!date) return;
+    const safeDate = new Date(date);
+    safeDate.setHours(12, 0, 0, 0); // Mediodía para evitar desfase
+    onSelect?.(safeDate);
+  };
+
   return (
     <Calendar
       mode="single"
       selected={selectedDate}
-      onSelect={onSelect}
+      onSelect={handleSelect}
       locale={es}
       className="rounded-lg border border-border p-3"
       modifiers={modifiers || defaultModifiers}

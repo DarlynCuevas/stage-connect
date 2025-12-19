@@ -76,19 +76,22 @@ const ArtistCalendarComponent = ({ artistId, editable = false, onDateToggle, onD
 
   const handleDateClick = (date: Date | undefined) => {
     if (!date) return;
-    setSelectedDate(date);
+    // Normalizar la hora a mediodía para evitar desfase por zona horaria
+    const safeDate = new Date(date);
+    safeDate.setHours(12, 0, 0, 0);
+    setSelectedDate(safeDate);
 
-    const status = getDateStatus(date);
+    const status = getDateStatus(safeDate);
     // Nueva lógica: si el día NO está bloqueado NI reservado, abrir modal para roles externos
     const isBlocked = status && (status.blocked || status.confirmed);
     if (!editable && !isBlocked && onDateSelect) {
-      onDateSelect(date);
+      onDateSelect(safeDate);
       return;
     }
 
     // Si es editable (artista dueño), mantener la lógica de edición
     if (editable && onDateToggle) {
-      onDateToggle(date);
+      onDateToggle(safeDate);
       return;
     }
   };
