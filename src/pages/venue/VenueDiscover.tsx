@@ -22,23 +22,34 @@ export default function VenueDiscover() {
   const [searchType, setSearchType] = useState<'artists' | 'managers'>('artists');
 
   // ARTISTS
-  const { artists, setArtists, loading, setFilters, filters } = useDiscoveryArtists();
+  const { populares, destacados, resto, pagination, loading, setFilters, filters, setPopulares, setDestacados, setResto } = useDiscoveryArtists();
   const [showFavorites, setShowFavorites] = useState(false);
-  const searchQuery = (filters.query || '').toLowerCase();
-  const filteredArtists = searchQuery
-    ? artists.filter((a) =>
-        (a.nickName || a.name || '').toLowerCase().includes(searchQuery)
-      )
-    : artists;
-  const verifiedArtists = filteredArtists.filter((a) => a.verified);
-  const featuredArtists = filteredArtists.filter((a) => a.featured && !a.verified);
-  const othersArtists = filteredArtists.filter((a) => !a.verified && !a.featured);
-  const favoritesArtists = filteredArtists.filter((a) => a.favorite);
+  const [favorites, setFavorites] = useState<any[]>([]);
   const handleFavoriteArtist = async (artistId: number, favorite: boolean) => {
     if (!user) return;
     try {
+      // Buscar y actualizar en el array correspondiente
+      setPopulares((prev) => prev.map((artist) => (artist.id === artistId ? { ...artist, favorite } : artist)));
+      setDestacados((prev) => prev.map((artist) => (artist.id === artistId ? { ...artist, favorite } : artist)));
+      setResto((prev) => prev.map((artist) => (artist.id === artistId ? { ...artist, favorite } : artist)));
+      // Actualizar favoritos
+      setFavorites((prevFavs) => {
+        const allArtists = [...populares, ...destacados, ...resto];
+        const artist = allArtists.find((a) => a.id === artistId);
+        if (!artist) return prevFavs;
+        if (favorite) {
+          // Agregar si no está
+          if (!prevFavs.some((a) => a.id === artistId)) {
+            return [...prevFavs, { ...artist, favorite: true }];
+          }
+          // Si ya está, actualizar el estado
+          return prevFavs.map((a) => a.id === artistId ? { ...a, favorite: true } : a);
+        } else {
+          // Quitar si se desmarca
+          return prevFavs.filter((a) => a.id !== artistId);
+        }
+      });
       await handleFavorite({ userId: user.id, targetId: artistId, favorite });
-      setArtists((prevArtists: any[]) => prevArtists.map((artist) => artist.id === artistId ? { ...artist, favorite } : artist));
     } catch (e) {
       // Manejo de error opcional
     }
@@ -49,23 +60,30 @@ export default function VenueDiscover() {
   };
 
   // MANAGERS
-  const { managers, setManagers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters } = useDiscoveryManagers();
+  const { populares: popularesManagers, destacados: destacadosManagers, resto: restoManagers, pagination: paginationManagers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters, setPopulares: setPopularesManagers, setDestacados: setDestacadosManagers, setResto: setRestoManagers } = useDiscoveryManagers();
   const [showFavoritesManagers, setShowFavoritesManagers] = useState(false);
-  const searchQueryManagers = (managerFilters.query || '').toLowerCase();
-  const filteredManagers = searchQueryManagers
-    ? managers.filter((m) =>
-        (m.name || '').toLowerCase().includes(searchQueryManagers)
-      )
-    : managers;
-  const verifiedManagers = filteredManagers.filter((m) => m.verified);
-  const featuredManagers = filteredManagers.filter((m) => m.featured && !m.verified);
-  const othersManagers = filteredManagers.filter((m) => !m.verified && !m.featured);
-  const favoritesManagers = filteredManagers.filter((m) => m.favorite);
+  const [favoritesManagers, setFavoritesManagers] = useState<any[]>([]);
   const handleFavoriteManager = async (managerId: number, favorite: boolean) => {
     if (!user) return;
     try {
+      setPopularesManagers((prev) => prev.map((manager) => manager.id === managerId ? { ...manager, favorite } : manager));
+      setDestacadosManagers((prev) => prev.map((manager) => manager.id === managerId ? { ...manager, favorite } : manager));
+      setRestoManagers((prev) => prev.map((manager) => manager.id === managerId ? { ...manager, favorite } : manager));
+      // Actualizar favoritos
+      setFavoritesManagers((prevFavs) => {
+        const allManagers = [...popularesManagers, ...destacadosManagers, ...restoManagers];
+        const manager = allManagers.find((m) => m.id === managerId);
+        if (!manager) return prevFavs;
+        if (favorite) {
+          if (!prevFavs.some((m) => m.id === managerId)) {
+            return [...prevFavs, { ...manager, favorite: true }];
+          }
+          return prevFavs.map((m) => m.id === managerId ? { ...m, favorite: true } : m);
+        } else {
+          return prevFavs.filter((m) => m.id !== managerId);
+        }
+      });
       await handleFavorite({ userId: user.id, targetId: managerId, favorite });
-      setManagers((prevManagers: any[]) => prevManagers.map((manager) => manager.id === managerId ? { ...manager, favorite } : manager));
     } catch (e) {
       // Manejo de error opcional
     }
@@ -89,10 +107,10 @@ export default function VenueDiscover() {
         <Discovery
           type="artists"
           loading={loading}
-          verified={verifiedArtists}
-          featured={featuredArtists}
-          others={othersArtists}
-          favorites={favoritesArtists}
+          verified={populares}
+          featured={destacados}
+          others={resto}
+          favorites={favorites}
           showFavorites={showFavorites}
           setShowFavorites={setShowFavorites}
           onFavoriteChange={handleFavoriteArtist}
@@ -103,17 +121,19 @@ export default function VenueDiscover() {
               onFiltersChange={handleArtistSearch}
             />
           }
-          totalCount={artists.length}
+          totalCount={pagination.total}
           sectionTitle="Encuentra artistas para tu evento"
           cardType="artist"
+          pagination={pagination}
+          onPageChange={(page) => setFilters((prev: any) => ({ ...prev, page }))}
         />
       ) : (
         <Discovery
           type="managers"
           loading={loadingManagers}
-          verified={verifiedManagers}
-          featured={featuredManagers}
-          others={othersManagers}
+          verified={popularesManagers}
+          featured={destacadosManagers}
+          others={restoManagers}
           favorites={favoritesManagers}
           showFavorites={showFavoritesManagers}
           setShowFavorites={setShowFavoritesManagers}
@@ -124,9 +144,11 @@ export default function VenueDiscover() {
               onSearch={handleManagerSearch}
             />
           }
-          totalCount={managers.length}
+          totalCount={paginationManagers.total}
           sectionTitle="Encuentra managers para tu evento"
           cardType="manager"
+          pagination={paginationManagers}
+          onPageChange={(page) => setManagerFilters((prev: any) => ({ ...prev, page }))}
         />
       )}
     </HeaderLayout>

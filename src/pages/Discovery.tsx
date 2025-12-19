@@ -22,6 +22,13 @@ type DiscoveryProps = {
   totalCount: number;
   sectionTitle: string;
   cardType: 'artist' | 'venue' | 'manager' | 'promoter';
+  pagination?: {
+    page: number;
+    pageSize: number;
+    total: number;
+    hasNextPage: boolean;
+  };
+  onPageChange?: (page: number) => void;
 };
 
 
@@ -39,6 +46,8 @@ export default function Discovery({
   totalCount,
   sectionTitle,
   cardType,
+  pagination,
+  onPageChange
 }: DiscoveryProps) {
   const { user } = useAuth();
   const artistId = user && user.role && String(user.role).toLowerCase().includes('art') ? user.id : undefined;
@@ -187,15 +196,35 @@ export default function Discovery({
                 {others.map((item) => (
                   cardType === 'artist' ? (
                     <ArtistCard key={item.id} artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
-                        ) : cardType === 'manager' ? (
-                          <ManagerCard key={item.id} manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
-                        ) : cardType === 'promoter' ? (
-                          <PromotorCard key={item.id} promoter={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
-                        ) : (
-                          <VenueCard key={item.id} venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
-                        )
+                  ) : cardType === 'manager' ? (
+                    <ManagerCard key={item.id} manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                  ) : cardType === 'promoter' ? (
+                    <PromotorCard key={item.id} promoter={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                  ) : (
+                    <VenueCard key={item.id} venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                  )
                 ))}
               </div>
+              {/* Paginación */}
+              {pagination && (
+                <div className="flex justify-center items-center gap-4 mt-6">
+                  <button
+                    className="px-4 py-2 rounded bg-muted text-muted-foreground disabled:opacity-50"
+                    disabled={pagination.page === 1}
+                    onClick={() => onPageChange && onPageChange(pagination.page - 1)}
+                  >
+                    Anterior
+                  </button>
+                  <span>Página {pagination.page} de {Math.ceil(pagination.total / pagination.pageSize)}</span>
+                  <button
+                    className="px-4 py-2 rounded bg-muted text-muted-foreground disabled:opacity-50"
+                    disabled={!pagination.hasNextPage}
+                    onClick={() => onPageChange && onPageChange(pagination.page + 1)}
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </>

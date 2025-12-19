@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export interface DiscoveryArtist {
   id: number;
+  user_id?: number;
   name: string;
   city?: string;
   genre?: string;
@@ -16,6 +17,7 @@ export interface DiscoveryArtist {
   rating?: number;
   blockedDays?: string[];
   nickName?: string;
+  reviewsCount?: number;
 }
 
 
@@ -25,17 +27,20 @@ export interface DiscoveryArtistFilters {
   priceMin?: number;
   priceMax?: number;
   query?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 
 
 export function useDiscoveryArtists() {
-  const [artists, setArtists] = useState<DiscoveryArtist[]>([]);
+  const [populares, setPopulares] = useState<DiscoveryArtist[]>([]);
+  const [destacados, setDestacados] = useState<DiscoveryArtist[]>([]);
+  const [resto, setResto] = useState<DiscoveryArtist[]>([]);
+  const [pagination, setPagination] = useState<any>({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
   const [loading, setLoading] = useState(true);
-  // Por defecto, ciudad vacía (no 'all')
-  const [filters, setFilters] = useState<DiscoveryArtistFilters>({ city: '', genre: [] });
-   const { token } = useAuth();
-
+  const [filters, setFilters] = useState<DiscoveryArtistFilters>({ city: '', genre: [], page: 1, pageSize: 20 });
+  const { token } = useAuth();
 
   useEffect(() => {
     const fetchArtists = async () => {
@@ -49,11 +54,19 @@ export function useDiscoveryArtists() {
         if (filters.priceMin !== undefined) params.append('priceMin', String(filters.priceMin));
         if (filters.priceMax !== undefined) params.append('priceMax', String(filters.priceMax));
         if (filters.query && filters.query.trim() !== '') params.append('query', filters.query.trim());
+        if (filters.page !== undefined) params.append('page', String(filters.page));
+        if (filters.pageSize !== undefined) params.append('pageSize', String(filters.pageSize));
         const url = `/public/artists${params.toString() ? '?' + params.toString() : ''}`;
         const response = await apiFetch(url, token ? { token } : undefined);
-        setArtists(response);
+        setPopulares(response.populares || []);
+        setDestacados(response.destacados || []);
+        setResto(response.resto || []);
+        setPagination(response.pagination || { page: 1, pageSize: 20, total: 0, hasNextPage: false });
       } catch (error) {
-        setArtists([]);
+        setPopulares([]);
+        setDestacados([]);
+        setResto([]);
+        setPagination({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
       } finally {
         setLoading(false);
       }
@@ -61,5 +74,5 @@ export function useDiscoveryArtists() {
     fetchArtists();
   }, [filters]);
 
-  return { artists, setArtists, loading, setFilters, filters };
+  return { populares, destacados, resto, pagination, loading, setFilters, filters, setPopulares, setDestacados, setResto };
 }
