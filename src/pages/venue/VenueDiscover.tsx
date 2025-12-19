@@ -1,4 +1,3 @@
-
 import Discovery from "@/pages/Discovery";
 import { useAuth } from '@/contexts/AuthContext';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
@@ -10,6 +9,8 @@ import { handleFavorite } from '@/lib/favorite';
 import { ArtistSearch } from '@/components/artists/ArtistSearch';
 import { ManagerSearchBar } from '@/components/manager/ManagerSearchBar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArtistCard } from '@/components/artists/ArtistCard';
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 export default function VenueDiscover() {
   const { user } = useAuth();
@@ -104,29 +105,118 @@ export default function VenueDiscover() {
         </Tabs>
       </div>
       {searchType === 'artists' ? (
-        <Discovery
-          type="artists"
-          loading={loading}
-          verified={populares}
-          featured={destacados}
-          others={resto}
-          favorites={favorites}
-          showFavorites={showFavorites}
-          setShowFavorites={setShowFavorites}
-          onFavoriteChange={handleFavoriteArtist}
-          mapToCard={mapToArtistCard}
-          onSearchBar={
-            <ArtistSearch
-              filters={filters}
-              onFiltersChange={handleArtistSearch}
-            />
-          }
-          totalCount={pagination.total}
-          sectionTitle="Encuentra artistas para tu evento"
-          cardType="artist"
-          pagination={pagination}
-          onPageChange={(page) => setFilters((prev: any) => ({ ...prev, page }))}
-        />
+        <>
+          <Discovery
+            type="artists"
+            loading={loading}
+            verified={[]}
+            featured={destacados}
+            others={resto}
+            favorites={favorites}
+            showFavorites={showFavorites}
+            setShowFavorites={setShowFavorites}
+            onFavoriteChange={handleFavoriteArtist}
+            mapToCard={mapToArtistCard}
+            onSearchBar={
+              <ArtistSearch
+                filters={filters}
+                onFiltersChange={handleArtistSearch}
+              />
+            }
+            totalCount={pagination.total}
+            sectionTitle="Encuentra artistas para tu evento"
+            cardType="artist"
+            pagination={pagination}
+            onPageChange={(page) => setFilters((prev: any) => ({ ...prev, page }))}
+            // Renderizado personalizado de la grilla de artistas
+            renderGrid={(children) => (
+              <>
+                <div className="rounded-xl border text-card-foreground transition-all duration-300 bg-transparent shadow-lg mb-6 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      {/* Icono de corona premium */}
+                      <span className="text-yellow-500 text-2xl">👑</span>
+                      <span className="font-bold text-lg gradient-text">Artistas Destacados</span>
+                    </div>
+                    <a href="#" className="flex items-center gap-1 text-sm text-yellow-700 hover:underline">
+                      Ver todos <span className="text-lg">→</span>
+                    </a>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                    {destacados.slice(0, 5).map((artist) => (
+                      <div className="min-w-0 w-full relative" key={artist.id}>
+                        <ArtistCard
+                          artist={mapToArtistCard(artist)}
+                          showPrice={true}
+                          onFavoriteChange={handleFavoriteArtist}
+                          className="!p-1 !text-xs !h-40 !min-h-0 !max-w-[140px] border-yellow-300 hover:border-yellow-500"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Sección de favoritos (mover debajo de populares) */}
+                {/* ...existing code for destacados... */}
+                {/* ...existing code for populares... */}
+                <div className="mb-6 relative">
+                  <button
+                    className="flex items-center gap-2 text-lg font-semibold text-red-500 mb-2 focus:outline-none hover:underline"
+                    onClick={() => setShowFavorites(!showFavorites)}
+                  >
+                    <span className="text-red-400 text-xl">❤️</span> Favoritos
+                    {showFavorites ? (
+                      <ChevronUp className="h-4 w-4 text-red-400" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-red-400" />
+                    )}
+                  </button>
+                  {showFavorites && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                      {favorites.length > 0 ? favorites.map((artist) => (
+                        <ArtistCard
+                          key={artist.id}
+                          artist={mapToArtistCard(artist)}
+                          showPrice={true}
+                          onFavoriteChange={handleFavoriteArtist}
+                          className="!p-1 !text-xs !h-40 !min-h-0 !max-w-[140px] border-red-300 hover:border-red-500"
+                        />
+                      )) : (
+                        <div className="text-muted-foreground px-4 py-8 col-span-5">No tienes favoritos.</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {/* Card visual para los primeros 5 artistas populares */}
+                <div className="rounded-xl border text-card-foreground transition-all duration-300 bg-transparent shadow-lg mb-6 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      {/* Icono de estrella popular */}
+                      <span className="text-amber-400 text-2xl">⭐</span>
+                      <span className="font-bold text-lg">Artistas Populares</span>
+                    </div>
+                    <a href="#" className="flex items-center gap-1 text-sm text-amber-700 hover:underline">
+                      Ver todos <span className="text-lg">→</span>
+                    </a>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                    {populares.slice(0, 5).map((artist) => (
+                      <div className="min-w-0 w-full relative" key={artist.id}>
+                        <ArtistCard
+                          artist={mapToArtistCard(artist)}
+                          showPrice={true}
+                          onFavoriteChange={handleFavoriteArtist}
+                          className="!p-1 !text-xs !h-40 !min-h-0 !max-w-[140px] border-amber-300 hover:border-amber-500"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Renderizar el resto de artistas */}
+                {children}
+              </>
+            )}
+          />
+        </>
       ) : (
         <Discovery
           type="managers"

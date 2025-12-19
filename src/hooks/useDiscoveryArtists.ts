@@ -41,6 +41,7 @@ export function useDiscoveryArtists() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<DiscoveryArtistFilters>({ city: '', genre: [], page: 1, pageSize: 20 });
   const { token } = useAuth();
+  const artists = [...populares, ...destacados, ...resto];
 
   useEffect(() => {
     const fetchArtists = async () => {
@@ -74,5 +75,5 @@ export function useDiscoveryArtists() {
     fetchArtists();
   }, [filters]);
 
-  return { populares, destacados, resto, pagination, loading, setFilters, filters, setPopulares, setDestacados, setResto };
+  return { populares, destacados, resto, pagination, artists, loading, setFilters, filters, setPopulares, setDestacados, setResto };
 }

@@ -21,7 +21,7 @@ export default function PromoterDiscover() {
   const [searchType, setSearchType] = useState<'artists' | 'managers'>('artists');
 
   // ARTISTS
-  const { artists, setArtists, loading, setFilters, filters } = useDiscoveryArtists();
+  const { artists, loading, setFilters, filters } = useDiscoveryArtists();
   const [showFavorites, setShowFavorites] = useState(false);
   const verifiedArtists = artists.filter((a) => a.verified);
   const featuredArtists = artists.filter((a) => a.featured && !a.verified);
@@ -30,7 +30,6 @@ export default function PromoterDiscover() {
   const handleFavoriteArtist = async (artistId: number, favorite: boolean) => {
     try {
       await handleFavorite({ targetId: artistId, favorite });
-      setArtists((prevArtists: any[]) => prevArtists.map((artist) => artist.id === artistId ? { ...artist, favorite } : artist));
     } catch (e) {
       // Manejo de error opcional
     }
@@ -41,7 +40,7 @@ export default function PromoterDiscover() {
   };
 
   // MANAGERS
-  const { managers, setManagers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters } = useDiscoveryManagers();
+  const { managers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters } = useDiscoveryManagers();
   const [showFavoritesManagers, setShowFavoritesManagers] = useState(false);
   const verifiedManagers = managers.filter((m) => m.verified);
   const featuredManagers = managers.filter((m) => m.featured && !m.verified);
@@ -50,7 +49,6 @@ export default function PromoterDiscover() {
   const handleFavoriteManager = async (managerId: number, favorite: boolean) => {
     try {
       await handleFavorite({ targetId: managerId, favorite });
-      setManagers((prevManagers: any[]) => prevManagers.map((manager) => manager.id === managerId ? { ...manager, favorite } : manager));
     } catch (e) {
       // Manejo de error opcional
     }

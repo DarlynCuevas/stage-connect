@@ -71,24 +71,20 @@ export default function ArtistDiscover() {
   };
 
   // MANAGERS
-  const { managers, setManagers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters } = useDiscoveryManagers();
+  const { managers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters } = useDiscoveryManagers();
   const verifiedManagers = managers.filter((m: any) => m.verified);
   const featuredManagers = managers.filter((m: any) => m.featured && !m.verified);
   const othersManagers = managers.filter((m: any) => !m.verified && !m.featured);
   const favoritesManagers = managers.filter((m: any) => m.favorite);
-  const handleFavoriteManager = async (managerId: number, favorite: boolean) => {
     if (!user) return;
-    try {
-      await handleFavorite({targetId: managerId, favorite });
-      setManagers && setManagers((prevManagers: any[]) =>
-        prevManagers.map((manager) =>
-          manager.id === managerId ? { ...manager, favorite } : manager
-        )
-      );
-    } catch (e) {
-      // Manejo de error opcional
-    }
-  };
+    const handleFavoriteManager = async (managerId: number, favorite: boolean) => {
+      if (!user) return;
+      try {
+        await handleFavorite({ targetId: managerId, favorite });
+      } catch (e) {
+        // Manejo de error opcional
+      }
+    };
 
   //PROMOTERS(solo exploración)
   const { promoters, setPromoters, loading: loadingPromoters, setFilters: setPromoterFilters, filters: promoterFilters } = useDiscoveryPromoters();

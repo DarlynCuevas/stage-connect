@@ -29,6 +29,7 @@ export function useDiscoveryManagers() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<DiscoveryManagerFilters>({ city: '' });
   const { token } = useAuth();
+  const managers = [...populares, ...destacados, ...resto];
 
   useEffect(() => {
     const fetchManagers = async () => {
@@ -62,6 +63,7 @@ export function useDiscoveryManagers() {
     destacados,
     resto,
     pagination,
+    managers,
     loading,
     setFilters,
     filters,

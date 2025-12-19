@@ -29,6 +29,7 @@ type DiscoveryProps = {
     hasNextPage: boolean;
   };
   onPageChange?: (page: number) => void;
+  renderGrid?: (children: React.ReactNode) => React.ReactNode;
 };
 
 
@@ -47,7 +48,8 @@ export default function Discovery({
   sectionTitle,
   cardType,
   pagination,
-  onPageChange
+  onPageChange,
+  renderGrid
 }: DiscoveryProps) {
   const { user } = useAuth();
   const artistId = user && user.role && String(user.role).toLowerCase().includes('art') ? user.id : undefined;
@@ -112,120 +114,138 @@ export default function Discovery({
               </div>
             </div>
           )}
-          {/* Destacados */}
-          {featured.length > 0 && (
-            <div className="mb-6 relative">
-              <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                {cardType === 'artist' ? 'Artistas destacados' : 'Salas destacadas'}
-              </h2>
-              <div className="relative">
-                <Carousel>
-                  <div className="flex flex-col">
-                    <div className="flex justify-center items-center gap-1 mb-3">
-                      <CarouselPrevious />
-                      <CarouselNext />
-                    </div>
-                    <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
-                      {featured.map((item) => (
-                        <CarouselItem key={item.id} className="basis-72 max-w-xs">
-                          {cardType === 'artist' ? (
-                            <ArtistCard artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
-                          ) : cardType === 'manager' ? (
-                            <ManagerCard manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
-                          ) : cardType === 'promoter' ? (
-                            <PromotorCard promoter={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
-                          ) : (
-                            <VenueCard venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
-                          )}
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                  </div>
-                </Carousel>
-              </div>
-            </div>
-          )}
-          {/* Favoritos */}
-          <div className="mb-6 relative">
-            <button
-              className="flex items-center gap-2 text-lg font-semibold text-red-500 mb-2 focus:outline-none hover:underline"
-              onClick={() => setShowFavorites(!showFavorites)}
-            >
-              <Heart className="h-5 w-5" /> Favoritos
-              {showFavorites ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </button>
-            {showFavorites && (
-              <Carousel>
-                <div className="flex flex-col">
-                  <div className="flex justify-center items-center gap-1 mb-3">
-                    <CarouselPrevious />
-                    <CarouselNext />
-                  </div>
-                  <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
-                    {favorites.length > 0 ? favorites.map((item) => (
-                      <CarouselItem key={item.id} className="basis-72 max-w-xs">
-                        {cardType === 'artist' ? (
-                          <ArtistCard artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
+          {/* Renderizado personalizado de la grilla si existe renderGrid */}
+          {renderGrid ? (
+            renderGrid(
+              <>
+                {/* Otros */}
+                {others.length > 0 && (
+                  <div className="mb-6">
+                    <h2 className="text-lg font-semibold text-muted-foreground mb-2">
+                      {cardType === 'artist' ? 'Artistas' : 'Salas'}
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                      {others.map((item) => (
+                        cardType === 'artist' ? (
+                          <ArtistCard key={item.id} artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
                         ) : cardType === 'manager' ? (
-                          <ManagerCard manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                          <ManagerCard key={item.id} manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
                         ) : cardType === 'promoter' ? (
-                          <PromotorCard promoter={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                          <PromotorCard key={item.id} promoter={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
                         ) : (
-                          <VenueCard venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
-                        )}
-                      </CarouselItem>
-                    )) : (
-                      <div className="text-muted-foreground px-4 py-8">No tienes favoritos.</div>
+                          <VenueCard key={item.id} venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                        )
+                      ))}
+                    </div>
+                    {/* Paginación */}
+                    {pagination && (
+                      <div className="flex justify-center items-center gap-4 mt-6">
+                        <button
+                          className="px-4 py-2 rounded bg-muted text-muted-foreground disabled:opacity-50"
+                          disabled={pagination.page === 1}
+                          onClick={() => onPageChange && onPageChange(pagination.page - 1)}
+                        >
+                          Anterior
+                        </button>
+                        <span>Página {pagination.page} de {Math.ceil(pagination.total / pagination.pageSize)}</span>
+                        <button
+                          className="px-4 py-2 rounded bg-muted text-muted-foreground disabled:opacity-50"
+                          disabled={!pagination.hasNextPage}
+                          onClick={() => onPageChange && onPageChange(pagination.page + 1)}
+                        >
+                          Siguiente
+                        </button>
+                      </div>
                     )}
-                  </CarouselContent>
-                </div>
-              </Carousel>
-            )}
-          </div>
-          {/* Otros */}
-          {others.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                {cardType === 'artist' ? 'Artistas' : 'Salas'}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {others.map((item) => (
-                  cardType === 'artist' ? (
-                    <ArtistCard key={item.id} artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
-                  ) : cardType === 'manager' ? (
-                    <ManagerCard key={item.id} manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
-                  ) : cardType === 'promoter' ? (
-                    <PromotorCard key={item.id} promoter={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                  </div>
+                )}
+              </>
+            )
+          ) : (
+            <>
+              {/* Favoritos */}
+              <div className="mb-6 relative">
+                <button
+                  className="flex items-center gap-2 text-lg font-semibold text-red-500 mb-2 focus:outline-none hover:underline"
+                  onClick={() => setShowFavorites(!showFavorites)}
+                >
+                  <Heart className="h-5 w-5" /> Favoritos
+                  {showFavorites ? (
+                    <ChevronUp className="h-4 w-4" />
                   ) : (
-                    <VenueCard key={item.id} venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
-                  )
-                ))}
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </button>
+                {showFavorites && (
+                  <Carousel>
+                    <div className="flex flex-col">
+                      <div className="flex justify-center items-center gap-1 mb-3">
+                        <CarouselPrevious />
+                        <CarouselNext />
+                      </div>
+                      <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
+                        {favorites.length > 0 ? favorites.map((item) => (
+                          <CarouselItem key={item.id} className="basis-72 max-w-xs">
+                            {cardType === 'artist' ? (
+                              <ArtistCard artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
+                            ) : cardType === 'manager' ? (
+                              <ManagerCard manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                            ) : cardType === 'promoter' ? (
+                              <PromotorCard promoter={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                            ) : (
+                              <VenueCard venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                            )}
+                          </CarouselItem>
+                        )) : (
+                          <div className="text-muted-foreground px-4 py-8">No tienes favoritos.</div>
+                        )}
+                      </CarouselContent>
+                    </div>
+                  </Carousel>
+                )}
               </div>
-              {/* Paginación */}
-              {pagination && (
-                <div className="flex justify-center items-center gap-4 mt-6">
-                  <button
-                    className="px-4 py-2 rounded bg-muted text-muted-foreground disabled:opacity-50"
-                    disabled={pagination.page === 1}
-                    onClick={() => onPageChange && onPageChange(pagination.page - 1)}
-                  >
-                    Anterior
-                  </button>
-                  <span>Página {pagination.page} de {Math.ceil(pagination.total / pagination.pageSize)}</span>
-                  <button
-                    className="px-4 py-2 rounded bg-muted text-muted-foreground disabled:opacity-50"
-                    disabled={!pagination.hasNextPage}
-                    onClick={() => onPageChange && onPageChange(pagination.page + 1)}
-                  >
-                    Siguiente
-                  </button>
+              {/* Otros */}
+              {others.length > 0 && (
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-muted-foreground mb-2">
+                    {cardType === 'artist' ? 'Artistas' : 'Salas'}
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    {others.map((item) => (
+                      cardType === 'artist' ? (
+                        <ArtistCard key={item.id} artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
+                      ) : cardType === 'manager' ? (
+                        <ManagerCard key={item.id} manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                      ) : cardType === 'promoter' ? (
+                        <PromotorCard key={item.id} promoter={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                      ) : (
+                        <VenueCard key={item.id} venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
+                      )
+                    ))}
+                  </div>
+                  {/* Paginación */}
+                  {pagination && (
+                    <div className="flex justify-center items-center gap-4 mt-6">
+                      <button
+                        className="px-4 py-2 rounded bg-muted text-muted-foreground disabled:opacity-50"
+                        disabled={pagination.page === 1}
+                        onClick={() => onPageChange && onPageChange(pagination.page - 1)}
+                      >
+                        Anterior
+                      </button>
+                      <span>Página {pagination.page} de {Math.ceil(pagination.total / pagination.pageSize)}</span>
+                      <button
+                        className="px-4 py-2 rounded bg-muted text-muted-foreground disabled:opacity-50"
+                        disabled={!pagination.hasNextPage}
+                        onClick={() => onPageChange && onPageChange(pagination.page + 1)}
+                      >
+                        Siguiente
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
+            </>
           )}
         </>
       )}
