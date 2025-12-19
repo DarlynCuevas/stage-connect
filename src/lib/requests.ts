@@ -54,9 +54,16 @@ export function useCreateBookingRequest() {
       });
     },
     onError: (error: any) => {
+      let description = error?.message || 'No se pudo enviar la solicitud.';
+      if (
+        typeof description === 'string' &&
+        description.includes('Ya existe una solicitud pendiente para este artista y fecha')
+      ) {
+        description = 'Ya has enviado una solicitud pendiente para este artista y fecha. Espera a que el artista responda antes de enviar otra.';
+      }
       toast({
         title: 'Error',
-        description: error?.message || 'No se pudo enviar la solicitud.',
+        description,
         variant: 'destructive',
         duration: 4000,
       });

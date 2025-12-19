@@ -2,6 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiFetch from './api';
 import { Artist } from '@/types';
 
+import { useAuth } from '@/contexts/AuthContext';
+
+export function useManagedArtists() {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['managed-artists'],
+    queryFn: () => apiFetch('/users/managed-artists', { token }),
+    enabled: !!token,
+  });
+}
+
 export async function fetchArtistById(id: number | string) {
   const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
   return apiFetch(`/public/users/${numericId}`);
