@@ -13,6 +13,11 @@ import { PriceRangeSlider } from '@/components/ui/PriceRangeSlider';
 import { Search, X, SlidersHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
 import { genres, countries, cities } from '@/data/mockData';
 import { SearchFilters } from '@/types';
+import { useContext } from 'react';
+import { useVenue } from '@/hooks/useVenue';
+import { AuthContext } from '@/contexts/AuthContext';
+import { notifyAvailableDate } from '@/lib/notifications';
+import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CalendarComponent } from '../calendar/CalendarComponent';
 
@@ -22,24 +27,60 @@ interface ArtistSearchProps {
 }
 
 export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
-    const [showGenre, setShowGenre] = useState(false);
-    const [showLocation, setShowLocation] = useState(false);
-    const [showPrice, setShowPrice] = useState(false);
-    const [showDate, setShowDate] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(filters.date ? new Date(filters.date) : undefined);
+  const [showGenre, setShowGenre] = useState(false);
+  const [showLocation, setShowLocation] = useState(false);
+  const [showPrice, setShowPrice] = useState(false);
+  const [showDate, setShowDate] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(filters.date ? new Date(filters.date) : undefined);
   const [showFilters, setShowFilters] = useState(false);
-    // Cierra todos los desplegables al abrir el panel de filtros
-    const handleOpenFilters = () => {
-      setShowFilters((prev) => {
-        if (!prev) {
-          setShowGenre(false);
-          setShowLocation(false);
-          setShowPrice(false);
-        }
-        return !prev;
-      });
-    };
+  const [offeredPrice, setOfferedPrice] = useState<string>('');
+  // Cierra todos los desplegables al abrir el panel de filtros
+  const handleOpenFilters = () => {
+    setShowFilters((prev) => {
+      if (!prev) {
+        setShowGenre(false);
+        setShowLocation(false);
+        setShowPrice(false);
+      }
+      return !prev;
+    });
+  };
   const [priceRange, setPriceRange] = useState([filters.priceMin || 0, filters.priceMax || 50000]);
+
+  // Mover hooks y lógica de venue aquí
+  const auth = useContext(AuthContext);
+  const user = auth?.user;
+  const token = auth?.token;
+  // Ya no necesitamos venue para el botón premium
+  const isFeatured = user?.role === 'Local' && user?.featured;
+  console.log(' usuario role ', user?.role);
+   console.log(' usuario user ', user);
+  
+  
+  const venueId = user?.id; // Si necesitas el id del local para notificar
+  const goldButtonClass =
+    'relative bg-gradient-to-br from-yellow-300 via-yellow-500 to-yellow-700 border-2 border-yellow-400 shadow-gold text-yellow-950 font-semibold hover:from-yellow-400 hover:to-yellow-800 active:scale-[0.98]';
+  const handleNotifyWithPrice = async (date: Date, price: string) => {
+    if (isFeatured && date && user && price && Number(price) > 0) {
+      try {
+        await notifyAvailableDate(venueId, date.toISOString().slice(0, 10), token || undefined, Number(price));
+        toast({
+          title: 'Notificación enviada',
+          description: `Notificación enviada a artistas y managers para el día ${date.toLocaleDateString()}\nOferta: ${Number(price).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}`,
+          duration: 4000,
+        });
+        setShowDate(false);
+        setOfferedPrice('');
+      } catch (err: any) {
+        toast({
+          title: 'Error al notificar',
+          description: err?.message || 'Error desconocido',
+          variant: 'destructive',
+          duration: 4000,
+        });
+      }
+    }
+  };
 
   const handleQueryChange = (query: string) => {
     onFiltersChange({ ...filters, query });
@@ -214,60 +255,115 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
             </div>
 
             {/* Price range */}
-                        {/* Date filter */}
-                        <div>
-                          <button
-                            type="button"
-                            className="flex items-center gap-2 text-sm font-medium text-foreground mb-3 focus:outline-none"
-                            onClick={() => setShowDate((v) => !v)}
-                          >
-                            Fecha
-                            {showDate ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                            {selectedDate && (
-                              <span className="ml-2 text-xs text-muted-foreground">{selectedDate.toLocaleDateString()}</span>
-                            )}
-                          </button>
-                          {showDate && (
-                            <div className="flex flex-row gap-6 p-2 rounded-xl bg-muted/10 border border-border items-start">
-                              <div className="w-full max-w-xs">
-                                <CalendarComponent
-                                  dates={[]}
-                                  selectedDate={selectedDate}
-                                  onSelect={date => setSelectedDate(date)}
-                                />
-                              </div>
-                              <div className="flex flex-col gap-3 min-w-[220px]">
-                                <Button
-                                  variant="default"
-                                  size="sm"
-                                  disabled={!selectedDate}
-                                  onClick={() => {
-                                    if (selectedDate) {
-                                      onFiltersChange({ ...filters, date: selectedDate.toISOString().slice(0, 10) });
-                                      setShowDate(false);
-                                    }
-                                  }}
-                                >
-                                  Buscar artistas disponibles para este día
-                                </Button>
-                                <span className="text-xs text-muted-foreground mb-2">Filtra la lista y muestra solo artistas que tienen libre el día seleccionado.</span>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  disabled={!selectedDate}
-                                  onClick={() => {
-                                    // Aquí iría la lógica para notificar a artistas (puedes conectar con backend)
-                                    alert('Se notificará a los artistas que el local está disponible el ' + selectedDate?.toLocaleDateString());
-                                    setShowDate(false);
-                                  }}
-                                >
-                                  Notificar a artistas que este día está disponible
-                                </Button>
-                                <span className="text-xs text-muted-foreground">Envía una notificación a los artistas para que puedan sugerirse si están interesados en la fecha seleccionada.</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+            {/* Date filter */}
+            <div>
+              <button
+                type="button"
+                className="flex items-center gap-2 text-sm font-medium text-foreground mb-3 focus:outline-none"
+                onClick={() => setShowDate((v) => !v)}
+              >
+                Fecha
+                {showDate ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {selectedDate && (
+                  <span className="ml-2 text-xs text-muted-foreground">{selectedDate.toLocaleDateString()}</span>
+                )}
+              </button>
+              {showDate && (
+                <div className="flex flex-row gap-6 p-2 rounded-xl bg-muted/10 border border-border items-start">
+                  <div className="w-full max-w-xs">
+                    <CalendarComponent
+                      dates={[]}
+                      selectedDate={selectedDate}
+                      onSelect={date => setSelectedDate(date)}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-3 min-w-[220px] items-center text-center">
+                    <div className="flex flex-col gap-4 w-full items-center justify-center">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        disabled={!selectedDate}
+                        style={{ marginTop: 12, maxWidth: 260, width: '100%', display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
+                        onClick={() => {
+                          if (selectedDate) {
+                            onFiltersChange({ ...filters, date: selectedDate.toISOString().slice(0, 10) });
+                            setShowDate(false);
+                          }
+                        }}
+                      >
+                        Buscar artistas disponibles para este día
+                      </Button>
+                      <span className="text-xs text-muted-foreground mb-2">Filtra la lista y muestra solo artistas que tienen libre el día seleccionado.</span>
+                      {/* Separador visual */}
+                      <div style={{ height: 32 }} />
+                      {/* Simulación: solo premium puede notificar. Cambia isPremium según el usuario */}
+                      {/* Simulación: reemplaza isFeatured por el valor real del usuario */}
+                      <div className="flex flex-col gap-1 items-center group w-full">
+                        {isFeatured ? (
+                          <div className="flex flex-col gap-2 w-full items-center justify-center">
+                            <input
+                              type="number"
+                              min={0}
+                              placeholder="Precio ofrecido (€)"
+                              className="border rounded-md px-3 py-2 mb-1 text-sm text-black bg-white max-w-xs text-center"
+                              value={offeredPrice}
+                              onChange={e => setOfferedPrice(e.target.value)}
+                            />
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className="max-w-xs w-full"
+                              style={{ display: 'block', margin: '0 auto' }}
+                              disabled={!selectedDate || !offeredPrice || Number(offeredPrice) <= 0}
+                              onClick={async () => {
+                                if (selectedDate && offeredPrice && Number(offeredPrice) > 0) {
+                                  await handleNotifyWithPrice(selectedDate, offeredPrice);
+                                }
+                              }}
+                            >
+                              Notificar a artistas que este día está disponible
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              disabled={!isFeatured || !selectedDate}
+                              className={
+                                'px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ' +
+                                goldButtonClass +
+                                (!isFeatured ? ' opacity-70 cursor-not-allowed' : '')
+                              }
+                              title="Solo para cuentas destacadas"
+                            >
+                              <span className="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-yellow-900"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2z" /></svg>
+                                Notificar a artistas que este día está disponible
+                                <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-950 border border-yellow-300 shadow-gold">Premium</span>
+                              </span>
+                              <span className="absolute inset-0 rounded-lg pointer-events-none animate-gold-shine" />
+                            </button>
+                            <span className="text-xs text-yellow-900 flex items-center gap-1 mt-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="inline align-middle text-yellow-900"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2z" /></svg>
+                              Solo para cuentas destacadas
+                            </span>
+                            <style>{`
+                              .shadow-gold { box-shadow: 0 2px 8px 0 rgba(212, 175, 55, 0.25), 0 1.5px 0 0 #e6c200 inset; }
+                              @keyframes gold-shine {
+                                0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.3); }
+                                50% { box-shadow: 0 0 16px 4px rgba(255, 215, 0, 0.5); }
+                                100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.3); }
+                              }
+                              .animate-gold-shine { animation: gold-shine 2.5s infinite; }
+                            `}</style>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
             <div>
               <button
                 type="button"
@@ -320,17 +416,17 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
               )}
             </div>
 
-            {/* Clear filters */}
-            {activeFiltersCount > 0 && (
+            {/* Clear filters: siempre visible y alineado a la derecha */}
+            <div className="flex w-full justify-end">
               <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground">
                 <X className="w-4 h-4 mr-2" />
                 Limpiar filtros
               </Button>
-            )}
+            </div>
           </div>
         </div>
       </div>
-    <style>{`
+      <style>{`
       /* Oculta las flechitas de los inputs type number */
       .no-spinner::-webkit-outer-spin-button,
       .no-spinner::-webkit-inner-spin-button {
@@ -341,6 +437,6 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
         -moz-appearance: textfield;
       }
     `}</style>
-  </div>
+    </div>
   );
 }

@@ -30,6 +30,7 @@ export interface DiscoveryArtistFilters {
   page?: number;
   pageSize?: number;
   country?: string;
+  date?: string;
 }
 
 

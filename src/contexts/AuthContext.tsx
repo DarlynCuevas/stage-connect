@@ -12,7 +12,7 @@ interface AuthContextType {
   setUser: (user: User | null) => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -48,6 +48,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     priceVariants: u?.priceVariants ?? u?.price_variants,
     createdAt: u?.created_at ? new Date(u.created_at) : u?.createdAt ? new Date(u.createdAt) : new Date(),
     totalReviews: u?.totalReviews ?? u?.total_reviews,
+    // Tomar featured directamente si viene, o desde venueProfile
+    ...(typeof u?.featured !== 'undefined' ? { featured: u.featured } : {}),
+    ...(u?.venueProfile && typeof u.venueProfile.featured !== 'undefined' ? { featured: u.venueProfile.featured } : {}),
   });
 
   // Sincronizar user con localStorage cuando cambie

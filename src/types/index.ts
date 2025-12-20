@@ -41,6 +41,9 @@ export interface User {
   willingToTravel?: boolean;
   performanceTypes?: string[];
   audienceSize?: string;
+
+  // Para locales: destacado/premium
+  featured?: boolean;
 }
 
 export interface Artist {

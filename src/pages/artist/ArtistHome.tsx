@@ -160,6 +160,18 @@ export default function ArtistHome() {
       queryClient.invalidateQueries({ queryKey: ['artists'] });
     });
 
+    // Listener genérico para artistas y managers: notificación de día disponible
+    socket.on('notification.available-date', (payload: any) => {
+      const { venueName, venueCity, date } = payload;
+      const fecha = date ? new Date(date).toLocaleDateString('es-ES') : '';
+      toast({
+        title: 'Oportunidad de actuación',
+        description: `El local ${venueName || 'desconocido'}${venueCity ? ' (' + venueCity + ')' : ''} tiene disponible el día ${fecha} para nuevas actuaciones.`,
+        duration: 5000,
+      });
+      // Aquí puedes agregar lógica extra, como refrescar la lista de fechas o artistas
+    });
+
     return () => {
       socket.disconnect();
     };

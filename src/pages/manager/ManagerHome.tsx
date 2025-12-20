@@ -1,3 +1,8 @@
+import { useEffect } from 'react';
+import { API_BASE_URL } from '@/config';
+import { io, Socket } from 'socket.io-client';
+import { useToast } from '@/hooks/use-toast';
+// import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,11 +26,36 @@ import { HeaderLayout } from '@/components/layout/HeaderLayout';
 
 export default function ManagerHome() {
   useManagerRequestsRealtime();
-  const { user } = useAuth();
+  const { toast } = useToast();
+  const { user, token } = useAuth();
   const { data: artists = [] } = useArtists();
   const { data: stats } = useManagerStats();
   const { data: requests = [] } = useManagerRequests();
-  
+
+  useEffect(() => {
+    if (!token) return;
+    const socket: Socket = io(API_BASE_URL.replace('/api', ''), {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 500,
+      reconnectionAttempts: 10,
+      auth: { token },
+      extraHeaders: { Authorization: `Bearer ${token}` },
+    });
+    socket.on('notification.available-date', (payload: any) => {
+      const { venueName, venueCity, date } = payload;
+      const fecha = date ? new Date(date).toLocaleDateString('es-ES') : '';
+      toast({
+        title: 'Oportunidad de actuación',
+        description: `El local ${venueName || 'desconocido'}${venueCity ? ' (' + venueCity + ')' : ''} tiene disponible el día ${fecha} para nuevas actuaciones.`,
+        duration: 5000,
+      });
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, [token, toast]);
+
   const manager = user;
   const managedArtists = (artists || []).filter((a: any) => {
     return a.managerId && String(a.managerId) === String(user?.id);

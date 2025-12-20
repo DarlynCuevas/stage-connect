@@ -188,6 +188,35 @@ function RealtimeToasts() {
       invalidateManagerRelations();
     });
 
+    // Notificación global de oportunidad de actuación
+    socket.on('notification.available-date', (payload: any) => {
+      const { venueName, venueCity, date } = payload;
+      const fecha = date ? new Date(date).toLocaleDateString('es-ES') : '';
+      // Determinar rol para la notificación (artista o manager)
+      const role = user?.role === 'Manager' ? 'manager' : 'artista';
+      // Usar función genérica para mostrar la notificación personalizada
+      import('@/hooks/showOpportunityNotification.tsx').then(({ showOpportunityNotification }) => {
+        showOpportunityNotification({
+          venueName: venueName || 'desconocido',
+          venueCity: venueCity || '',
+          date: fecha,
+          role,
+          onDetails: () => {
+            // Redirigir a la página de detalles del local
+            if (user?.role === 'Manager') {
+              navigate(`/manager/${user.id}/discover`);
+            } else {
+              navigate(`/artist/${user.id}/discover`);
+            }
+          },
+          onInterest: async () => {
+            // Aquí puedes llamar a la API para registrar el interés si lo deseas
+            // await apiFetch(...)
+          },
+        });
+      });
+    });
+
     return () => {
       socket.disconnect();
     };
