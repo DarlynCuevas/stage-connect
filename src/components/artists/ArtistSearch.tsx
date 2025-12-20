@@ -55,7 +55,14 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
   };
 
   const clearFilters = () => {
-    onFiltersChange({});
+    onFiltersChange({
+      query: '',
+      genre: [],
+      country: '',
+      city: '',
+      priceMin: 0,
+      priceMax: 50000,
+    });
     setPriceRange([0, 50000]);
   };
 
