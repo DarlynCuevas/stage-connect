@@ -57,6 +57,7 @@ export function useDiscoveryArtists() {
         if (filters.priceMin !== undefined) params.append('priceMin', String(filters.priceMin));
         if (filters.priceMax !== undefined) params.append('priceMax', String(filters.priceMax));
         if (filters.query && filters.query.trim() !== '') params.append('query', filters.query.trim());
+        if (filters.date) params.append('date', filters.date);
         if (filters.page !== undefined) params.append('page', String(filters.page));
         if (filters.pageSize !== undefined) params.append('pageSize', String(filters.pageSize));
         const url = `/public/artists${params.toString() ? '?' + params.toString() : ''}`;
