@@ -59,6 +59,7 @@ function RealtimeToasts() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+
   useEffect(() => {
     if (!token) return;
 
@@ -89,6 +90,13 @@ function RealtimeToasts() {
       queryClient.invalidateQueries({ queryKey: ['artist'] });
     };
 
+    // NUEVO: invalidar interesados para venues
+    const invalidateInterested = () => {
+      if (user?.role === 'Local' && user?.id) {
+        queryClient.invalidateQueries({ queryKey: ['interested', Number(user.id)] });
+      }
+    };
+
     const updateManagerRequestStatus = async (requestId: number, status: 'Accepted' | 'Rejected') => {
       try {
         await apiFetch(`/manager-requests/${requestId}/status`, {
@@ -111,6 +119,18 @@ function RealtimeToasts() {
         });
       }
     };
+
+    // NUEVO: escuchar evento de interesado creado
+    socket.on('interested.created', (payload: any) => {
+      if (user?.role === 'Local' && user?.id && payload?.venueId === user.id) {
+        toast({
+          title: 'Nuevo interesado',
+          description: `Un artista o manager ha mostrado interés en tu oportunidad.`,
+          duration: 4000,
+        });
+        invalidateInterested();
+      }
+    });
 
     socket.on('request.created', (payload: any) => {
       toast({
@@ -209,10 +229,9 @@ function RealtimeToasts() {
               navigate(`/artist/${user.id}/discover`);
             }
           },
-          onInterest: async () => {
-            // Aquí puedes llamar a la API para registrar el interés si lo deseas
-            // await apiFetch(...)
-          },
+          venueId: payload.venueId || payload.venue_id || undefined,
+          artistId: user?.role === 'Artista' ? user.id : undefined,
+          managerId: user?.role === 'Manager' ? user.id : undefined,
         });
       });
     });

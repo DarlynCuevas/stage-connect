@@ -1,9 +1,9 @@
 import apiFetch from '@/lib/api';
 
-export async function notifyAvailableDate(venueId: string, date: string, token?: string) {
+export async function notifyAvailableDate(venueId: string, date: string, token?: string, price?: number) {
   return apiFetch('/notifications/available-date', {
     method: 'POST',
-    body: { venueId, date },
+    body: { venueId, date, price },
     token,
   });
 }

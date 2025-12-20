@@ -4,6 +4,7 @@ interface OpportunityNotificationProps {
   venueName: string;
   venueCity: string;
   date: string;
+  price?: number;
   role: "artista" | "manager";
   onDetails: () => void;
   onInterest: () => void;
@@ -13,6 +14,7 @@ export const OpportunityNotification: React.FC<OpportunityNotificationProps> = (
   venueName,
   venueCity,
   date,
+  price,
   role,
   onDetails,
   onInterest,
@@ -26,6 +28,11 @@ export const OpportunityNotification: React.FC<OpportunityNotificationProps> = (
       <div className="text-gray-700 text-sm">
         El local <b>{venueName}</b> en <b>{venueCity}</b> tiene disponible el <b>{date}</b>.
       </div>
+      {typeof price === 'number' && price > 0 && (
+        <div className="text-green-700 font-semibold text-sm">
+          Oferta: {price.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+        </div>
+      )}
       <div className="flex gap-2 mt-2">
         <button
           className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"

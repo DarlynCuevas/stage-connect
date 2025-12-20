@@ -1,6 +1,9 @@
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import React from "react";
+import { createInterested } from "@/lib/interested";
+import { useContext } from "react";
+import { AuthContext } from "@/contexts/AuthContext";
 
 interface ShowOpportunityNotificationArgs {
   venueName: string;
@@ -11,6 +14,7 @@ interface ShowOpportunityNotificationArgs {
   onInterest: () => Promise<void> | void;
 }
 
+
 export function showOpportunityNotification({
   venueName,
   venueCity,
@@ -18,7 +22,28 @@ export function showOpportunityNotification({
   role,
   onDetails,
   onInterest,
-}: ShowOpportunityNotificationArgs) {
+  venueId,
+  artistId,
+  managerId
+}: ShowOpportunityNotificationArgs & { venueId?: number, artistId?: number, managerId?: number }) {
+  const handleInterest = async () => {
+    try {
+      await createInterested(venueId!, [artistId!], date, undefined, managerId);
+      toast({
+        title: '¡Interés registrado!',
+        description: 'Tu interés ha sido enviado al local. Si eres seleccionado, te contactarán.',
+        duration: 4000,
+      });
+      if (onInterest) onInterest();
+    } catch (err: any) {
+      toast({
+        title: 'Error al registrar interés',
+        description: err?.message || 'No se pudo registrar tu interés.',
+        variant: 'destructive',
+        duration: 4000,
+      });
+    }
+  };
   toast({
     title: '¡Oportunidad de actuación!',
     description: (
@@ -73,7 +98,7 @@ export function showOpportunityNotification({
               cursor: 'pointer',
               transition: 'filter 0.2s',
             }}
-            onClick={onInterest}
+            onClick={handleInterest}
             onMouseOver={e => (e.currentTarget.style.filter = 'brightness(1.08)')}
             onMouseOut={e => (e.currentTarget.style.filter = 'none')}
           >

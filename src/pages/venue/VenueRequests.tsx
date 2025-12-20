@@ -9,6 +9,9 @@ import { RequestDetailModal } from '@/components/booking/RequestDetailModal';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSentRequests } from '@/lib/requests';
+import { useEffect, useCallback } from 'react';
+import { getInterestedByVenue, Interested } from '@/lib/interested';
+import { useQuery } from '@tanstack/react-query';
 import { Clock, Check, Loader2, HelpCircle, X } from 'lucide-react';
 import { useParams, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,10 +34,20 @@ const VenueRequests = () => {
     setSelectedRequest(request);
     setModalOpen(true);
   };
-  const { user: authUser } = useAuth();
+  const { user: authUser, token } = useAuth();
   const { data: requests = [], isLoading } = useSentRequests();
   const [search, setSearch] = useState('');
   const [date, setDate] = useState('');
+  // Usar React Query para interesados
+  const {
+    data: interested = [],
+    isLoading: loadingInterested,
+    refetch: refetchInterested
+  } = useQuery({
+    queryKey: ['interested', authUser?.id],
+    queryFn: () => authUser?.id ? getInterestedByVenue(Number(authUser.id), token) : [],
+    enabled: !!authUser?.id && !!token,
+  });
 
   // Filtrado por nombre de artista y fecha
   const filterRequests = (arr) => arr.filter(r => {
@@ -210,7 +223,45 @@ const VenueRequests = () => {
               <X className="w-4 h-4 text-red-500" />
               Canceladas ({rejectedRequests.length})
             </TabsTrigger>
+            <TabsTrigger value="interested" className="gap-2 bg-blue-100/80 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 data-[state=active]:bg-blue-200/80 data-[state=active]:text-blue-900">
+              <HelpCircle className="w-4 h-4 text-blue-500" />
+              Interesados ({interested.length})
+            </TabsTrigger>
           </TabsList>
+                    <TabsContent value="interested">
+                      {loadingInterested ? (
+                        <div className="flex flex-col items-center justify-center min-h-[30vh]">
+                          <Loader2 className="animate-spin w-10 h-10 text-primary mb-2" />
+                          <p className="text-muted-foreground">Cargando interesados...</p>
+                        </div>
+                      ) : interested.length > 0 ? (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          {interested.map((item) => (
+                            <div key={item.id} className="rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow p-4 flex flex-col gap-2 border border-blue-200 dark:border-blue-900">
+                              <div className="flex items-center gap-3">
+                                <span className="font-semibold text-blue-700 dark:text-blue-300">{item.artist?.name || 'Artista'}</span>
+                                {item.manager && (
+                                  <span className="text-xs text-muted-foreground">(Manager: {item.manager?.name})</span>
+                                )}
+                              </div>
+                              <div className="flex gap-4 text-sm">
+                                <span>Fecha: <b>{item.date}</b></span>
+                                {item.price && <span>Oferta: <b>{item.price}€</b></span>}
+                              </div>
+                              <div className="flex gap-2 items-center">
+                                <Badge variant="outline" className="capitalize">{item.status}</Badge>
+                                <span className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <HelpCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                          <p className="text-lg">No hay interesados por ahora</p>
+                        </div>
+                      )}
+                    </TabsContent>
           <TabsContent value="rejected">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {rejectedRequests.length > 0 ? (

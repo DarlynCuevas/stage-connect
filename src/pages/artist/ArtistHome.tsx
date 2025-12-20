@@ -162,11 +162,15 @@ export default function ArtistHome() {
 
     // Listener genérico para artistas y managers: notificación de día disponible
     socket.on('notification.available-date', (payload: any) => {
-      const { venueName, venueCity, date } = payload;
+      const { venueName, venueCity, date, price } = payload;
       const fecha = date ? new Date(date).toLocaleDateString('es-ES') : '';
+      let desc = `El local ${venueName || 'desconocido'}${venueCity ? ' (' + venueCity + ')' : ''} tiene disponible el día ${fecha} para nuevas actuaciones.`;
+      if (price) {
+        desc += `\nOferta: ${Number(price).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}`;
+      }
       toast({
         title: 'Oportunidad de actuación',
-        description: `El local ${venueName || 'desconocido'}${venueCity ? ' (' + venueCity + ')' : ''} tiene disponible el día ${fecha} para nuevas actuaciones.`,
+        description: desc,
         duration: 5000,
       });
       // Aquí puedes agregar lógica extra, como refrescar la lista de fechas o artistas

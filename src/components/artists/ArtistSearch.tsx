@@ -53,10 +53,7 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
   const token = auth?.token;
   // Ya no necesitamos venue para el botón premium
   const isFeatured = user?.role === 'Local' && user?.featured;
-  console.log(' usuario role ', user?.role);
-   console.log(' usuario user ', user);
-  
-  
+
   const venueId = user?.id; // Si necesitas el id del local para notificar
   const goldButtonClass =
     'relative bg-gradient-to-br from-yellow-300 via-yellow-500 to-yellow-700 border-2 border-yellow-400 shadow-gold text-yellow-950 font-semibold hover:from-yellow-400 hover:to-yellow-800 active:scale-[0.98]';
