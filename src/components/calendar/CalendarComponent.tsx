@@ -41,6 +41,10 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
     onSelect?.(safeDate);
   };
 
+  // Deshabilitar días anteriores a hoy
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   return (
     <Calendar
       mode="single"
@@ -50,6 +54,7 @@ export const CalendarComponent: React.FC<CalendarComponentProps> = ({
       className="rounded-lg border border-border p-3"
       modifiers={modifiers || defaultModifiers}
       modifiersStyles={modifiersStyles}
+      disabled={{ before: today }}
     />
   );
 };
