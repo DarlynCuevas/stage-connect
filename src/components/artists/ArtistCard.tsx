@@ -55,7 +55,13 @@ export function ArtistCard({ artist, showPrice = false, onFavoriteChange }: Arti
                 <CheckCircle2 className="h-5 w-5 text-green-500 drop-shadow" />
               </span>
             )}
-            {artist.gallery && artist.gallery.length > 0 ? (
+            {artist.avatar ? (
+              <img
+                src={artist.avatar}
+                alt={artist.nickName || artist.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : artist.gallery && artist.gallery.length > 0 ? (
               <img
                 src={artist.gallery[0]}
                 alt={artist.nickName || artist.name}

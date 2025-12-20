@@ -12,6 +12,7 @@ interface ManagerCardProps {
   onFavoriteChange?: (managerId: string, favorite: boolean) => void;
 }
 
+
 export function ManagerCard({ manager, onViewProfile, onFavoriteChange }: ManagerCardProps) {
     const location = [manager.city, manager.country].filter(Boolean).join(', ');
     const { user, token } = useAuth();

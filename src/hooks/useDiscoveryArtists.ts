@@ -29,6 +29,7 @@ export interface DiscoveryArtistFilters {
   query?: string;
   page?: number;
   pageSize?: number;
+  country?: string;
 }
 
 
@@ -48,6 +49,7 @@ export function useDiscoveryArtists() {
       setLoading(true);
       try {
         const params = new URLSearchParams();
+        if (filters.country && filters.country !== 'all') params.append('country', filters.country);
         if (filters.city !== 'all') params.append('city', filters.city);
         if (filters.genre && filters.genre.length > 0) {
           filters.genre.forEach((g) => params.append('genre', g));

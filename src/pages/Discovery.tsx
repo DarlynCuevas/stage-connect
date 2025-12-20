@@ -56,16 +56,6 @@ export default function Discovery({
   const venueId = user && user.role && String(user.role).toLowerCase().includes('venue') ? user.id : undefined;
   return (
     <div className="w-full max-w-[1800px] mx-auto px-4 py-6">
-      <div className="flex flex-col items-center justify-center mb-4 text-center">
-        <h1 className="text-3xl font-display font-bold mb-1">
-          {sectionTitle}
-        </h1>
-        <p className="text-muted-foreground mb-2">
-          {cardType === 'artist'
-            ? 'Descubre y contacta artistas disponibles'
-            : 'Descubre salas y eventos donde mostrar tu talento'}
-        </p>
-      </div>
       {onSearchBar}
       <div className="flex justify-center my-4">
         <Badge variant="secondary" className="text-sm">
@@ -81,39 +71,7 @@ export default function Discovery({
         </div>
       ) : (
         <>
-          {/* Verificados */}
-          {verified.length > 0 && (
-            <div className="mb-6 relative">
-              <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                {cardType === 'artist' ? 'Artistas verificados' : 'Salas verificadas'}
-              </h2>
-              <div className="relative">
-                <Carousel>
-                  <div className="flex flex-col">
-                    <div className="flex justify-center items-center gap-1 mb-3">
-                      <CarouselPrevious />
-                      <CarouselNext />
-                    </div>
-                    <CarouselContent className="xl:!grid xl:!grid-cols-5 xl:!gap-6">
-                      {verified.map((item) => (
-                        <CarouselItem key={item.id} className="basis-72 max-w-xs">
-                          {cardType === 'artist' ? (
-                            <ArtistCard artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
-                          ) : cardType === 'manager' ? (
-                            <ManagerCard manager={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
-                          ) : cardType === 'promoter' ? (
-                            <PromotorCard promoter={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
-                          ) : (
-                            <VenueCard venue={mapToCard(item)} onFavoriteChange={onFavoriteChange} />
-                          )}
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                  </div>
-                </Carousel>
-              </div>
-            </div>
-          )}
+      
           {/* Renderizado personalizado de la grilla si existe renderGrid */}
           {renderGrid ? (
             renderGrid(
@@ -122,7 +80,7 @@ export default function Discovery({
                 {others.length > 0 && (
                   <div className="mb-6">
                     <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                      {cardType === 'artist' ? 'Artistas' : 'Salas'}
+                      {cardType === 'artist' ? 'Artistas' : 'Managers'}
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                       {others.map((item) => (
