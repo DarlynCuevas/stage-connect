@@ -5,6 +5,7 @@ import { createInterested } from "@/lib/interested";
 import { useContext } from "react";
 import { AuthContext } from "@/contexts/AuthContext";
 
+
 interface ShowOpportunityNotificationArgs {
   venueName: string;
   venueCity: string;
@@ -12,6 +13,7 @@ interface ShowOpportunityNotificationArgs {
   role: "artista" | "manager";
   onDetails: () => void;
   onInterest: () => Promise<void> | void;
+  price?: number;
 }
 
 
@@ -24,11 +26,12 @@ export function showOpportunityNotification({
   onInterest,
   venueId,
   artistId,
-  managerId
-}: ShowOpportunityNotificationArgs & { venueId?: number, artistId?: number, managerId?: number }) {
+  managerId,
+  price
+}: ShowOpportunityNotificationArgs & { venueId?: number, artistId?: number, managerId?: number, price?: number }) {
   const handleInterest = async () => {
     try {
-      await createInterested(venueId!, [artistId!], date, undefined, managerId);
+      await createInterested(venueId!, [artistId!], date, price, managerId);
       toast({
         title: '¡Interés registrado!',
         description: 'Tu interés ha sido enviado al local. Si eres seleccionado, te contactarán.',
@@ -63,6 +66,11 @@ export function showOpportunityNotification({
         <span style={{ fontWeight: 500 }}>
           El local <span style={{ color: 'hsl(var(--primary))', fontWeight: 700 }}>{venueName}</span> en <span style={{ color: 'hsl(var(--accent))', fontWeight: 700 }}>{venueCity}</span> tiene disponible el <span style={{ color: 'hsl(var(--success))', fontWeight: 700 }}>{date}</span>.
         </span>
+        {typeof price === 'number' && (
+          <span style={{ fontWeight: 600, color: 'hsl(var(--primary))', fontSize: '1.1em' }}>
+            Oferta: €{price.toLocaleString()}
+          </span>
+        )}
         <div style={{ display: 'flex', gap: '0.75rem', marginTop: 4 }}>
           <button
             style={{

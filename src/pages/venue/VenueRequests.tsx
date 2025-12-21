@@ -16,11 +16,13 @@ import { useQuery } from '@tanstack/react-query';
 import { Clock, Check, Loader2, HelpCircle, X } from 'lucide-react';
 import { useParams, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import ModalSolicitudContratacion from '@/components/calendar/ModalSolicitudContratacion';
 
 
 const VenueRequests = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [selectedInterested, setSelectedInterested] = useState<Interested | null>(null); // Nuevo estado
 
 
 
@@ -31,24 +33,36 @@ const VenueRequests = () => {
     alert('Funcionalidad de editar: aquí se abriría un modal para editar la solicitud.');
   };
 
-  // Contratar interesado: crea solicitud de booking
+  // Contratar interesado: ahora abre el modal en vez de enviar directamente
+  const handleHireInterested = (interested: Interested) => {
+    setSelectedInterested(interested);
+    setModalOpen(true);
+  };
+
+  // Enviar solicitud desde el modal
   const { mutate: createBookingRequest } = useCreateBookingRequest();
-  const handleHireInterested = async (interested: Interested) => {
-    if (!interested || !interested.artist || !authUser) return;
-    // Tomar datos actualizados del perfil del venue
-    const venueProfile = authUser;
+  const handleSubmitContratacion = (data: {
+    fecha: Date;
+    oferta: number;
+    tipoEvento: string;
+    ubicacion: string;
+    nombreLocal: string;
+    ciudadLocal: string;
+    mensaje?: string;
+  }) => {
+    if (!selectedInterested || !selectedInterested.artist || !authUser) return;
     createBookingRequest({
-      artistId: interested.artist.id,
-      eventDate: interested.date,
-      eventLocation: venueProfile.address || venueProfile.name || '',
-      eventType: 'Contratación',
-      offeredPrice: interested.price || 0,
-      nombreLocal: venueProfile.name || '',
-      ciudadLocal: venueProfile.city || '',
-      message: `Solicitud generada desde interesado (ID: ${interested.id})`
+      artistId: selectedInterested.artist.id,
+      eventDate: data.fecha.toISOString(),
+      eventLocation: data.ubicacion,
+      eventType: data.tipoEvento,
+      offeredPrice: data.oferta,
+      nombreLocal: data.nombreLocal,
+      ciudadLocal: data.ciudadLocal,
+      message: data.mensaje || '',
     });
-    // Opcional: actualizar estado a 'accepted' si lo requiere el flujo
-    // await updateInterestedStatus(interested.id, 'accepted');
+    setModalOpen(false);
+    setSelectedInterested(null);
     refetchInterested();
   };
 
@@ -465,6 +479,18 @@ const VenueRequests = () => {
         onCancel={selectedRequest ? () => handleCancel(selectedRequest.id) : undefined}
         onEdit={selectedRequest ? () => handleEdit(selectedRequest) : undefined}
         onResend={selectedRequest ? () => handleResend(selectedRequest) : undefined}
+      />
+      <ModalSolicitudContratacion
+        open={modalOpen}
+        onClose={() => { setModalOpen(false); setSelectedInterested(null); }}
+        fecha={selectedInterested ? (selectedInterested.date ? new Date(selectedInterested.date) : null) : null}
+        cacheBase={selectedInterested?.artist?.basePrice || 0}
+        allowNegotiation={false}
+        nombreLocalDefault={authUser?.name || ''}
+        ciudadLocalDefault={authUser?.city || ''}
+        ubicacionDefault={authUser?.address || ''}
+        fixedPrice={selectedInterested?.price}
+        onSubmit={handleSubmitContratacion}
       />
     </HeaderLayout>
   );

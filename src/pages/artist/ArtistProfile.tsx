@@ -827,11 +827,11 @@ export default function ArtistProfile() {
                   </>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <p className="text-2xl font-bold text-primary">
+                    <p className="text-base font-normal text-muted-foreground">
                       €{(currentArtist?.basePrice ?? 0).toLocaleString()}
                     </p>
                     {currentArtist?.allowNegotiation && (
-                      <span className="ml-2 px-2 py-1 rounded bg-primary/10 text-primary text-xs font-medium">Negociable</span>
+                      <span className="ml-2 px-2 py-1 rounded bg-muted text-muted-foreground text-xs font-normal">Negociable</span>
                     )}
                   </div>
                 )}
@@ -1075,17 +1075,35 @@ export default function ArtistProfile() {
           </div>
         )}
 
-        <ModalSolicitudContratacion
-          open={modalOpen && canSendRequest}
-          onClose={() => setModalOpen(false)}
-          fecha={fechaSeleccionada}
-          cacheBase={cacheBase}
-          allowNegotiation={!!currentArtist?.allowNegotiation}
-          nombreLocalDefault={authUser?.name || ''}
-          ciudadLocalDefault={authUser?.city || ''}
-          ubicacionDefault={authUser?.address || ''}
-          onSubmit={handleEnviarSolicitud}
-        />
+        {/*
+          Lógica para determinar si el precio debe ser cerrado (no editable):
+          - Si el usuario autenticado es 'Local' y el flujo es de interesados (por ejemplo, el local acepta a un artista interesado),
+            entonces el precio debe ser el fijado por el local y no editable.
+          - Aquí, como ejemplo, se asume que si el usuario es 'Local' y no se permite negociación, el precio es cerrado.
+          - Puedes ajustar la lógica según el flujo real de tu app.
+        */}
+        {(() => {
+          let precioCerrado: number | undefined = undefined;
+          // Ejemplo de lógica: si el usuario es Local y la negociación NO está permitida, el precio es cerrado
+          if (authUser?.role === 'Local' && !currentArtist?.allowNegotiation) {
+            // El precio cerrado puede venir de un campo específico, aquí usamos el caché base
+            precioCerrado = cacheBase;
+          }
+          return (
+            <ModalSolicitudContratacion
+              open={modalOpen && canSendRequest}
+              onClose={() => setModalOpen(false)}
+              fecha={fechaSeleccionada}
+              cacheBase={cacheBase}
+              allowNegotiation={!!currentArtist?.allowNegotiation}
+              nombreLocalDefault={authUser?.name || ''}
+              ciudadLocalDefault={authUser?.city || ''}
+              ubicacionDefault={authUser?.address || ''}
+              fixedPrice={typeof precioCerrado === 'number' ? precioCerrado : undefined}
+              onSubmit={handleEnviarSolicitud}
+            />
+          );
+        })()}
       </div>
 
       {/* Sección de Reseñas */}

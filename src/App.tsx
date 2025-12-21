@@ -210,7 +210,7 @@ function RealtimeToasts() {
 
     // Notificación global de oportunidad de actuación
     socket.on('notification.available-date', (payload: any) => {
-      const { venueName, venueCity, date } = payload;
+      const { venueName, venueCity, date, price } = payload;
       const fecha = date ? new Date(date).toLocaleDateString('es-ES') : '';
       // Determinar rol para la notificación (artista o manager)
       const role = user?.role === 'Manager' ? 'manager' : 'artista';
@@ -221,6 +221,7 @@ function RealtimeToasts() {
           venueCity: venueCity || '',
           date: fecha,
           role,
+          price: typeof price === 'number' ? price : undefined,
           onDetails: () => {
             // Redirigir a la página de detalles del local
             if (user?.role === 'Manager') {

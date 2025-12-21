@@ -13,6 +13,7 @@ interface ModalSolicitudContratacionProps {
   nombreLocalDefault?: string;
   ciudadLocalDefault?: string;
   ubicacionDefault?: string;
+  fixedPrice?: number; // Si se pasa, el precio es cerrado y no editable
   onSubmit: (data: {
     fecha: Date;
     oferta: number;
@@ -25,7 +26,7 @@ interface ModalSolicitudContratacionProps {
 }
 
 
-export default function ModalSolicitudContratacion({ open, onClose, fecha, cacheBase, allowNegotiation = true, nombreLocalDefault = '', ciudadLocalDefault = '', ubicacionDefault = '', onSubmit }: ModalSolicitudContratacionProps) {
+export default function ModalSolicitudContratacion({ open, onClose, fecha, cacheBase, allowNegotiation = true, nombreLocalDefault = '', ciudadLocalDefault = '', ubicacionDefault = '', fixedPrice, onSubmit }: ModalSolicitudContratacionProps) {
   // Log para confirmar que la prop llega correctamente
   React.useEffect(() => {
     console.log('[ModalSolicitudContratacion] ubicacionDefault prop:', ubicacionDefault);
@@ -58,14 +59,18 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
       setNombreLocal(nombreLocalDefault || '');
       setCiudadLocal(ciudadLocalDefault || '');
       setUbicacion(ubicacionDefault || '');
-      setOferta('');
+      if (fixedPrice !== undefined && fixedPrice !== null) {
+        setOferta(String(fixedPrice));
+      } else {
+        setOferta('');
+      }
       setTipoEvento('');
       setMensaje('');
       setFechaEditable(fecha ? fecha.toISOString().slice(0, 10) : '');
       // Log para confirmar que el estado se inicializa correctamente
       console.log('[ModalSolicitudContratacion] setUbicacion inicial:', ubicacionDefault || '');
     }
-  }, [open, nombreLocalDefault, ciudadLocalDefault, ubicacionDefault, fecha]);
+  }, [open, nombreLocalDefault, ciudadLocalDefault, ubicacionDefault, fecha, fixedPrice]);
 
   React.useEffect(() => {
     setFechaEditable(fecha ? fecha.toISOString().slice(0, 10) : '');
@@ -100,26 +105,37 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
               <label className="block text-xs font-medium text-gray-600 mb-1">Fecha seleccionada</label>
               <Input type="date" value={fechaEditable} onChange={e => setFechaEditable(e.target.value)} required className="rounded-lg border-gray-200" />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Caché base del artista</label>
-              <Input value={`${Number(cacheBase).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €`} readOnly tabIndex={-1} className="rounded-lg border-gray-200 bg-gray-50 text-gray-700" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Oferta (€)</label>
-              <Input
-                type="number"
-                value={oferta}
-                onChange={e => setOferta(e.target.value)}
-                min={0}
-                required={!!allowNegotiation}
-                disabled={!allowNegotiation}
-                className="rounded-lg border-gray-200 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                style={{ MozAppearance: 'textfield' }}
-              />
-              {!allowNegotiation && (
-                <p className="text-xs text-gray-400 mt-1">Este artista no permite negociar el caché base. El precio es fijo.</p>
-              )}
-            </div>
+            {fixedPrice === undefined || fixedPrice === null ? (
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Caché base del artista</label>
+                <Input value={`${Number(cacheBase).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €`} readOnly tabIndex={-1} className="rounded-lg border-gray-200 bg-gray-50 text-gray-700" />
+              </div>
+            ) : null}
+            {fixedPrice !== undefined && fixedPrice !== null ? (
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Precio cerrado</label>
+                <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-1 text-base font-normal text-muted-foreground">
+                  {Number(fixedPrice).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Este es el precio cerrado acordado por el local. No es editable.</p>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Oferta (€)</label>
+                <Input
+                  type="number"
+                  value={oferta}
+                  onChange={e => setOferta(e.target.value)}
+                  min={0}
+                  required={!!allowNegotiation}
+                  className="rounded-lg border-gray-200 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-gray-50 text-gray-700"
+                  style={{ MozAppearance: 'textfield' }}
+                />
+                {!allowNegotiation && (
+                  <p className="text-xs text-gray-400 mt-1">Este artista no permite negociar el caché base. El precio es fijo.</p>
+                )}
+              </div>
+            )}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de evento</label>
               <Select
