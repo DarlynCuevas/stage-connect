@@ -14,6 +14,7 @@ interface ModalSolicitudContratacionProps {
   ciudadLocalDefault?: string;
   ubicacionDefault?: string;
   fixedPrice?: number; // Si se pasa, el precio es cerrado y no editable
+  artistId?: number;
   onSubmit: (data: {
     fecha: Date;
     oferta: number;
@@ -22,11 +23,12 @@ interface ModalSolicitudContratacionProps {
     nombreLocal: string;
     ciudadLocal: string;
     mensaje?: string;
+    artistId?: number;
   }) => void;
 }
 
 
-export default function ModalSolicitudContratacion({ open, onClose, fecha, cacheBase, allowNegotiation = true, nombreLocalDefault = '', ciudadLocalDefault = '', ubicacionDefault = '', fixedPrice, onSubmit }: ModalSolicitudContratacionProps) {
+export default function ModalSolicitudContratacion({ open, onClose, fecha, cacheBase, allowNegotiation = true, nombreLocalDefault = '', ciudadLocalDefault = '', ubicacionDefault = '', fixedPrice, artistId, onSubmit }: ModalSolicitudContratacionProps) {
   // Log para confirmar que la prop llega correctamente
   React.useEffect(() => {
     console.log('[ModalSolicitudContratacion] ubicacionDefault prop:', ubicacionDefault);
@@ -80,7 +82,7 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
     e.preventDefault();
     const tipoFinal = isOtro ? tipoEventoOtro : tipoEvento;
     if (!fechaEditable || !tipoFinal || !ubicacion) return;
-    onSubmit({
+    const payload = {
       fecha: new Date(fechaEditable),
       oferta: Number(oferta),
       tipoEvento: tipoFinal,
@@ -88,7 +90,9 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
       nombreLocal,
       ciudadLocal,
       mensaje,
-    });
+      artistId,
+    };
+    onSubmit(payload);
     onClose();
   };
 

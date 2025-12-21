@@ -50,9 +50,10 @@ const VenueRequests = () => {
     ciudadLocal: string;
     mensaje?: string;
   }) => {
-    if (!selectedInterested || !selectedInterested.artist || !authUser) return;
+    if (!selectedInterested || !authUser) return;
+    const artistId = selectedInterested.artist?.user_id ?? selectedInterested.artistId ?? selectedInterested.id;
     createBookingRequest({
-      artistId: selectedInterested.artist.id,
+      artistId: selectedInterested.artist?.user_id,
       eventDate: data.fecha.toISOString(),
       eventLocation: data.ubicacion,
       eventType: data.tipoEvento,

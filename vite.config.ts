@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => ({
   // GitHub Project Pages base path
   base: '/stage-connect/',
   server: {
-    host: "::",
+    host: true,
     port: 8080,
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),

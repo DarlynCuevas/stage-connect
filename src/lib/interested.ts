@@ -1,4 +1,6 @@
 import apiFetch from './api';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface Interested {
   id: number;
@@ -9,6 +11,7 @@ export interface Interested {
   price: number | null;
   status: 'pending' | 'accepted' | 'rejected' | 'withdrawn';
   createdAt: string;
+  artistId: number;
 }
 
 export async function createInterested(
@@ -38,4 +41,13 @@ export async function updateInterestedStatus(id: number, status: Interested['sta
 export async function deleteInterested(id: number) {
   return apiFetch(`/interested/${id}`, {
     method: 'DELETE' });
+}
+
+export function useInterestedByArtist(artistId?: number) {
+  const { token } = useAuth();
+  return useQuery({
+    queryKey: ['interested-artist', artistId],
+    queryFn: () => artistId ? apiFetch<Interested[]>(`/interested/artist/${artistId}`, { token }) : [],
+    enabled: !!artistId,
+  });
 }

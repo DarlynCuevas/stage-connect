@@ -30,18 +30,20 @@ export function useCreateBookingRequest() {
       nombreLocal?: string;
       ciudadLocal?: string;
     }) => {
+      const payload = {
+        artistId: data.artistId,
+        eventDate: data.eventDate,
+        eventLocation: data.eventLocation,
+        eventType: data.eventType,
+        offeredPrice: data.offeredPrice,
+        message: data.message,
+        nombreLocal: data.nombreLocal,
+        ciudadLocal: data.ciudadLocal,
+      };
+      // log eliminado
       return apiFetch('/requests', {
         method: 'POST',
-        body: {
-          artistId: data.artistId,
-          eventDate: data.eventDate,
-          eventLocation: data.eventLocation,
-          eventType: data.eventType,
-          offeredPrice: data.offeredPrice,
-          message: data.message,
-          nombreLocal: data.nombreLocal,
-          ciudadLocal: data.ciudadLocal,
-        },
+        body: payload,
         token,
       });
     },

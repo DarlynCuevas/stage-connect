@@ -8,6 +8,7 @@ import { mockArtists } from '@/data/mockData';
 import { BookingRequest } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useArtistRequests, useSentRequests, useUpdateRequestStatus } from '@/lib/requests';
+import { useInterestedByArtist } from '@/lib/interested';
 import { useReceivedManagerRequests, useUpdateManagerRequestStatus } from '@/lib/manager-requests';
 import { MessageSquare, Clock, Check, X, User } from 'lucide-react';
 import { useParams } from 'react-router-dom';
@@ -26,6 +27,8 @@ export default function ArtistRequests() {
   const { toast } = useToast();
   const updateStatusMutation = useUpdateRequestStatus();
   const updateManagerRequestStatus = useUpdateManagerRequestStatus();
+  const interestedQuery = useInterestedByArtist(authUser?.id);
+  const interestedList = interestedQuery.data || [];
 
   const handleAccept = useCallback(async (requestId: string) => {
     try {
@@ -94,15 +97,19 @@ export default function ArtistRequests() {
           </p>
         </div>
 
-        <Tabs defaultValue="received" className="w-full">
+        <Tabs defaultValue="pending" className="w-full">
           <TabsList className="mb-6">
-            <TabsTrigger value="received" className="gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Recibidas ({receivedRequests.length})
-            </TabsTrigger>
             <TabsTrigger value="pending" className="gap-2">
               <Clock className="w-4 h-4" />
               Pendientes ({pendingRequests.length})
+            </TabsTrigger>
+            <TabsTrigger value="interest" className="gap-2">
+              <User className="w-4 h-4 text-primary" />
+              Ofertas de interés (0)
+            </TabsTrigger>
+            <TabsTrigger value="received" className="gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Recibidas ({receivedRequests.length})
             </TabsTrigger>
             <TabsTrigger value="sent" className="gap-2">
               <X className="w-4 h-4" />
@@ -113,6 +120,15 @@ export default function ArtistRequests() {
               Completadas ({completedRequests.length})
             </TabsTrigger>
           </TabsList>
+          <TabsContent value="interest">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Aquí se mostrarán las ofertas de interés. Reemplaza el array por el hook real cuando esté disponible. */}
+              <div className="col-span-2 text-center py-12 text-muted-foreground">
+                <User className="w-16 h-16 mx-auto mb-4 opacity-50 text-primary" />
+                <p className="text-lg">No tienes ofertas de interés por ahora</p>
+              </div>
+            </div>
+          </TabsContent>
 
           <TabsContent value="received">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -200,6 +216,45 @@ export default function ArtistRequests() {
         </Tabs>
 
      
+      {/* Sección de Ofertas de interés */}
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          <User className="w-6 h-6 text-primary" />
+          Ofertas de interés
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+          {interestedQuery.isLoading ? (
+            <div className="col-span-2 text-center py-12 text-muted-foreground">
+              <User className="w-16 h-16 mx-auto mb-4 opacity-50 text-primary" />
+              <p className="text-lg">Cargando ofertas de interés...</p>
+            </div>
+          ) : interestedList.length > 0 ? (
+            interestedList.map((item) => (
+              <div key={item.id} className="rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow-sm p-6 flex flex-col gap-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <User className="w-5 h-5 text-primary" />
+                  <span className="font-semibold">{item.venue?.name || 'Local'}</span>
+                  <span className="text-xs text-muted-foreground ml-2">{item.date}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">Caché ofertado:</span>
+                  <span className="font-bold text-primary">{item.price ? `€${item.price}` : 'Sin caché'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">Estado:</span>
+                  <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">{item.status}</span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-2 text-center py-12 text-muted-foreground">
+              <User className="w-16 h-16 mx-auto mb-4 opacity-50 text-primary" />
+              <p className="text-lg">No tienes ofertas de interés por ahora</p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Sección de Solicitudes de Representación */}
       <div className="mt-12">
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">

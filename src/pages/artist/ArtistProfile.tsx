@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateProfile, useArtist, useUser } from '@/lib/users';
+import { getArtistIdFromContext } from '@/lib/getArtistIdFromContext';
 import { useConfirmedRequests } from '@/lib/requests';
 import { useRemoveManagerRelation, useReceivedManagerRequests, useCreateManagerRequest } from '@/lib/manager-requests';
 import { useCreateBookingRequest } from '@/lib/requests';
@@ -64,12 +65,14 @@ export default function ArtistProfile() {
       mainContext = 'venue';
     }
   }
-  // Extraer artistId de params o de la URL si no existe
-  let artistId = params.artistId;
-  if (!artistId && path) {
-    const match = path.match(/artist\/(\d+)/);
-    if (match) artistId = match[1];
-  }
+  // Usar función utilitaria para obtener el id del artista
+  const artistId = getArtistIdFromContext({
+    artistId: undefined, // Si se recibe como prop, aquí
+    params,
+    path,
+    profile: undefined, // Si se recibe como prop, aquí
+    notification: undefined, // Si se recibe como prop, aquí
+  });
 
 
   function renderEditButton() {
@@ -101,7 +104,7 @@ export default function ArtistProfile() {
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
   const { data: freshArtist } = useArtist(artistId);
-  const { data: confirmedRequests = [] } = useConfirmedRequests(Number(artistId));
+  const { data: confirmedRequests = [] } = useConfirmedRequests(artistId);
   const createBookingRequestMutation = useCreateBookingRequest();
   const createManagerRequestMutation = useCreateManagerRequest();
   const removeManagerRelationMutation = useRemoveManagerRelation();
@@ -229,10 +232,12 @@ export default function ArtistProfile() {
     setModalOpen(true);
   }, [canSendRequest, setFechaSeleccionada, setModalOpen]);
 
-  function handleEnviarSolicitud(data: { fecha: Date; oferta: number; tipoEvento: string; ubicacion: string; nombreLocal?: string; ciudadLocal?: string; mensaje?: string }) {
-    if (!artistId) return;
+  function handleEnviarSolicitud(data: { fecha: Date; oferta: number; tipoEvento: string; ubicacion: string; nombreLocal?: string; ciudadLocal?: string; mensaje?: string; artistId?: number }) {
+    const idToSend = data.artistId ?? artistId;
+    console.log('[ENVIAR SOLICITUD] artistId:', idToSend);
+    if (!idToSend) return;
     createBookingRequestMutation.mutate({
-      artistId: Number(artistId),
+      artistId: Number(idToSend),
       eventDate: data.fecha.toISOString(),
       eventLocation: data.ubicacion,
       eventType: data.tipoEvento,
@@ -1089,6 +1094,7 @@ export default function ArtistProfile() {
             // El precio cerrado puede venir de un campo específico, aquí usamos el caché base
             precioCerrado = cacheBase;
           }
+          // El id correcto debe venir de currentArtist.id, que está normalizado y siempre presente
           return (
             <ModalSolicitudContratacion
               open={modalOpen && canSendRequest}
@@ -1100,6 +1106,7 @@ export default function ArtistProfile() {
               ciudadLocalDefault={authUser?.city || ''}
               ubicacionDefault={authUser?.address || ''}
               fixedPrice={typeof precioCerrado === 'number' ? precioCerrado : undefined}
+              artistId={currentArtist?.id}
               onSubmit={handleEnviarSolicitud}
             />
           );
