@@ -27,6 +27,8 @@ import {
   MapPinned
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { countries, cities } from '@/data/mockData';
 import { CalendarComponent } from '@/components/calendar/CalendarComponent';
 import { VenueCalendarComponent } from '@/components/calendar/VenueCalendarComponent';
 
@@ -261,24 +263,10 @@ export default function VenueProfile() {
                 </div>
                 <div className="flex items-center gap-1 text-muted-foreground mt-2">
                   <MapPin className="w-4 h-4" />
-                  {isEditing ? (
-                    <div className="flex gap-2">
-                      <Input
-                        value={editData?.city || ''}
-                        onChange={(e) => setEditData({ ...editData, city: e.target.value })}
-                        placeholder="Ciudad"
-                        className="h-6 text-sm"
-                      />
-                      <Input
-                        value={editData?.country || ''}
-                        onChange={(e) => setEditData({ ...editData, country: e.target.value })}
-                        placeholder="País"
-                        className="h-6 text-sm"
-                      />
-                    </div>
-                  ) : (
-                    <span>{(venue as any)?.city || 'Ciudad'}, {(venue as any)?.country || 'País'}</span>
-                  )}
+                  <span>{isEditing
+                    ? ((editData as any)?.city || 'Ciudad') + ', ' + ((editData as any)?.country || 'País')
+                    : ((venue as any)?.city || 'Ciudad') + ', ' + ((venue as any)?.country || 'País')
+                  }</span>
                 </div>
               </div>
             </div>
@@ -558,32 +546,49 @@ export default function VenueProfile() {
                 )}
               </div>
               <div>
-                <Label htmlFor="city">Ciudad</Label>
+                <Label htmlFor="country">País</Label>
                 {isEditing ? (
-                  <Input
-                    id="city"
-                    value={(editData as any)?.city || ''}
-                    onChange={(e) => setEditData({ ...editData, city: e.target.value } as any)}
-                    placeholder="Ciudad"
-                  />
+                  <Select
+                    value={(editData as any)?.country || ''}
+                    onValueChange={value => {
+                      setEditData({ ...editData, country: value, city: '' } as any);
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecciona un país" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map(country => (
+                        <SelectItem key={country} value={country}>{country}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : (
                   <p className="text-sm text-muted-foreground mt-1">
-                    {(venue as any)?.city || 'No especificado'}
+                    {(venue as any)?.country || 'No especificado'}
                   </p>
                 )}
               </div>
               <div>
-                <Label htmlFor="country">País</Label>
+                <Label htmlFor="city">Ciudad</Label>
                 {isEditing ? (
-                  <Input
-                    id="country"
-                    value={(editData as any)?.country || ''}
-                    onChange={(e) => setEditData({ ...editData, country: e.target.value } as any)}
-                    placeholder="País"
-                  />
+                  <Select
+                    value={(editData as any)?.city || ''}
+                    onValueChange={value => setEditData({ ...editData, city: value } as any)}
+                    disabled={!editData?.country}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecciona una ciudad" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(cities[(editData as any)?.country] || []).map(city => (
+                        <SelectItem key={city} value={city}>{city}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : (
                   <p className="text-sm text-muted-foreground mt-1">
-                    {(venue as any)?.country || 'No especificado'}
+                    {(venue as any)?.city || 'No especificado'}
                   </p>
                 )}
               </div>

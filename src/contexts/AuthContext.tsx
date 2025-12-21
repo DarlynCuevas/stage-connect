@@ -37,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     genre: u?.genre,
     country: u?.country,
     city: u?.city,
+    address: u?.address ?? '',
     basePrice: u?.basePrice ?? u?.base_price,
     banner: u?.banner,
     rating: u?.rating,

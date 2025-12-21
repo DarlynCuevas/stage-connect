@@ -196,8 +196,6 @@ export default function ArtistProfile() {
         token
       });
 
-      // LOG: Ver los datos que devuelve el backend
-      console.log('Respuesta backend al actualizar perfil:', updatedUser);
 
       // Actualizar el usuario en AuthContext
       if (updatedUser?.user) {
@@ -803,19 +801,39 @@ export default function ArtistProfile() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-3 rounded-lg bg-secondary/50">
-                <p className="text-sm text-muted-foreground mb-1">Caché base</p>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm text-muted-foreground">Caché base</p>
+                </div>
                 {isEditing ? (
-                  <Input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={editData?.basePrice ?? 0}
-                    onChange={(e) => setEditData({ ...editData, basePrice: e.target.value ? Number(e.target.value) : 0 })}
-                  />
+                  <>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={editData?.basePrice ?? ''}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setEditData({ ...editData, basePrice: val ? Number(val) : '' });
+                      }}
+                    />
+                    <div className="flex items-center gap-2 mt-2">
+                      <Switch
+                        id="allowNegotiation"
+                        checked={!!editData?.allowNegotiation}
+                        onCheckedChange={(checked) => setEditData({ ...editData, allowNegotiation: checked })}
+                      />
+                      <Label htmlFor="allowNegotiation" className="text-xs text-muted-foreground">Permitir negociación</Label>
+                    </div>
+                  </>
                 ) : (
-                  <p className="text-2xl font-bold text-primary">
-                    €{(currentArtist?.basePrice ?? 0).toLocaleString()}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-2xl font-bold text-primary">
+                      €{(currentArtist?.basePrice ?? 0).toLocaleString()}
+                    </p>
+                    {currentArtist?.allowNegotiation && (
+                      <span className="ml-2 px-2 py-1 rounded bg-primary/10 text-primary text-xs font-medium">Negociable</span>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -829,12 +847,6 @@ export default function ArtistProfile() {
                 </div>
               ))}
 
-              {isEditing && (
-                <Button variant="outline" className="w-full">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Añadir variante
-                </Button>
-              )}
             </CardContent>
           </Card>
           {/* Manager Section */}
@@ -1063,7 +1075,17 @@ export default function ArtistProfile() {
           </div>
         )}
 
-        <ModalSolicitudContratacion open={modalOpen && canSendRequest} onClose={() => setModalOpen(false)} fecha={fechaSeleccionada} cacheBase={cacheBase} onSubmit={handleEnviarSolicitud} />
+        <ModalSolicitudContratacion
+          open={modalOpen && canSendRequest}
+          onClose={() => setModalOpen(false)}
+          fecha={fechaSeleccionada}
+          cacheBase={cacheBase}
+          allowNegotiation={!!currentArtist?.allowNegotiation}
+          nombreLocalDefault={authUser?.name || ''}
+          ciudadLocalDefault={authUser?.city || ''}
+          ubicacionDefault={authUser?.address || ''}
+          onSubmit={handleEnviarSolicitud}
+        />
       </div>
 
       {/* Sección de Reseñas */}
@@ -1088,6 +1110,7 @@ import { Star as StarIcon } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ArtistCalendarComponent from '@/components/calendar/ArtistCalendarComponent';
+import { Switch } from '@/components/ui/switch';
 
 function ReviewsList({ artistId }: { artistId: number }) {
   const [reviews, setReviews] = useState<Review[]>([]);

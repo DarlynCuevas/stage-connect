@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,10 @@ interface ModalSolicitudContratacionProps {
   onClose: () => void;
   fecha: Date | null;
   cacheBase: number;
+  allowNegotiation?: boolean;
+  nombreLocalDefault?: string;
+  ciudadLocalDefault?: string;
+  ubicacionDefault?: string;
   onSubmit: (data: {
     fecha: Date;
     oferta: number;
@@ -19,14 +24,48 @@ interface ModalSolicitudContratacionProps {
   }) => void;
 }
 
-export default function ModalSolicitudContratacion({ open, onClose, fecha, cacheBase, onSubmit }: ModalSolicitudContratacionProps) {
+
+export default function ModalSolicitudContratacion({ open, onClose, fecha, cacheBase, allowNegotiation = true, nombreLocalDefault = '', ciudadLocalDefault = '', ubicacionDefault = '', onSubmit }: ModalSolicitudContratacionProps) {
+  // Log para confirmar que la prop llega correctamente
+  React.useEffect(() => {
+    console.log('[ModalSolicitudContratacion] ubicacionDefault prop:', ubicacionDefault);
+  }, [ubicacionDefault]);
   const [oferta, setOferta] = useState('');
   const [tipoEvento, setTipoEvento] = useState('');
+  const [tipoEventoOtro, setTipoEventoOtro] = useState('');
+  const [isOtro, setIsOtro] = useState(false);
+
+  const tiposEvento = [
+    'Concierto',
+    'Sesión de DJ',
+    'Fiesta privada',
+    'Evento corporativo',
+    'Festival',
+    'Open mic',
+    'Showcase',
+    'Obra de teatro',
+    'Afterwork',
+    'Otro',
+  ];
   const [ubicacion, setUbicacion] = useState('');
   const [nombreLocal, setNombreLocal] = useState('');
   const [ciudadLocal, setCiudadLocal] = useState('');
   const [mensaje, setMensaje] = useState('');
-  const [fechaEditable, setFechaEditable] = useState(fecha ? fecha.toISOString().slice(0, 10) : '');
+  const [fechaEditable, setFechaEditable] = useState('');
+
+  React.useEffect(() => {
+    if (open) {
+      setNombreLocal(nombreLocalDefault || '');
+      setCiudadLocal(ciudadLocalDefault || '');
+      setUbicacion(ubicacionDefault || '');
+      setOferta('');
+      setTipoEvento('');
+      setMensaje('');
+      setFechaEditable(fecha ? fecha.toISOString().slice(0, 10) : '');
+      // Log para confirmar que el estado se inicializa correctamente
+      console.log('[ModalSolicitudContratacion] setUbicacion inicial:', ubicacionDefault || '');
+    }
+  }, [open, nombreLocalDefault, ciudadLocalDefault, ubicacionDefault, fecha]);
 
   React.useEffect(() => {
     setFechaEditable(fecha ? fecha.toISOString().slice(0, 10) : '');
@@ -34,11 +73,12 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fechaEditable || !tipoEvento || !ubicacion) return;
+    const tipoFinal = isOtro ? tipoEventoOtro : tipoEvento;
+    if (!fechaEditable || !tipoFinal || !ubicacion) return;
     onSubmit({
       fecha: new Date(fechaEditable),
       oferta: Number(oferta),
-      tipoEvento,
+      tipoEvento: tipoFinal,
       ubicacion,
       nombreLocal,
       ciudadLocal,
@@ -49,51 +89,93 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Solicitud de Contratación</DialogTitle>
+      <DialogContent className="max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 p-0">
+        <DialogHeader className="px-8 pt-8 pb-2">
+          <DialogTitle className="text-2xl font-semibold text-gray-900 mb-2">Solicitud de Contratación</DialogTitle>
+          <p className="text-sm text-gray-500">Completa los datos para enviar tu propuesta al artista.</p>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block mb-1">Fecha seleccionada</label>
-            <Input type="date" value={fechaEditable} onChange={e => setFechaEditable(e.target.value)} required />
+        <form onSubmit={handleSubmit} className="space-y-6 px-8 pt-2 pb-8">
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Fecha seleccionada</label>
+              <Input type="date" value={fechaEditable} onChange={e => setFechaEditable(e.target.value)} required className="rounded-lg border-gray-200" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Caché base del artista</label>
+              <Input value={`${Number(cacheBase).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €`} readOnly tabIndex={-1} className="rounded-lg border-gray-200 bg-gray-50 text-gray-700" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Oferta (€)</label>
+              <Input
+                type="number"
+                value={oferta}
+                onChange={e => setOferta(e.target.value)}
+                min={0}
+                required={!!allowNegotiation}
+                disabled={!allowNegotiation}
+                className="rounded-lg border-gray-200 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                style={{ MozAppearance: 'textfield' }}
+              />
+              {!allowNegotiation && (
+                <p className="text-xs text-gray-400 mt-1">Este artista no permite negociar el caché base. El precio es fijo.</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de evento</label>
+              <Select
+                value={tipoEvento}
+                onValueChange={value => {
+                  setTipoEvento(value);
+                  setIsOtro(value === 'Otro');
+                  if (value !== 'Otro') setTipoEventoOtro('');
+                }}
+              >
+                <SelectTrigger className="w-full rounded-lg border-gray-200">
+                  <SelectValue placeholder="Selecciona tipo de evento" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tiposEvento.map((tipo) => (
+                    <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {isOtro && (
+                <Input
+                  className="mt-2 rounded-lg border-gray-200"
+                  value={tipoEventoOtro}
+                  onChange={e => setTipoEventoOtro(e.target.value)}
+                  required
+                  placeholder="Describe el tipo de evento"
+                />
+              )}
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Ubicación del evento</label>
+              <Input value={ubicacion} onChange={e => setUbicacion(e.target.value)} required placeholder="Dirección o lugar del evento" className="rounded-lg border-gray-200" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Nombre del local</label>
+                <Input value={nombreLocal} onChange={e => setNombreLocal(e.target.value)} required className="rounded-lg border-gray-200" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Ciudad del local</label>
+                <Input value={ciudadLocal} onChange={e => setCiudadLocal(e.target.value)} required className="rounded-lg border-gray-200" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Mensaje para el artista</label>
+              <textarea
+                className="w-full border rounded-lg p-2 min-h-[60px] border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                value={mensaje}
+                onChange={e => setMensaje(e.target.value)}
+                placeholder="Mensaje opcional para el artista"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block mb-1">Caché base del artista</label>
-            <Input value={`€${cacheBase}`} readOnly tabIndex={-1} />
-          </div>
-          <div>
-            <label className="block mb-1">Oferta (€)</label>
-            <Input type="number" value={oferta} onChange={e => setOferta(e.target.value)} required min={0} />
-          </div>
-          <div>
-            <label className="block mb-1">Tipo de evento</label>
-            <Input value={tipoEvento} onChange={e => setTipoEvento(e.target.value)} required placeholder="Ej: Concierto, Fiesta, Festival..." />
-          </div>
-          <div>
-            <label className="block mb-1">Ubicación del evento</label>
-            <Input value={ubicacion} onChange={e => setUbicacion(e.target.value)} required placeholder="Dirección o lugar del evento" />
-          </div>
-          <div>
-            <label className="block mb-1">Nombre del local</label>
-            <Input value={nombreLocal} onChange={e => setNombreLocal(e.target.value)} required />
-          </div>
-          <div>
-            <label className="block mb-1">Ciudad del local</label>
-            <Input value={ciudadLocal} onChange={e => setCiudadLocal(e.target.value)} required />
-          </div>
-          <div>
-            <label className="block mb-1">Mensaje para el artista</label>
-            <textarea
-              className="w-full border rounded p-2 min-h-[60px]"
-              value={mensaje}
-              onChange={e => setMensaje(e.target.value)}
-              placeholder="Mensaje opcional para el artista"
-            />
-          </div>
-          <DialogFooter>
-            <Button type="submit">Enviar solicitud</Button>
-            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+          <DialogFooter className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="rounded-lg px-6 text-gray-700 border-gray-200">Cancelar</Button>
+            <Button type="submit" className="rounded-lg px-6">Enviar solicitud</Button>
           </DialogFooter>
         </form>
       </DialogContent>

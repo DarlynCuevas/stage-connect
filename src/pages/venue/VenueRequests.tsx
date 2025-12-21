@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSentRequests } from '@/lib/requests';
 import { useEffect, useCallback } from 'react';
 import { getInterestedByVenue, Interested } from '@/lib/interested';
+import { updateInterestedStatus } from '@/lib/interested';
 import { useQuery } from '@tanstack/react-query';
 import { Clock, Check, Loader2, HelpCircle, X } from 'lucide-react';
 import { useParams, Navigate } from 'react-router-dom';
@@ -22,12 +23,40 @@ const VenueRequests = () => {
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
 
 
+
   // Acción editar (abre modal de edición, placeholder)
   const handleEdit = (request) => {
     setEditRequest(request);
     setEditModalOpen(true);
-    // Aquí puedes implementar el modal real de edición
     alert('Funcionalidad de editar: aquí se abriría un modal para editar la solicitud.');
+  };
+
+  // Contratar interesado: crea solicitud de booking
+  const { mutate: createBookingRequest } = useCreateBookingRequest();
+  const handleHireInterested = async (interested: Interested) => {
+    if (!interested || !interested.artist || !authUser) return;
+    // Tomar datos actualizados del perfil del venue
+    const venueProfile = authUser;
+    createBookingRequest({
+      artistId: interested.artist.id,
+      eventDate: interested.date,
+      eventLocation: venueProfile.address || venueProfile.name || '',
+      eventType: 'Contratación',
+      offeredPrice: interested.price || 0,
+      nombreLocal: venueProfile.name || '',
+      ciudadLocal: venueProfile.city || '',
+      message: `Solicitud generada desde interesado (ID: ${interested.id})`
+    });
+    // Opcional: actualizar estado a 'accepted' si lo requiere el flujo
+    // await updateInterestedStatus(interested.id, 'accepted');
+    refetchInterested();
+  };
+
+  // Rechazar interesado: actualiza estado a 'rejected'
+  const handleRejectInterested = async (interested: Interested) => {
+    if (!interested) return;
+    await updateInterestedStatus(interested.id, 'rejected');
+    refetchInterested();
   };
 
   const openDetailModal = (request: any) => {
@@ -146,24 +175,7 @@ const VenueRequests = () => {
   return (
     <HeaderLayout profileTabs={localNav}>
       <div className="space-y-6">
-        {/* Resumen superior */}
-        <div className="flex flex-wrap gap-4 items-center justify-center mb-2">
-          <div className="flex items-center gap-2 bg-yellow-100/80 dark:bg-yellow-900/40 px-4 py-2 rounded-lg">
-            <Clock className="w-4 h-4 text-yellow-500" />
-            <span className="font-medium text-yellow-700 dark:text-yellow-300">Pendientes</span>
-            <Badge variant="warning" className="text-xs px-2 py-0.5">{pendingRequests.length}</Badge>
-          </div>
-          <div className="flex items-center gap-2 bg-green-100/80 dark:bg-green-900/40 px-4 py-2 rounded-lg">
-            <Check className="w-4 h-4 text-green-600" />
-            <span className="font-medium text-green-700 dark:text-green-300">Aceptadas</span>
-            <Badge variant="success" className="text-xs px-2 py-0.5">{acceptedRequests.length}</Badge>
-          </div>
-          <div className="flex items-center gap-2 bg-red-100/80 dark:bg-red-900/40 px-4 py-2 rounded-lg">
-            <X className="w-4 h-4 text-red-500" />
-            <span className="font-medium text-red-700 dark:text-red-300">Rechazadas</span>
-            <Badge variant="destructive" className="text-xs px-2 py-0.5">{rejectedRequests.length}</Badge>
-          </div>
-        </div>
+        {/* ...eliminado resumen superior duplicado... */}
         <div className="flex justify-end">
           <Dialog>
             <DialogTrigger asChild>
@@ -228,40 +240,103 @@ const VenueRequests = () => {
               Interesados ({interested.length})
             </TabsTrigger>
           </TabsList>
-                    <TabsContent value="interested">
-                      {loadingInterested ? (
-                        <div className="flex flex-col items-center justify-center min-h-[30vh]">
-                          <Loader2 className="animate-spin w-10 h-10 text-primary mb-2" />
-                          <p className="text-muted-foreground">Cargando interesados...</p>
-                        </div>
-                      ) : interested.length > 0 ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {interested.map((item) => (
-                            <div key={item.id} className="rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow p-4 flex flex-col gap-2 border border-blue-200 dark:border-blue-900">
-                              <div className="flex items-center gap-3">
-                                <span className="font-semibold text-blue-700 dark:text-blue-300">{item.artist?.name || 'Artista'}</span>
-                                {item.manager && (
-                                  <span className="text-xs text-muted-foreground">(Manager: {item.manager?.name})</span>
-                                )}
-                              </div>
-                              <div className="flex gap-4 text-sm">
-                                <span>Fecha: <b>{item.date}</b></span>
-                                {item.price && <span>Oferta: <b>{item.price}€</b></span>}
-                              </div>
-                              <div className="flex gap-2 items-center">
-                                <Badge variant="outline" className="capitalize">{item.status}</Badge>
-                                <span className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-12 text-muted-foreground">
-                          <HelpCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                          <p className="text-lg">No hay interesados por ahora</p>
-                        </div>
-                      )}
-                    </TabsContent>
+        <TabsContent value="accepted">
+          {/* ...resto de código... */}
+        </TabsContent>
+        {/* Apartado de Interesados */}
+        {/* Pestañas de interesados */}
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <HelpCircle className="w-6 h-6 text-blue-500" /> Interesados
+          </h2>
+          <Tabs defaultValue="pending-interested" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="pending-interested" className="gap-2 bg-blue-100/80 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 data-[state=active]:bg-blue-200/80 data-[state=active]:text-blue-900">
+                Pendientes ({interested.filter(i => i.status === 'pending').length})
+              </TabsTrigger>
+              <TabsTrigger value="rejected-interested" className="gap-2 bg-red-100/80 dark:bg-red-900/40 text-red-700 dark:text-red-300 data-[state=active]:bg-red-200/80 data-[state=active]:text-red-900">
+                Rechazados ({interested.filter(i => i.status === 'rejected').length})
+              </TabsTrigger>
+            </TabsList>
+           
+            <TabsContent value="pending-interested">
+              {loadingInterested ? (
+                <div className="flex flex-col items-center justify-center min-h-[30vh]">
+                  <Loader2 className="animate-spin w-10 h-10 text-primary mb-2" />
+                  <p className="text-muted-foreground">Cargando interesados...</p>
+                </div>
+              ) : interested.filter(i => i.status === 'pending').length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {interested.filter(i => i.status === 'pending').map((item) => (
+                    <div key={item.id} className="rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow p-4 flex flex-col gap-2 border border-blue-200 dark:border-blue-900">
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold text-blue-700 dark:text-blue-300">{item.artist?.name || 'Artista'}</span>
+                        {item.manager && (
+                          <span className="text-xs text-muted-foreground">(Manager: {item.manager?.name})</span>
+                        )}
+                      </div>
+                      <div className="flex gap-4 text-sm">
+                        <span>Fecha: <b>{item.date}</b></span>
+                        {item.price && <span>Oferta: <b>{item.price}€</b></span>}
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <Badge variant="outline" className="capitalize">{item.status}</Badge>
+                        <span className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</span>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <Button size="sm" variant="default" onClick={() => handleHireInterested(item)}>
+                          Contratar
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleRejectInterested(item)}>
+                          Rechazar
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <HelpCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg">No hay interesados pendientes</p>
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="rejected-interested">
+              {loadingInterested ? (
+                <div className="flex flex-col items-center justify-center min-h-[30vh]">
+                  <Loader2 className="animate-spin w-10 h-10 text-primary mb-2" />
+                  <p className="text-muted-foreground">Cargando interesados...</p>
+                </div>
+              ) : interested.filter(i => i.status === 'rejected').length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {interested.filter(i => i.status === 'rejected').map((item) => (
+                    <div key={item.id} className="rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow p-4 flex flex-col gap-2 border border-red-200 dark:border-red-900">
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold text-red-700 dark:text-red-300">{item.artist?.name || 'Artista'}</span>
+                        {item.manager && (
+                          <span className="text-xs text-muted-foreground">(Manager: {item.manager?.name})</span>
+                        )}
+                      </div>
+                      <div className="flex gap-4 text-sm">
+                        <span>Fecha: <b>{item.date}</b></span>
+                        {item.price && <span>Oferta: <b>{item.price}€</b></span>}
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <Badge variant="outline" className="capitalize">{item.status}</Badge>
+                        <span className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <HelpCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg">No hay interesados rechazados</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
           <TabsContent value="rejected">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {rejectedRequests.length > 0 ? (

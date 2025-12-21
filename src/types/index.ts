@@ -12,6 +12,7 @@ export interface User {
   genre?: string[];
   country?: string;
   city?: string;
+  address?: string;
   basePrice?: number;
   banner?: string;
   rating?: number;
@@ -44,6 +45,9 @@ export interface User {
 
   // Para locales: destacado/premium
   featured?: boolean;
+
+  // Permitir negociación de caché base
+  allowNegotiation?: boolean;
 }
 
 export interface Artist {

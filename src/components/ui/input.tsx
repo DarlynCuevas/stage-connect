@@ -15,8 +15,13 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           "hover:border-border/80 hover:bg-secondary/70",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-0 focus-visible:border-primary/50 focus-visible:bg-secondary",
           "disabled:cursor-not-allowed disabled:opacity-50",
+          // Ocultar spinners de number en todos los navegadores
+          type === 'number' ?
+            '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none' : '',
           className
         )}
+        // Firefox
+        style={type === 'number' ? { MozAppearance: 'textfield', ...props.style } : props.style}
         ref={ref}
         {...props}
       />
