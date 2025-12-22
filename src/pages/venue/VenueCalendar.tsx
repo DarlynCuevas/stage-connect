@@ -21,12 +21,12 @@ export default function VenueCalendar() {
   return (
     <HeaderLayout>
         <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-display font-bold mb-2">
+          <div className="text-center mt-10">
+            <h1 className="text-2xl sm:text-3xl font-display font-bold mb-2">
               Calendario de la sala
             </h1>
-            <p className="text-muted-foreground">
-              Gestiona la disponibilidad de tu sala para que los artistas y promotores puedan ver cuándo está libre. Bloquea días en los que no esté disponible.
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Gestiona la disponibilidad de tu sala
             </p>
           </div>
           <VenueCalendarComponent venueId={venueId} editable={true} />

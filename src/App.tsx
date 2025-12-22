@@ -35,7 +35,7 @@ import ManagerProfile from "./pages/manager/ManagerProfile";
 
 
 // Venue pages
-import VenueHome from "./pages/venue/VenueHome";
+import VenueDashboard from "./pages/venue/VenueDashboard";
 import VenueRequests from "./pages/venue/VenueRequests";
 import VenueProfile from "./pages/venue/VenueProfile";
 import VenueCalendar from "./pages/venue/VenueCalendar";
@@ -293,7 +293,7 @@ function AppRoutes() {
       <Route path="/venue/:id/profile" element={<VenueProfile />} />
       <Route path="/venue/:id/calendar" element={<VenueCalendar />} />
       <Route path="/venue/:id/requests" element={<VenueRequests />} />
-      <Route path="/venue/:id/dashboard" element={<VenueHome />} />
+      <Route path="/venue/:id/dashboard" element={<VenueDashboard />} />
       <Route path="/venue/:id/settings" element={<Settings />} />
       {/* Ruta pública: artista o manager pueden ver perfil de venue */}
       <Route path="/artist/:id/venue/:venueId/profile" element={<VenueProfile />} />

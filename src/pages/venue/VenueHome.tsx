@@ -110,31 +110,31 @@ export default function VenueHome() {
   ];
   return (
     <HeaderLayout>
-      <div className="space-y-8">
+      <div className="space-y-10 max-w-5xl mx-auto w-full">
         {/* Welcome header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 lg:gap-8 pb-2 border-b border-border/20">
           <div>
-            <h1 className="text-3xl font-display font-bold mb-2">
+            <h1 className="text-4xl font-display font-semibold mb-1 tracking-tight text-gray-900 dark:text-white">
               Panel de Local
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-base font-light">
               Bienvenido, {user?.name || 'Local'}
             </p>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat) => (
-            <Card key={stat.label} variant="gradient">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
-                    {stat.icon && <stat.icon className={`w-5 h-5 ${stat.color}`} />}
+            <Card key={stat.label} className="shadow-none border border-border/30 bg-background/80">
+              <CardContent className="p-6 flex flex-col items-start gap-2">
+                <div className="flex items-center gap-4 mb-2">
+                  <div className={`w-12 h-12 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
+                    {stat.icon && <stat.icon className={`w-6 h-6 ${stat.color}`} />}
                   </div>
                   <div>
-                    <p className="text-2xl font-display font-bold">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                    <p className="text-3xl font-display font-bold leading-tight">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground font-medium mt-1">{stat.label}</p>
                   </div>
                 </div>
               </CardContent>
@@ -142,48 +142,47 @@ export default function VenueHome() {
           ))}
         </div>
 
-        {/* Artista más contratado */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Artista más contratado</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-2">
+          {/* Artista más contratado */}
+          <Card className="border border-border/30 bg-background/80">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">Artista más contratado</CardTitle>
+            </CardHeader>
+            <CardContent className="flex items-center gap-4 pt-0">
+              <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 text-xl font-bold">
                 {/* Aquí podrías poner el avatar real */}
-                <span className="text-lg font-bold">{safeMostHiredArtist.name ? safeMostHiredArtist.name[0] : '?'}</span>
+                <span>{safeMostHiredArtist.name ? safeMostHiredArtist.name[0] : '?'}</span>
               </div>
               <div>
-                <p className="font-semibold">{safeMostHiredArtist.name}</p>
+                <p className="font-semibold text-base">{safeMostHiredArtist.name}</p>
                 <p className="text-xs text-muted-foreground">{safeMostHiredArtist.times} contrataciones</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Próximo evento */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Próximo evento</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div>
-              <p className="font-semibold">{safeNextEvent.artist}</p>
-              <p className="text-xs text-muted-foreground">{safeNextEvent.date} a las {safeNextEvent.hour}</p>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Próximo evento */}
+          <Card className="border border-border/30 bg-background/80">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">Próximo evento</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div>
+                <p className="font-semibold text-base">{safeNextEvent.artist}</p>
+                <p className="text-xs text-muted-foreground">{safeNextEvent.date} a las {safeNextEvent.hour}</p>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Notificaciones */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Notificaciones</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="font-semibold">Tienes {notifications} notificaciones pendientes</p>
-          </CardContent>
-        </Card>
-
+          {/* Notificaciones */}
+          <Card className="border border-border/30 bg-background/80">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">Notificaciones</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="font-semibold text-base">Tienes {notifications} notificaciones pendientes</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </HeaderLayout>
   );
