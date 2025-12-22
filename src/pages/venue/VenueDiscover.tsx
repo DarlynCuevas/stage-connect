@@ -11,7 +11,7 @@ import { ManagerSearchBar } from '@/components/manager/ManagerSearchBar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 import { ManagerCard } from '@/components/manager/ManagerCard';
-import { ChevronDown, ChevronUp, Star, Users, MapPin, Trophy } from "lucide-react";
+import { ChevronDown, ChevronUp, Star, Users, MapPin, Trophy, BadgeCheck } from "lucide-react";
 import { Sparkles } from "lucide-react";
 import { artistFilterConfig, managerFilterConfig } from "@/data/filterConfigs";
 import "./venueDiscoverScroll.css";
@@ -72,7 +72,7 @@ export default function VenueDiscover() {
     };
 
     // MANAGERS
-    const { populares: popularesManagers, destacados: destacadosManagers, resto: restoManagers, pagination: paginationManagers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters, setPopulares: setPopularesManagers, setDestacados: setDestacadosManagers, setResto: setRestoManagers } = useDiscoveryManagers();
+    const { populares: popularesManagers, destacados: destacadosManagers, verificados: verificadosManagers, resto: restoManagers, pagination: paginationManagers, loading: loadingManagers, setFilters: setManagerFilters, filters: managerFilters, setPopulares: setPopularesManagers, setDestacados: setDestacadosManagers, setVerificados: setVerificadosManagers, setResto: setRestoManagers } = useDiscoveryManagers();
     const [showFavoritesManagers, setShowFavoritesManagers] = useState(false);
     const [favoritesManagers, setFavoritesManagers] = useState<any[]>([]);
     const handleFavoriteManager = (managerId: string, favorite: boolean) => {
@@ -109,8 +109,8 @@ export default function VenueDiscover() {
     return (
       <HeaderLayout>
         {/* Título y subtítulo principal */}
-        <div className="mt-8 mb-4 text-center">
-          <h1 className="text-3xl font-display font-bold mb-1">
+        <div className="mt-8 mb-4 text-center px-2">
+          <h1 className="text-2xl sm:text-3xl font-display font-semibold mb-1 mx-auto max-w-xl">
             {searchType === 'artists' ? 'Encuentra artistas para tu evento' : 'Encuentra managers para tu evento'}
           </h1>
           <p className="text-muted-foreground mb-2">
@@ -328,47 +328,69 @@ export default function VenueDiscover() {
             onPageChange={(page) => setManagerFilters((prev: any) => ({ ...prev, page }))}
             renderGrid={(children) => (
               <>
+                {/* Sección visual para managers verificados */}
+                <HorizontalScrollSection
+                  title={<span className="flex items-center gap-2"><BadgeCheck className="text-green-500 w-5 h-5" />Managers verificados</span>}
+                  items={verificadosManagers.slice(0, 5)}
+                  containerId="verificadosManagers-scroll"
+                  onScrollRight={() => {
+                    const el = document.getElementById('verificadosManagers-scroll');
+                    if (el) {
+                      el.scrollBy({ left: 220, behavior: 'smooth' });
+                    }
+                  }}
+                  onScrollLeft={() => {
+                    const el = document.getElementById('verificadosManagers-scroll');
+                    if (el) {
+                      el.scrollBy({ left: -220, behavior: 'smooth' });
+                    }
+                  }}
+                  renderItem={(manager) => <ManagerCard manager={mapToManagerCard(manager)} />}
+                />
                 {/* Card visual para los primeros 5 managers destacados */}
-                <div className="rounded-xl border text-card-foreground transition-all duration-300 bg-transparent shadow-lg mb-6 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    {/* Icono de tendencia original y título juntos */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-orange-500 text-xl">↗</span>
-                      <span className="font-bold text-lg gradient-text">Managers Destacados</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                    {destacadosManagers.slice(0, 5).map((manager) => (
-                      <div className="min-w-0 w-full relative" key={manager.id}>
-                        <ManagerCard
-                          manager={mapToManagerCard(manager)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <HorizontalScrollSection                              
+                  title={<span className="flex items-center gap-2"><Star className="text-yellow-400 w-5 h-5" />Managers Destacados</span>}
+                  items={destacadosManagers}
+                  containerId="destacados-scroll"
+                  onScrollRight={() => {
+                    const el = document.getElementById('destacados-scroll');
+                    if (el) {
+                      el.scrollBy({ left: 220, behavior: 'smooth' });
+                    }
+                  }}
+                  onScrollLeft={() => {
+                    const el = document.getElementById('destacados-scroll');
+                    if (el) {
+                      el.scrollBy({ left: -220, behavior: 'smooth' });
+                    }
+                  }}
+                  renderItem={(manager) => <ManagerCard manager={mapToManagerCard(manager)} />}
+                />
                 {/* Card visual para los primeros 5 managers populares */}
-                <div className="rounded-xl border text-card-foreground transition-all duration-300 bg-transparent shadow-lg mb-6 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      {/* Icono de estrella popular */}
-                      <span className="text-amber-400 text-2xl">⭐</span>
-                      <span className="font-bold text-lg">Managers Populares</span>
-                    </div>
-                    <a href="#" className="flex items-center gap-1 text-sm text-amber-700 hover:underline">
-                      Ver todos <span className="text-lg">→</span>
-                    </a>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                    {popularesManagers.slice(0, 5).map((manager) => (
-                      <div className="min-w-0 w-full relative" key={manager.id}>
-                        <ManagerCard
-                          manager={mapToManagerCard(manager)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                  <HorizontalScrollSection
+                    title={<span className="flex items-center gap-2"><Users className="text-blue-500 w-5 h-5" />Managers Populares</span>}
+                    items={popularesManagers.slice(0, 5)}
+                    containerId="populares-scroll"
+                    onScrollRight={() => {
+                      const el = document.getElementById('populares-scroll');
+                      if (el) {
+                        console.log('Scrolling populares-scroll');
+                        el.scrollBy({ left: 220, behavior: 'smooth' });
+                      } else {
+                        console.error('Element with id populares-scroll not found');
+                      }
+                    }}
+                    onScrollLeft={() => {
+                      const el = document.getElementById('populares-scroll');
+                      if (el) {
+                        console.log('Scrolling populares-scroll left');
+                        el.scrollBy({ left: -220, behavior: 'smooth' });
+                      } else {
+                        console.error('Element with id populares-scroll not found');
+                      }
+                    }}
+                    renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
+                  />
                 {/* Sección de favoritos para managers */}
                 <div className="mb-6 relative">
                   <button

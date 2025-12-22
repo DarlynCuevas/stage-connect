@@ -25,31 +25,44 @@ export interface DiscoveryManagerFilters {
 export function useDiscoveryManagers() {
   const [populares, setPopulares] = useState<DiscoveryManager[]>([]);
   const [destacados, setDestacados] = useState<DiscoveryManager[]>([]);
+  const [verificados, setVerificados] = useState<DiscoveryManager[]>([]);
   const [resto, setResto] = useState<DiscoveryManager[]>([]);
   const [pagination, setPagination] = useState<any>({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<DiscoveryManagerFilters>({ city: '', country: '', page: 1, pageSize: 20 });
   const { token } = useAuth();
-  const managers = [...populares, ...destacados, ...resto];
+  const managers = [...populares, ...destacados, ...verificados, ...resto];
 
   useEffect(() => {
+    const noFilters = !filters || (
+      (!filters.city || filters.city === '' || filters.city === 'all') &&
+      (!filters.country || filters.country === '' || filters.country === 'all') &&
+      !filters.query
+    );
     const fetchManagers = async () => {
       setLoading(true);
       try {
-        const params = new URLSearchParams();
-        if (filters.city && filters.city !== 'all') params.append('city', filters.city);
-        if (filters.query && filters.query.trim() !== '') params.append('query', filters.query.trim());
-        if (filters.page) params.append('page', String(filters.page));
-        if (filters.pageSize) params.append('pageSize', String(filters.pageSize));
-        const url = `/public/managers${params.toString() ? '?' + params.toString() : ''}`;
-        const response = await apiFetch(url, token ? { token } : undefined);
+        let response;
+        if (noFilters) {
+          response = await apiFetch('/public/managers/discover', token ? { token } : undefined);
+        } else {
+          const params = new URLSearchParams();
+          if (filters.city && filters.city !== 'all') params.append('city', filters.city);
+          if (filters.query && filters.query.trim() !== '') params.append('query', filters.query.trim());
+          if (filters.page) params.append('page', String(filters.page));
+          if (filters.pageSize) params.append('pageSize', String(filters.pageSize));
+          const url = `/public/managers${params.toString() ? '?' + params.toString() : ''}`;
+          response = await apiFetch(url, token ? { token } : undefined);
+        }
         setPopulares(response.populares || []);
         setDestacados(response.destacados || []);
+        setVerificados(response.verificados || []);
         setResto(response.resto || []);
         setPagination(response.pagination || { page: 1, pageSize: 20, total: 0, hasNextPage: false });
       } catch (error) {
         setPopulares([]);
         setDestacados([]);
+        setVerificados([]);
         setResto([]);
         setPagination({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
       } finally {
@@ -62,6 +75,7 @@ export function useDiscoveryManagers() {
   return {
     populares,
     destacados,
+    verificados,
     resto,
     pagination,
     managers,
@@ -70,6 +84,7 @@ export function useDiscoveryManagers() {
     filters,
     setPopulares,
     setDestacados,
+    setVerificados,
     setResto,
   };
 }
