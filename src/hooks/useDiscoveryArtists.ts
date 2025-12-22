@@ -38,7 +38,9 @@ export interface DiscoveryArtistFilters {
 export function useDiscoveryArtists() {
   const [populares, setPopulares] = useState<DiscoveryArtist[]>([]);
   const [destacados, setDestacados] = useState<DiscoveryArtist[]>([]);
+  const [recienLlegados, setRecienLlegados] = useState<DiscoveryArtist[]>([]);
   const [enCiudad, setEnCiudad] = useState<DiscoveryArtist[]>([]);
+  const [masContratados, setMasContratados] = useState<DiscoveryArtist[]>([]);
   const [resto, setResto] = useState<DiscoveryArtist[]>([]);
   const [pagination, setPagination] = useState<any>({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
   const [loading, setLoading] = useState(true);
@@ -65,18 +67,26 @@ export function useDiscoveryArtists() {
         if (filters.page !== undefined) params.append('page', String(filters.page));
         if (filters.pageSize !== undefined) params.append('pageSize', String(filters.pageSize));
         const url = `/public/artists${params.toString() ? '?' + params.toString() : ''}`;
-        const response = await apiFetch(url, token ? { token } : undefined);
-        setPopulares(response.populares || []);
-        setDestacados(response.destacados || []);
-        setEnCiudad(response.enCiudad || []);
-        setResto(response.resto || []);
-        setPagination(response.pagination || { page: 1, pageSize: 20, total: 0, hasNextPage: false });
-      } catch (error) {
-        setPopulares([]);
-        setDestacados([]);
-        setEnCiudad([]);
-        setResto([]);
-        setPagination({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
+        // ...
+        try {
+          const response = await apiFetch(url, token ? { token } : undefined);
+          // ...
+          setPopulares(response.populares || []);
+          setDestacados(response.destacados || []);
+          setRecienLlegados(response.recienLlegados || []);
+          setEnCiudad(response.enCiudad || []);
+          setMasContratados(response.masContratados || []);
+          setResto(response.resto || []);
+          setPagination(response.pagination || { page: 1, pageSize: 20, total: 0, hasNextPage: false });
+        } catch (error) {
+          // ...
+          setPopulares([]);
+          setDestacados([]);
+          setEnCiudad([]);
+          setMasContratados([]);
+          setResto([]);
+          setPagination({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
+        }
       } finally {
         setLoading(false);
       }
@@ -84,5 +94,5 @@ export function useDiscoveryArtists() {
     fetchArtists();
   }, [filters]);
 
-  return { populares, destacados, enCiudad, resto, pagination, artists, loading, setFilters, filters, setPopulares, setDestacados, setEnCiudad, setResto };
+  return { populares, destacados, recienLlegados, enCiudad, masContratados, resto, pagination, artists, loading, setFilters, filters, setPopulares, setDestacados, setRecienLlegados, setEnCiudad, setMasContratados, setResto };
 }

@@ -31,8 +31,12 @@ export async function apiFetch<T = any>(path: string, opts: FetchOptions = {}): 
     headers['Authorization'] = `Bearer ${token}`;
   }
 
+  const fullUrl = `${API_BASE_URL}${path}`;
+  // ...
+  // ...
+
   try {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
+    const res = await fetch(fullUrl, {
       ...rest,
       cache: 'no-store', // Forzar a no usar caché
       signal: controller.signal,
@@ -43,19 +47,30 @@ export async function apiFetch<T = any>(path: string, opts: FetchOptions = {}): 
     clearTimeout(id);
 
     const text = await res.text();
-    const data = text ? JSON.parse(text) : null;
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch (parseErr) {
+      // ...
+    }
 
     if (!res.ok) {
       const message = data?.message || data?.error || `Request failed with status ${res.status}`;
+      // ...
       throw new ApiError(message, res.status, data);
     }
 
     return data as T;
   } catch (err: any) {
     if (err.name === 'AbortError') {
+      // ...
       throw new ApiError('Request timeout', 408);
     }
-    if (err instanceof ApiError) throw err;
+    if (err instanceof ApiError) {
+      // ...
+      throw err;
+    }
+    // ...
     throw new ApiError(err.message || 'Network error', err.status || 0, err);
   }
 }

@@ -11,7 +11,8 @@ import { ManagerSearchBar } from '@/components/manager/ManagerSearchBar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 import { ManagerCard } from '@/components/manager/ManagerCard';
-import { ChevronDown, ChevronUp, Star, Users, MapPin } from "lucide-react";
+import { ChevronDown, ChevronUp, Star, Users, MapPin, Trophy } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { artistFilterConfig, managerFilterConfig } from "@/data/filterConfigs";
 import "./venueDiscoverScroll.css";
 import { HorizontalScrollSection } from '@/components/ui/HorizontalScrollSection';
@@ -30,7 +31,7 @@ export default function VenueDiscover() {
   };
 
   // ARTISTS
-  const { populares, destacados, enCiudad, resto, pagination, loading, setFilters, filters, setPopulares, setDestacados, setEnCiudad, setResto } = useDiscoveryArtists();
+  const { populares, destacados, enCiudad, recienLlegados, masContratados, resto, pagination, loading, setFilters, filters, setPopulares, setDestacados, setEnCiudad, setResto, setRecienLlegados, setMasContratados } = useDiscoveryArtists();
   const [showFavorites, setShowFavorites] = useState(false);
   const [favorites, setFavorites] = useState<any[]>([]);
   const handleFavoriteArtist = async (artistId: number, favorite: boolean) => {
@@ -153,7 +154,7 @@ export default function VenueDiscover() {
               renderGrid={(children) => (
                 <>
                   {/* Reemplazo de la sección de "Artistas Destacados" con el componente genérico */}
-                  <HorizontalScrollSection
+                  <HorizontalScrollSection                              
                     title={<span className="flex items-center gap-2"><Star className="text-yellow-400 w-5 h-5" />Artistas Destacados</span>}
                     items={destacados}
                     containerId="destacados-scroll"
@@ -228,8 +229,44 @@ export default function VenueDiscover() {
                     }}
                     renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
                   />
-
-
+                   {/* Sección Recién llegados */}
+                  <HorizontalScrollSection
+                    title={<span className="flex items-center gap-2"><Sparkles className="text-purple-500 w-5 h-5" />Recién llegados</span>}
+                    items={recienLlegados.slice(0, 5)}
+                    containerId="recienLlegados-scroll"
+                    onScrollRight={() => {
+                      const el = document.getElementById('recienLlegados-scroll');
+                      if (el) {
+                        el.scrollBy({ left: 220, behavior: 'smooth' });
+                      }
+                    }}
+                    onScrollLeft={() => {
+                      const el = document.getElementById('recienLlegados-scroll');
+                      if (el) {
+                        el.scrollBy({ left: -220, behavior: 'smooth' });
+                      }
+                    }}
+                    renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
+                  />
+                   {/* Sección mas contratados */}
+                  <HorizontalScrollSection
+                    title={<span className="flex items-center gap-2"><Trophy  className="text-purple-500 w-5 h-5" />Mas contratados</span>}
+                    items={masContratados.slice(0, 5)}
+                    containerId="masContratados-scroll"
+                    onScrollRight={() => {
+                      const el = document.getElementById('masContratados-scroll');
+                      if (el) {
+                        el.scrollBy({ left: 220, behavior: 'smooth' });
+                      }
+                    }}
+                    onScrollLeft={() => {
+                      const el = document.getElementById('masContratados-scroll');
+                      if (el) {
+                        el.scrollBy({ left: -220, behavior: 'smooth' });
+                      }
+                    }}
+                    renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
+                  />
 
                   {/* Sección de favoritos (mover debajo de populares) */}
                   <div className="mb-6 relative">
