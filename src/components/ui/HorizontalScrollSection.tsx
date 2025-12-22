@@ -2,7 +2,7 @@ import React from 'react';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 
 interface HorizontalScrollSectionProps {
-  title: string;
+  title:  React.ReactNode;
   items: any[];
   onScrollRight: () => void;
   onScrollLeft?: () => void; // Added optional onScrollLeft prop
@@ -22,8 +22,7 @@ export const HorizontalScrollSection: React.FC<HorizontalScrollSectionProps> = (
     <div className="rounded-xl text-card-foreground transition-all duration-300 bg-transparent mb-0 p-0">
       <div className="flex items-center gap-2 mb-4 justify-between">
         <div className="flex items-center gap-2">
-          {/* Icono de tendencia original */}
-          <span className="text-orange-500 text-xl">↗</span>
+
           <span className="font-bold text-lg gradient-text">{title}</span>
         </div>
         <div className="flex gap-2"> {/* Adjusted visibility for arrows */}

@@ -38,12 +38,15 @@ export interface DiscoveryArtistFilters {
 export function useDiscoveryArtists() {
   const [populares, setPopulares] = useState<DiscoveryArtist[]>([]);
   const [destacados, setDestacados] = useState<DiscoveryArtist[]>([]);
+  const [enCiudad, setEnCiudad] = useState<DiscoveryArtist[]>([]);
   const [resto, setResto] = useState<DiscoveryArtist[]>([]);
   const [pagination, setPagination] = useState<any>({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<DiscoveryArtistFilters>({ city: '', genre: [], page: 1, pageSize: 20 });
-  const { token } = useAuth();
-  const artists = [...populares, ...destacados, ...resto];
+  const { user, token } = useAuth();
+  // Si el usuario tiene ciudad, usarla como valor inicial
+  const initialCity = user?.city || '';
+  const [filters, setFilters] = useState<DiscoveryArtistFilters>({ city: initialCity, genre: [], page: 1, pageSize: 20 });
+  const artists = [...populares, ...destacados, ...enCiudad, ...resto];
 
   useEffect(() => {
     const fetchArtists = async () => {
@@ -65,11 +68,13 @@ export function useDiscoveryArtists() {
         const response = await apiFetch(url, token ? { token } : undefined);
         setPopulares(response.populares || []);
         setDestacados(response.destacados || []);
+        setEnCiudad(response.enCiudad || []);
         setResto(response.resto || []);
         setPagination(response.pagination || { page: 1, pageSize: 20, total: 0, hasNextPage: false });
       } catch (error) {
         setPopulares([]);
         setDestacados([]);
+        setEnCiudad([]);
         setResto([]);
         setPagination({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
       } finally {
@@ -79,5 +84,5 @@ export function useDiscoveryArtists() {
     fetchArtists();
   }, [filters]);
 
-  return { populares, destacados, resto, pagination, artists, loading, setFilters, filters, setPopulares, setDestacados, setResto };
+  return { populares, destacados, enCiudad, resto, pagination, artists, loading, setFilters, filters, setPopulares, setDestacados, setEnCiudad, setResto };
 }
