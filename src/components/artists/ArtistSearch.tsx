@@ -25,9 +25,11 @@ import './no-spinner.css';
 interface ArtistSearchProps {
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
+  filterConfig: any[];
+  type: 'artists' | 'managers';
 }
 
-export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
+export function ArtistSearch({ filters, onFiltersChange, filterConfig, type }: ArtistSearchProps) {
   const [showGenre, setShowGenre] = useState(false);
   const [showLocation, setShowLocation] = useState(false);
   const [showPrice, setShowPrice] = useState(false);
@@ -132,25 +134,26 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
     (filters.priceMin && filters.priceMin > 0) || (filters.priceMax && filters.priceMax < 50000) ? 1 : 0,
     filters.date ? 1 : 0,
   ].reduce((a, b) => a + b, 0);
+  const queryConfig = filterConfig.find(f => f.key === 'query');
 
   return (
     <div className="space-y-4">
-      {/* Search bar */}
-      <div className="flex gap-3">
-        <div className="relative flex-1">
+      {/* Search bar and filters for mobile */}
+      <div className="space-y-3 md:space-y-0 md:flex md:gap-3">
+        <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
-            placeholder="Buscar artistas por nombre..."
+            placeholder={queryConfig?.placeholder || 'Buscar artistas por nombre o alias'}
             value={filters.query || ''}
             onChange={(e) => handleQueryChange(e.target.value)}
-            className="pl-10 h-12"
+            className="pl-10 h-12 w-full"
           />
         </div>
         <Button
           variant={showFilters ? "default" : "outline"}
           size="lg"
           onClick={handleOpenFilters}
-          className="relative"
+          className="relative w-full md:w-auto"
         >
           <SlidersHorizontal className="w-5 h-5 mr-2" />
           Filtros
@@ -167,33 +170,37 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
         "grid gap-6 overflow-hidden transition-all duration-300",
         showFilters ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
       )}>
+
         <div className="min-h-0">
           <div className="p-6 rounded-xl bg-card border border-border space-y-6">
             {/* Genres */}
-            <div>
-              <button
-                type="button"
-                className="flex items-center gap-2 text-sm font-medium text-foreground mb-3 focus:outline-none"
-                onClick={() => setShowGenre((v) => !v)}
-              >
-                Géneros musicales
-                {showGenre ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-              {showGenre && (
-                <div className="flex flex-wrap gap-2">
-                  {genres.slice(0, 15).map((genre) => (
-                    <Badge
-                      key={genre}
-                      variant={filters.genre?.includes(genre) ? "default" : "outline"}
-                      className="cursor-pointer hover:bg-primary/80 transition-colors"
-                      onClick={() => handleGenreToggle(genre)}
-                    >
-                      {genre}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
+
+            {type === 'artists' && (
+              <div>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 text-sm font-medium text-foreground mb-3 focus:outline-none"
+                  onClick={() => setShowGenre((v) => !v)}
+                >
+                  Géneros musicales
+                  {showGenre ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {showGenre && (
+                  <div className="flex flex-wrap gap-2">
+                    {genres.slice(0, 15).map((genre) => (
+                      <Badge
+                        key={genre}
+                        variant={filters.genre?.includes(genre) ? "default" : "outline"}
+                        className="cursor-pointer hover:bg-primary/80 transition-colors"
+                        onClick={() => handleGenreToggle(genre)}
+                      >
+                        {genre}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Location */}
             <div>
@@ -254,142 +261,130 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
 
             {/* Price range */}
             {/* Date filter */}
-            <div>
-              <button
-                type="button"
-                className="flex items-center gap-2 text-sm font-medium text-foreground mb-3 focus:outline-none"
-                onClick={() => setShowDate((v) => !v)}
-              >
-                Fecha
-                {showDate ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                {selectedDate && (
-                  <span className="ml-2 text-xs text-muted-foreground">{selectedDate.toLocaleDateString()}</span>
-                )}
-              </button>
-              {showDate && (
-                <div className="flex flex-row gap-8 p-4 rounded-2xl bg-white dark:bg-zinc-900 shadow-lg border border-zinc-200 dark:border-zinc-800 items-start w-fit">
-                  <div className="min-w-[320px]">
-                    <CalendarComponent
-                      dates={[]}
-                      selectedDate={selectedDate}
-                      onSelect={date => setSelectedDate(date)}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-4 min-w-[260px] items-end justify-start w-full">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      disabled={!selectedDate}
-                      className="w-full mt-2 mb-1 rounded-lg font-medium text-base transition-all"
-                      onClick={() => {
-                        if (selectedDate) {
-                          onFiltersChange({ ...filters, date: selectedDate.toISOString().slice(0, 10) });
-                          setShowDate(false);
-                        }
-                      }}
-                    >
-                      <span className="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-primary"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10m-7 4h4" /></svg>
-                        Buscar artistas disponibles
-                      </span>
-                    </Button>
-                    <span className="text-xs text-muted-foreground mb-2">Filtra la lista y muestra solo artistas que tienen libre el día seleccionado.</span>
-                    <div className="w-full border-t border-zinc-100 dark:border-zinc-800 my-2" />
-                    <div className="flex flex-col gap-2 w-full items-end justify-end">
-                      {isFeatured ? (
-                        <>
-                          <div className="relative w-full flex items-center">
-                            <input
-                              type="number"
-                              min={0}
-                              placeholder="Precio ofrecido"
-                              className="no-spinner border-0 border-b-2 border-zinc-200 dark:border-zinc-700 focus:border-primary focus:ring-0 bg-transparent pr-8 py-2 mb-1 text-base text-center w-full transition-all outline-none"
-                              value={offeredPrice}
-                              onChange={e => {
-                                const value = e.target.value;
-                                // Permite solo números y vacío
-                                if (/^\d*$/.test(value)) {
-                                  setOfferedPrice(value);
-                                }
-                              }}
-                              style={{ MozAppearance: 'textfield', appearance: 'textfield' }}
-                            />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">€</span>
-                          </div>
-                          <Button
-                            variant="default"
-                            size="sm"
-                            className="w-full rounded-lg font-medium text-base mt-1"
-                            disabled={!selectedDate || !offeredPrice || Number(offeredPrice) <= 0}
-                            onClick={async () => {
-                              if (selectedDate && offeredPrice && Number(offeredPrice) > 0) {
-                                await handleNotifyWithPrice(selectedDate, offeredPrice);
-                              }
-                            }}
-                          >
-                            <span className="flex items-center gap-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-primary"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2z" /></svg>
-                              Notificar a artistas
-                            </span>
-                          </Button>
-                          <span className="text-xs text-muted-foreground mt-1 block">Envía una notificación a todos los artistas y managers informando que tienes disponible este día y el caché ofertado.</span>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            type="button"
-                            disabled={!isFeatured || !selectedDate}
-                            className={
-                              'px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ' +
-                              goldButtonClass +
-                              (!isFeatured ? ' opacity-70 cursor-not-allowed' : '')
-                            }
-                            title="Solo para cuentas destacadas"
-                          >
-                            <span className="flex items-center gap-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-yellow-900"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2z" /></svg>
-                              Notificar a artistas
-                              <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-950 border border-yellow-300 shadow-gold">Premium</span>
-                            </span>
-                            <span className="absolute inset-0 rounded-lg pointer-events-none animate-gold-shine" />
-                          </button>
-                          <span className="text-xs text-yellow-900 flex items-center gap-1 mt-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="inline align-middle text-yellow-900"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2z" /></svg>
-                            Solo para cuentas destacadas
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div>
-              <button
-                type="button"
-                className="flex items-center gap-2 text-sm font-medium text-foreground mb-3 focus:outline-none"
-                onClick={() => setShowPrice((v) => !v)}
-              >
-                Rango de precio
-                {showPrice ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-              {showPrice && (
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-4">
-                    <div className="flex flex-col items-start">
-                      <span className="text-xs text-muted-foreground mb-1">Mín</span>
-                      <Input
-                        type="number"
-                        min={0}
-                        max={priceRange[1]}
-                        value={priceRange[0]}
-                        onChange={e => {
-                          const val = Math.max(0, Math.min(Number(e.target.value), priceRange[1]));
-                          handlePriceChange([val, priceRange[1]]);
-                        }}
-                        className="w-24 no-spinner"
+            {type === 'artists' && (
+              <div>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 text-sm font-medium text-foreground mb-3 focus:outline-none"
+                  onClick={() => setShowDate((v) => !v)}
+                >
+                  Fecha
+                  {showDate ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  {selectedDate && (
+                    <span className="ml-2 text-xs text-muted-foreground">{selectedDate.toLocaleDateString()}</span>
+                  )}
+                </button>
+                {showDate && (
+                  <div className="flex flex-col gap-8 p-4 rounded-2xl bg-white dark:bg-zinc-900 shadow-lg border border-zinc-200 dark:border-zinc-800 items-start w-fit md:flex-row">
+                    <div className="min-w-[320px]">
+                      <CalendarComponent
+                        dates={[]}
+                        selectedDate={selectedDate}
+                        onSelect={date => setSelectedDate(date)}
                       />
                     </div>
+                    <div className="flex flex-col gap-4 min-w-[260px] items-end justify-start w-full md:items-end">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        disabled={!selectedDate}
+                        className="w-full mt-2 mb-1 rounded-lg font-medium text-base transition-all"
+                        onClick={() => {
+                          if (selectedDate) {
+                            onFiltersChange({ ...filters, date: selectedDate.toISOString().slice(0, 10) });
+                            setShowDate(false);
+                          }
+                        }}
+                      >
+                        <span className="flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-primary"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10m-7 4h4" /></svg>
+                          Buscar artistas disponibles
+                        </span>
+                      </Button>
+                      <span className="text-xs text-muted-foreground mb-2">Filtra la lista y muestra solo artistas que tienen libre el día seleccionado.</span>
+                      <div className="w-full border-t border-zinc-100 dark:border-zinc-800 my-2" />
+                      <div className="flex flex-col gap-2 w-full items-end justify-end">
+                        {isFeatured ? (
+                          <>
+                            <div className="relative w-full flex items-center">
+                              <input
+                                type="number"
+                                min={0}
+                                placeholder="Precio ofrecido"
+                                className="no-spinner border-0 border-b-2 border-zinc-200 dark:border-zinc-700 focus:border-primary focus:ring-0 bg-transparent pr-8 py-2 mb-1 text-base text-center w-full transition-all outline-none"
+                                value={offeredPrice}
+                                onChange={e => {
+                                  const value = e.target.value;
+                                  // Permite solo números y vacío
+                                  if (/^\d*$/.test(value)) {
+                                    setOfferedPrice(value);
+                                  }
+                                }}
+                                style={{ MozAppearance: 'textfield', appearance: 'textfield' }}
+                              />
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">€</span>
+                            </div>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className="w-full rounded-lg font-medium text-base mt-1"
+                              disabled={!selectedDate || !offeredPrice || Number(offeredPrice) <= 0}
+                              onClick={async () => {
+                                if (selectedDate && offeredPrice && Number(offeredPrice) > 0) {
+                                  await handleNotifyWithPrice(selectedDate, offeredPrice);
+                                }
+                              }}
+                            >
+                              <span className="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-primary"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2-2z" /></svg>
+                                Notificar a artistas
+                              </span>
+                            </Button>
+                            <span className="text-xs text-muted-foreground mt-1 block">Envía una notificación a todos los artistas y managers informando que tienes disponible este día y el caché ofertado.</span>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              disabled={!isFeatured || !selectedDate}
+                              className={
+                                'px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ' +
+                                goldButtonClass +
+                                (!isFeatured ? ' opacity-70 cursor-not-allowed' : '')
+                              }
+                              title="Solo para cuentas destacadas"
+                            >
+                              <span className="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-yellow-900"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2-2z" /></svg>
+                                Notificar a artistas
+                                <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-950 border border-yellow-300 shadow-gold">Premium</span>
+                              </span>
+                              <span className="absolute inset-0 rounded-lg pointer-events-none animate-gold-shine" />
+                            </button>
+                            <span className="text-xs text-yellow-900 flex items-center gap-1 mt-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="inline align-middle text-yellow-900"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2-2z" /></svg>
+                              Solo para cuentas destacadas
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {type === 'artists' && (
+              <div>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 text-sm font-medium text-foreground mb-3 focus:outline-none"
+                  onClick={() => setShowPrice((v) => !v)}
+                >
+                  Rango de precio
+                  {showPrice ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {showPrice && (
+                  <div className="flex flex-col gap-2">
                     <PriceRangeSlider
                       value={priceRange as [number, number]}
                       onChange={(vals) => handlePriceChange(vals)}
@@ -397,24 +392,41 @@ export function ArtistSearch({ filters, onFiltersChange }: ArtistSearchProps) {
                       max={50000}
                       className="flex-1 mx-2"
                     />
-                    <div className="flex flex-col items-start">
-                      <span className="text-xs text-muted-foreground mb-1">Máx</span>
-                      <Input
-                        type="number"
-                        min={priceRange[0]}
-                        max={50000}
-                        value={priceRange[1]}
-                        onChange={e => {
-                          const val = Math.min(50000, Math.max(Number(e.target.value), priceRange[0]));
-                          handlePriceChange([priceRange[0], val]);
-                        }}
-                        className="w-24 no-spinner"
-                      />
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col items-start">
+                        <span className="text-xs text-muted-foreground mb-1">Mín</span>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={priceRange[1]}
+                          value={priceRange[0]}
+                          onChange={e => {
+                            const val = Math.max(0, Math.min(Number(e.target.value), priceRange[1]));
+                            handlePriceChange([val, priceRange[1]]);
+                          }}
+                          className="w-24 no-spinner"
+                        />
+                      </div>
+                      <div className="flex flex-col items-start">
+                        <span className="text-xs text-muted-foreground mb-1">Máx</span>
+                        <Input
+                          type="number"
+                          min={priceRange[0]}
+                          max={50000}
+                          value={priceRange[1]}
+                          onChange={e => {
+                            const val = Math.min(50000, Math.max(Number(e.target.value), priceRange[0]));
+                            handlePriceChange([priceRange[0], val]);
+                          }}
+                          className="w-24 no-spinner"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
+
 
             {/* Clear filters: siempre visible y alineado a la derecha */}
             <div className="flex w-full justify-end">

@@ -12,6 +12,9 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 import { ManagerCard } from '@/components/manager/ManagerCard';
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { artistFilterConfig, managerFilterConfig } from "@/data/filterConfigs";
+import "./venueDiscoverScroll.css";
+import { HorizontalScrollSection } from '@/components/ui/HorizontalScrollSection';
 
 export default function VenueDiscover() {
   const { user } = useAuth();
@@ -138,6 +141,8 @@ export default function VenueDiscover() {
                 <ArtistSearch
                   filters={filters}
                   onFiltersChange={handleArtistSearch}
+                  filterConfig={artistFilterConfig}
+                  type ='artists'
                 />
               }
               totalCount={pagination.total}
@@ -147,47 +152,56 @@ export default function VenueDiscover() {
               onPageChange={(page) => setFilters((prev: any) => ({ ...prev, page }))}
               renderGrid={(children) => (
                 <>
-                  {/* Card visual para los primeros 5 artistas destacados */}
-                  <div className="rounded-xl border text-card-foreground transition-all duration-300 bg-transparent shadow-lg mb-6 p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      {/* Icono de tendencia original */}
-                      <span className="text-orange-500 text-xl">↗</span>
-                      <span className="font-bold text-lg gradient-text">Artistas Destacados</span>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                      {destacados.slice(0, 5).map((artist) => (
-                        <div className="min-w-0 w-full relative" key={artist.id}>
-                          <ArtistCard
-                            artist={mapToArtistCard(artist)}
-                            showPrice={true}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Card visual para los primeros 5 artistas populares */}
-                  <div className="rounded-xl border text-card-foreground transition-all duration-300 bg-transparent shadow-lg mb-6 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        {/* Icono de estrella popular */}
-                        <span className="text-amber-400 text-2xl">⭐</span>
-                        <span className="font-bold text-lg">Artistas Populares</span>
-                      </div>
-                      <a href="#" className="flex items-center gap-1 text-sm text-amber-700 hover:underline">
-                        Ver todos <span className="text-lg">→</span>
-                      </a>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                      {populares.slice(0, 5).map((artist) => (
-                        <div className="min-w-0 w-full relative" key={artist.id}>
-                          <ArtistCard
-                            artist={mapToArtistCard(artist)}
-                            showPrice={true}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  {/* Reemplazo de la sección de "Artistas Destacados" con el componente genérico */}
+                  <HorizontalScrollSection
+                    title="Artistas Destacados"
+                    items={destacados}
+                    containerId="destacados-scroll"
+                    onScrollRight={() => {
+                      const el = document.getElementById('destacados-scroll');
+                      if (el) {
+                        console.log('Scrolling destacados-scroll');
+                        el.scrollBy({ left: 220, behavior: 'smooth' });
+                      } else {
+                        console.error('Element with id destacados-scroll not found');
+                      }
+                    }}
+                    onScrollLeft={() => {
+                      const el = document.getElementById('destacados-scroll');
+                      if (el) {
+                        console.log('Scrolling destacados-scroll left');
+                        el.scrollBy({ left: -220, behavior: 'smooth' });
+                      } else {
+                        console.error('Element with id destacados-scroll not found');
+                      }
+                    }}
+                    renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
+                  />
+                  {/* Reemplazo de la sección de "Artistas Populares" con el componente genérico */}
+                  <HorizontalScrollSection
+                    title="Artistas Populares"
+                    items={populares.slice(0, 5)}
+                    containerId="populares-scroll"
+                    onScrollRight={() => {
+                      const el = document.getElementById('populares-scroll');
+                      if (el) {
+                        console.log('Scrolling populares-scroll');
+                        el.scrollBy({ left: 220, behavior: 'smooth' });
+                      } else {
+                        console.error('Element with id populares-scroll not found');
+                      }
+                    }}
+                    onScrollLeft={() => {
+                      const el = document.getElementById('populares-scroll');
+                      if (el) {
+                        console.log('Scrolling populares-scroll left');
+                        el.scrollBy({ left: -220, behavior: 'smooth' });
+                      } else {
+                        console.error('Element with id populares-scroll not found');
+                      }
+                    }}
+                    renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
+                  />
                   {/* Sección de favoritos (mover debajo de populares) */}
                   <div className="mb-6 relative">
                     <button
@@ -234,8 +248,11 @@ export default function VenueDiscover() {
             onFavoriteChange={handleFavoriteManager}
             mapToCard={mapToManagerCard}
             onSearchBar={
-              <ManagerSearchBar
-                onSearch={handleManagerSearch}
+              <ArtistSearch
+                  filters={managerFilters}
+                  onFiltersChange={handleManagerSearch}
+                  filterConfig={managerFilterConfig}
+                  type="managers"
               />
             }
             totalCount={paginationManagers.total}

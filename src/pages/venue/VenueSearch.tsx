@@ -5,6 +5,7 @@ import { ArtistSearch } from '@/components/artists/ArtistSearch';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 import { useArtists } from '@/lib/users';
 import { SearchFilters } from '@/types';
+import { artistFilterConfig } from '@/data/filterConfigs';
 
 export default function VenueSearch() {
   const [filters, setFilters] = useState<SearchFilters>({});
@@ -24,7 +25,7 @@ export default function VenueSearch() {
           </p>
         </div>
 
-        <ArtistSearch filters={filters} onFiltersChange={setFilters} />
+        <ArtistSearch filters={filters} onFiltersChange={setFilters} filterConfig={artistFilterConfig} type={'artists'} />
 
         <div className="flex items-center justify-between">
           <p className="text-muted-foreground">

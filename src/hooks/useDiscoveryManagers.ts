@@ -16,6 +16,7 @@ export interface DiscoveryManager {
 }
 export interface DiscoveryManagerFilters {
   city: string;
+  country: string;
   query?: string;
   page?: number;
   pageSize?: number;
@@ -27,7 +28,7 @@ export function useDiscoveryManagers() {
   const [resto, setResto] = useState<DiscoveryManager[]>([]);
   const [pagination, setPagination] = useState<any>({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<DiscoveryManagerFilters>({ city: '' });
+  const [filters, setFilters] = useState<DiscoveryManagerFilters>({ city: '', country: '', page: 1, pageSize: 20 });
   const { token } = useAuth();
   const managers = [...populares, ...destacados, ...resto];
 

@@ -17,9 +17,30 @@ export interface HeaderLayoutProps {
 }
 
 export function HeaderLayout({ children }: HeaderLayoutProps) {
+  const getSettingsPath = () => {
+    if (!user) return '/';
+    const role = String(user.role).toLowerCase();
+    if (role.includes('art')) return `/artist/${user.id}/settings`;
+    if (role.includes('local')) return `/venue/${user.id}/settings`;
+    if (role.includes('manager')) return `/manager/${user.id}/settings`;
+    if (role.includes('promotor')) return `/promoter/${user.id}/settings`;
+    return '/';
+  };
   const { user, isAuthenticated, logout } = useAuth();
   React.useEffect(() => {}, [user, isAuthenticated]);
   const location = useLocation();
+
+  // Mapeo de rutas a títulos amigables
+  const getMobileTitle = () => {
+    const path = location.pathname;
+    if (path.includes('/requests')) return 'Solicitudes';
+    if (path.includes('/dashboard')) return 'Panel';
+    if (path.includes('/discover')) return 'Discover';
+    if (path.includes('/calendar')) return 'Calendario';
+    if (path.includes('/profile')) return 'Perfil';
+    if (path.includes('/settings')) return 'Ajustes';
+    return '';
+  };
   const [theme, setTheme] = React.useState<'dark' | 'light'>(() => {
     const t = localStorage.getItem('theme');
     return (t === 'light' ? 'light' : 'dark');
@@ -135,6 +156,22 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center">
+      {/* Header solo para móvil, con icono de ajustes */}
+      <header className="sm:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-border/20 flex items-center h-12 px-4 gap-2">
+        <span className="flex-1 text-base font-light font-display text-black truncate text-ellipsis">
+          {getMobileTitle()}
+        </span>
+        <button
+          aria-label="Cambiar tema"
+          className="w-6 h-6 rounded-full border flex items-center justify-center text-muted-foreground hover:text-foreground mr-2 p-0"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
+        <Link to={getSettingsPath()}>
+          <Settings className="w-5 h-5 text-muted-foreground" />
+        </Link>
+      </header>
       {/* Header y tabs solo en escritorio (sm+) */}
       <header className="hidden sm:block sticky top-0 z-50 bg-background/95 backdrop-blur border-b w-full">
         <div className="w-full px-0 flex flex-col items-center">
@@ -283,7 +320,10 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
           </div>
         </div>
       </header>
-      <main className="container mx-auto px-1 sm:px-4 py-2 sm:py-6 pb-16 sm:pb-6 flex flex-col items-center" style={{ paddingBottom: '4rem' }}>
+      <main
+        className="container mx-auto px-1 sm:px-4 py-2 sm:py-6 pb-16 sm:pb-6 flex flex-col items-center"
+        style={{ paddingTop: '3rem', paddingBottom: '4rem' }}
+      >
         {children}
       </main>
       {/* BottomNav solo en móvil, fijo en la parte inferior */}
