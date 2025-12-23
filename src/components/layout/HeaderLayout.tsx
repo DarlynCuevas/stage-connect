@@ -107,7 +107,7 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
       }
     },
      {
-      key: 'dashboard', label: 'Panel de datos', getPath: (user: any) => {
+      key: 'dashboard', label: 'Panel', getPath: (user: any) => {
         if (!user) return '/';
         const role = String(user.role).toLowerCase();
         if (role.includes('art')) return `/artist/${user.id}/dashboard`;
@@ -155,7 +155,7 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
  
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center">
+    <div className="min-h-screen bg-background flex flex-col items-center font-sans">
       {/* Header solo para móvil, con icono de ajustes */}
       <header className="sm:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-border/20 flex items-center h-12 px-4 gap-2">
         <span className="flex-1 text-base font-light font-display text-black truncate text-ellipsis">
@@ -198,9 +198,9 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
         )}
       </header>
       {/* Header y tabs solo en escritorio (sm+) */}
-      <header className="hidden sm:block sticky top-0 z-50 bg-background/95 backdrop-blur border-b w-full">
+      <header className="hidden sm:block sticky top-0 z-50 bg-background/80 backdrop-blur-md shadow-sm w-full transition-all">
         <div className="w-full px-0 flex flex-col items-center">
-          <div className="h-14 flex items-center justify-center w-full max-w-5xl">
+          <div className="h-16 flex items-center justify-center w-full max-w-6xl px-6">
             {/* Logo y nombre solo visibles en escritorio (sm+) */}
             <Link
               to={user && user.role
@@ -214,12 +214,12 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
                   ? `/promoter/${user.id}/discover`
                   : '/')
                 : '/'}
-              className="flex items-center gap-2 ml-1 sm:ml-3 mr-8 sm:mr-16"
+              className="flex items-center gap-2 ml-1 sm:ml-3 mr-8 sm:mr-16 select-none"
             >
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                <Music className="w-4 h-4 text-primary" />
+              <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shadow-sm">
+                <Music className="w-5 h-5 text-primary" />
               </div>
-              <span className="font-display font-bold">Artime</span>
+              <span className="font-display font-bold text-xl tracking-tight">Artime</span>
             </Link>
             {layoutItems.map((item) => {
               const path = item.getPath(user);
@@ -230,12 +230,12 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
                   key={item.key}
                   to={path}
                   className={cn(
-                    'px-5 py-2 rounded-full font-medium text-sm transition-colors relative',
+                    'px-5 py-2 rounded-full font-semibold text-base transition-all duration-200 relative',
                     isActive
-                      ? 'bg-[#232329] text-white shadow-sm'
-                      : 'text-muted-foreground hover:text-primary'
+                      ? 'bg-primary text-white shadow-md'
+                      : 'text-muted-foreground hover:text-primary/80 hover:bg-primary/10'
                   )}
-                  style={{ minWidth: 90, textAlign: 'center' }}
+                  style={{ minWidth: 100, textAlign: 'center', letterSpacing: '-0.01em' }}
                 >
                   {item.label}
                 </Link>
@@ -277,7 +277,7 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
                 </nav>
               );
             })()}
-            <div className="flex items-center gap-4 mr-8 sm:mr-16">
+            <div className="flex items-center gap-4 ml-auto">
               <button
                 aria-label="Cambiar tema"
                 className="w-9 h-9 rounded-full border flex items-center justify-center text-muted-foreground hover:text-foreground"
@@ -346,8 +346,8 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
         </div>
       </header>
       <main
-        className="container mx-auto px-1 sm:px-4 py-2 sm:py-6 pb-16 sm:pb-6 flex flex-col items-center"
-        style={{ paddingTop: '3rem', paddingBottom: '4rem' }}
+        className="container mx-auto px-2 sm:px-8 py-4 sm:py-10 pb-20 sm:pb-10 flex flex-col items-center min-h-[70vh]"
+        style={{ paddingTop: '3.5rem', paddingBottom: '4.5rem' }}
       >
         {children}
       </main>
