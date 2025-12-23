@@ -33,10 +33,15 @@ export default function ArtistRequests() {
   const handleAccept = useCallback(async (requestId: string) => {
     try {
       await updateStatusMutation.mutateAsync({ id: requestId, status: 'Accepted' });
+      toast({
+        title: '¡Contratación aceptada!',
+        description: 'Has confirmado la solicitud de este evento.',
+        duration: 4000,
+      });
     } catch (err) {
       // error already handled by mutation
     }
-  }, [updateStatusMutation]);
+  }, [updateStatusMutation, toast]);
 
   const handleReject = useCallback(async (requestId: string) => {
     try {

@@ -1,4 +1,23 @@
+  // Eliminado control de error visual para tipoEvento
 import React, { useState } from 'react';
+
+// Generar opciones de hora en intervalos de 15 minutos (de 12:00 a 04:00 del día siguiente)
+const horas: string[] = (() => {
+  const arr: string[] = [];
+  for (let h = 12; h <= 23; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      arr.push(label);
+    }
+  }
+  for (let h = 0; h <= 6; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      arr.push(label);
+    }
+  }
+  return arr;
+})();
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -59,20 +78,17 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
   const [fechaEditable, setFechaEditable] = useState('');
   const [horaInicio, setHoraInicio] = useState('00:00');
   const [horaFin, setHoraFin] = useState('00:00');
-  // Generar opciones de hora en intervalos de 15 minutos (de 12:00 a 04:00 del día siguiente)
-  const horas = [];
-  for (let h = 12; h <= 23; h++) {
-    for (let m = 0; m < 60; m += 15) {
-      const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-      horas.push(label);
+
+  // Filtrar horas de fin para que siempre sean mayores a la hora de inicio
+  const horasFinDisponibles = horas.filter(h => h > horaInicio);
+
+  // Si la hora de inicio cambia y la hora de fin es inválida, resetear hora de fin
+  React.useEffect(() => {
+    if (horaFin <= horaInicio) {
+      setHoraFin('');
     }
-  }
-  for (let h = 0; h <= 6; h++) {
-    for (let m = 0; m < 60; m += 15) {
-      const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-      horas.push(label);
-    }
-  }
+  }, [horaInicio]);
+
 
   React.useEffect(() => {
     if (open) {
@@ -102,11 +118,10 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
     e.preventDefault();
     const tipoFinal = isOtro ? tipoEventoOtro : tipoEvento;
     if (!fechaEditable || !tipoFinal || !ubicacion || !horaInicio || !horaFin) return;
-    const payload = {
+    const payload: any = {
       fecha: new Date(fechaEditable),
       horaInicio,
       horaFin,
-      oferta: Number(oferta),
       tipoEvento: tipoFinal,
       ubicacion,
       nombreLocal,
@@ -114,6 +129,7 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
       mensaje,
       artistId,
     };
+    if (oferta) payload.oferta = Number(oferta);
     onSubmit(payload);
     onClose();
   };
@@ -148,14 +164,20 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Hora de fin</label>
-                  <Select value={horaFin} onValueChange={setHoraFin} required>
+                  <Select value={horaFin} onValueChange={setHoraFin} required disabled={!horaInicio}>
                     <SelectTrigger className="w-full rounded-lg border-gray-200">
-                      <SelectValue>{horaFin}</SelectValue>
+                      <SelectValue>{horaFin || 'Selecciona hora de fin'}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {horas.map((hora) => (
-                        <SelectItem key={hora} value={hora}>{hora}</SelectItem>
-                      ))}
+                      {horasFinDisponibles.length === 0 ? (
+                        <SelectItem value="" disabled>
+                          No hay horas válidas
+                        </SelectItem>
+                      ) : (
+                        horasFinDisponibles.map((hora) => (
+                          <SelectItem key={hora} value={hora}>{hora}</SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -183,7 +205,6 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
                   value={oferta}
                   onChange={e => setOferta(e.target.value)}
                   min={0}
-                  required={!!allowNegotiation}
                   className="rounded-lg border-gray-200 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-gray-50 text-gray-700"
                   style={{ MozAppearance: 'textfield' }}
                 />

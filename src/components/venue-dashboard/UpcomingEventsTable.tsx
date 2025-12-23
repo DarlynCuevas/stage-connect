@@ -4,7 +4,7 @@ import { UpcomingEvent } from '@/types/venue-dashboard';
 export function UpcomingEventsTable({ events }: { events: UpcomingEvent[] }) {
   return (
     <div className="bg-background border border-border/20 rounded-xl p-4 mb-8 overflow-x-auto shadow-sm mx-2 sm:mx-6 max-w-2xl mx-auto">
-      <h2 className="text-lg font-semibold mb-2 text-black dark:text-white px-2 sm:px-6">Próximos eventos y pagos</h2>
+      <h2 className="text-lg font-semibold mb-2 text-black dark:text-white px-2 sm:px-6 text-center">Eventos y pagos</h2>
       <table className="min-w-full text-xs">
         <thead>
           <tr className="text-left text-muted-foreground">

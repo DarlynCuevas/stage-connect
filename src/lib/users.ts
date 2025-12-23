@@ -56,9 +56,23 @@ export async function fetchArtists(filters?: {
 }
 
 export async function updateProfile(profileData: any, token: string) {
+  // Asegura que avatar y banner siempre estén presentes si existen
+  const safeProfileData = { ...profileData };
+  if (typeof safeProfileData.avatar === 'undefined' && window?.currentUser?.avatar) {
+    safeProfileData.avatar = window.currentUser.avatar;
+  }
+  if (typeof safeProfileData.banner === 'undefined' && window?.currentUser?.banner) {
+    safeProfileData.banner = window.currentUser.banner;
+  }
+  // Elimina claves undefined para no sobrescribir
+  Object.keys(safeProfileData).forEach(key => {
+    if (typeof safeProfileData[key] === 'undefined') {
+      delete safeProfileData[key];
+    }
+  });
   return apiFetch('/users/me', {
     method: 'PATCH',
-    body: profileData,
+    body: safeProfileData,
     token,
   });
 }
@@ -100,10 +114,15 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: ({ profileData, token }: { profileData: any; token: string }) => 
       updateProfile(profileData, token),
-    onSuccess: () => {
-      // Invalidate queries to refetch updated data
+    onSuccess: (data, variables) => {
+      // Invalidar queries para refrescar datos actualizados
       queryClient.invalidateQueries({ queryKey: ['artist'] });
       queryClient.invalidateQueries({ queryKey: ['artists'] });
+      // Si hay id de usuario, invalidar también la query ['user', id]
+      const id = variables?.profileData?.id || variables?.profileData?.user_id;
+      if (id) {
+        queryClient.invalidateQueries({ queryKey: ['user', id] });
+      }
     },
   });
 }

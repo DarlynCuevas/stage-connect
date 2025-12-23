@@ -42,10 +42,14 @@ import { CalendarComponent } from '@/components/calendar/CalendarComponent';
 import { CalendarDays, User as UserIcon, Music } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useConfirmedRequestsByVenue } from '@/lib/requests';
+import useUploadImage from '@/hooks/useUploadImage';
 
 
 export default function VenueProfile() {
   const [tabValue, setTabValue] = useState('info');
+   const { user: authUser, token, setUser } = useAuth();
+  // Hook para subir imágenes
+  const uploadImage = useUploadImage(token);
   const [eventsToShow, setEventsToShow] = useState(3);
   // Próximos eventos reales desde el backend
   const params = useParams();
@@ -63,7 +67,7 @@ export default function VenueProfile() {
 
   // Soporta ambas rutas: /venue/:id/profile y /artist/:artistId/venue/:venueId/profile
   // venueId puede venir como 'id' o 'venueId' según la ruta
-  const { user: authUser, token, setUser } = useAuth();
+ 
   // Comprobación de seguridad: solo el dueño puede ver su perfil en /venue/:id/profile
   const isOwnProfile = authUser && venueIdParam && String(authUser.id) === String(venueIdParam);
   if (!params.venueId && venueIdParam && authUser && String(authUser.id) !== String(venueIdParam)) {
@@ -76,12 +80,15 @@ export default function VenueProfile() {
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
   const { data: venue } = useUser(venueId);
+  const [venueState, setVenueState] = useState<any>(null);
 
   useEffect(() => {
     if (isOwnProfile && authUser) {
       setEditData(authUser);
+      setVenueState(authUser);
     } else if (venue) {
       setEditData(venue);
+      setVenueState(venue);
     }
   }, [isOwnProfile, authUser, venue]);
 
@@ -111,11 +118,14 @@ export default function VenueProfile() {
         profileData: editData, 
         token 
       });
-      
       if (updatedUser?.user) {
         setUser(updatedUser.user);
+        setVenueState(updatedUser.user);
+        setEditData(updatedUser.user);
+      } else if (updatedUser) {
+        setVenueState(updatedUser);
+        setEditData(updatedUser);
       }
-      
       setIsEditing(false);
       toast({
         title: 'Perfil actualizado',
@@ -133,7 +143,7 @@ export default function VenueProfile() {
   };
 
   const handleCancel = () => {
-    setEditData(venue);
+    setEditData(venueState); // Usar el estado más reciente, no el objeto venue original
     setIsEditing(false);
   };
 
@@ -262,47 +272,38 @@ export default function VenueProfile() {
       {/* Banner estilo YouTube */}
       <div className="relative w-full flex flex-col items-center mb-20">
         <div className="w-full max-w-6xl mx-auto rounded-2xl overflow-hidden group relative" style={{height: '120px'}}>
-          {isEditing ? (
-            <>
-              <img
-                src={editData?.banner || `https://picsum.photos/1600/300?random=1`}
-                alt="Banner"
-                className="w-full h-full object-cover"
-              />
-              <label className="absolute left-1/2 -translate-x-1/2 bottom-2 w-2/3 flex items-center justify-center cursor-pointer group" style={{ zIndex: 20 }}>
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 dark:bg-background/90 border border-border shadow text-xs font-medium text-primary hover:bg-primary hover:text-white transition">
-                  <ImagePlus className="w-4 h-4" /> Cambiar banner
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async e => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = ev => {
-                        setEditData((prev: any) => ({ ...prev, banner: ev.target?.result }));
-                      };
-                      reader.readAsDataURL(file);
+          <img
+            src={editData?.banner || venue?.banner || `https://picsum.photos/1600/300?random=1`}
+            alt="Banner"
+            className="w-full h-full object-cover"
+          />
+          {isEditing && (
+            <label className="absolute left-1/2 -translate-x-1/2 bottom-2 w-2/3 flex items-center justify-center cursor-pointer group" style={{ zIndex: 20 }}>
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 dark:bg-background/90 border border-border shadow text-xs font-medium text-primary hover:bg-primary hover:text-white transition">
+                <ImagePlus className="w-4 h-4" /> Cambiar banner
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={async e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const url = await uploadImage(file);
+                    if (url) {
+                      setEditData((prev: any) => ({ ...prev, banner: url }));
                     }
-                  }}
-                  className="hidden"
-                />
-              </label>
-            </>
-          ) : (
-            <img
-              src={venue?.banner || `https://picsum.photos/1600/300?random=1`}
-              alt="Banner"
-              className="w-full h-full object-cover"
-            />
+                  }
+                }}
+                className="hidden"
+              />
+            </label>
           )}
         </div>
         {/* Avatar centrado y sobresaliendo */}
         <div className="absolute left-1/2 -translate-x-1/2" style={{top: '80px'}}>
           <div className="relative group">
             <Avatar className="h-36 w-36 border-4 border-background shadow-2xl bg-white dark:bg-background">
-              <AvatarImage src={editData?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=venue'} />
+              <AvatarImage src={editData?.avatar || venue?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=venue'} />
               <AvatarFallback className="text-4xl bg-primary text-primary-foreground">
                 {venue?.name?.charAt(0) || 'V'}
               </AvatarFallback>
@@ -319,11 +320,10 @@ export default function VenueProfile() {
                     onChange={async e => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        const reader = new FileReader();
-                        reader.onload = ev => {
-                          setEditData((prev: any) => ({ ...prev, avatar: ev.target?.result }));
-                        };
-                        reader.readAsDataURL(file);
+                        const url = await uploadImage(file);
+                        if (url) {
+                          setEditData((prev: any) => ({ ...prev, avatar: url }));
+                        }
                       }
                     }}
                     className="hidden"
@@ -473,7 +473,18 @@ export default function VenueProfile() {
           </h2>
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-border/30">
             <div className="flex gap-4 min-w-[320px] pb-2">
-              {((venue as any)?.gallery || []).map((photo: string, index: number) => (
+              {(isEditing
+                ? Array.isArray(editData?.gallery)
+                  ? editData.gallery
+                  : typeof editData?.gallery === 'string'
+                    ? editData.gallery.split(',').map((s: string) => s.trim()).filter(Boolean)
+                    : []
+                : Array.isArray(venueState?.gallery)
+                  ? venueState.gallery
+                  : typeof venueState?.gallery === 'string'
+                    ? venueState.gallery.split(',').map((s: string) => s.trim()).filter(Boolean)
+                    : []
+              ).map((photo: string, index: number) => (
                 <Dialog key={index}>
                   <DialogTrigger asChild>
                     <div className="relative group aspect-square w-40 sm:w-48 md:w-56 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity flex-shrink-0">
@@ -516,14 +527,13 @@ export default function VenueProfile() {
                       onChange={async e => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          const reader = new FileReader();
-                          reader.onload = ev => {
+                          const url = await uploadImage(file);
+                          if (url) {
                             setEditData((prev: any) => ({
                               ...prev,
-                              gallery: [...((prev?.gallery || [])), ev.target?.result]
+                              gallery: [...((prev?.gallery || [])), url]
                             }));
-                          };
-                          reader.readAsDataURL(file);
+                          }
                         }
                       }}
                       className="hidden"

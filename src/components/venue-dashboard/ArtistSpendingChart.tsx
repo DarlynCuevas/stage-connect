@@ -2,7 +2,7 @@
 export function ArtistSpendingChart({ data }: { data: MonthlyArtistSpending }) {
   return (
     <div className="bg-gradient-to-br from-background to-blue-50 dark:to-[#232329] border border-border/20 rounded-xl p-3 mb-8 shadow-sm px-2 sm:px-6">
-      <h2 className="text-lg font-semibold mb-2 text-black dark:text-white px-2 sm:px-6">Gastos en artistas por mes</h2>
+      <h2 className="text-lg font-semibold mb-2 text-black dark:text-white px-2 sm:px-6 text-center w-full">Gastos/mes</h2>
       <div className="h-48 w-full flex items-center justify-center bg-white/60 dark:bg-background/60 rounded-lg border border-border/10">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>

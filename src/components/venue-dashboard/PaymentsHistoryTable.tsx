@@ -4,7 +4,7 @@ import { PaymentHistory } from '@/types/venue-dashboard';
 export function PaymentsHistoryTable({ payments }: { payments: PaymentHistory[] }) {
   return (
     <div className="bg-background border border-border/20 rounded-xl p-4 mb-8 overflow-x-auto shadow-sm mx-2 sm:mx-6 max-w-2xl mx-auto">
-      <h2 className="text-lg font-semibold mb-2 text-black dark:text-white px-2 sm:px-6">Historial de pagos a artistas</h2>
+      <h2 className="text-lg font-semibold mb-2 text-black dark:text-white px-2 sm:px-6 text-center">Historial de pagos a artistas</h2>
       <table className="min-w-full text-xs">
         <thead>
           <tr className="text-left text-muted-foreground">

@@ -145,7 +145,7 @@ const VenueRequests = () => {
     { to: `/venue/${id}/dashboard`, label: 'Panel de datos' },
     { to: `/venue/${id}/profile`, label: 'Mi perfil' },
     { to: `/venue/${id}/calendar/`, label: 'Calendario' },
-    { to: `/venue/${id}/requests`, label: 'Solicitudes' },
+    { to: `/venue/${id}/requests`, label: 'Solicitudes', badge: pendingRequests.length },
   ];
 
   // Exportar a CSV
@@ -189,7 +189,7 @@ const VenueRequests = () => {
 
   return (
     <HeaderLayout profileTabs={localNav}>
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-full overflow-x-hidden px-1 sm:px-0">
         {/* ...eliminado resumen superior duplicado... */}
         <div className="flex justify-end">
           <Dialog>
@@ -218,7 +218,7 @@ const VenueRequests = () => {
         </div>
 
         {/* Filtros de búsqueda y exportar */}
-        <div className="flex flex-col md:flex-row gap-4 mb-4 items-start md:items-end">
+        <div className="flex flex-col md:flex-row gap-4 mb-4 items-start md:items-end w-full max-w-full">
           <Input
             placeholder="Buscar por artista..."
             value={search}
@@ -236,7 +236,7 @@ const VenueRequests = () => {
           </Button>
         </div>
 
-        <Tabs defaultValue="pending" className="w-full">
+        <Tabs defaultValue="pending" className="w-full max-w-full overflow-x-hidden">
           <TabsList className="mb-6">
             <TabsTrigger value="pending" className="gap-2 bg-yellow-100/80 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 data-[state=active]:bg-yellow-200/80 data-[state=active]:text-yellow-900">
               <Clock className="w-4 h-4 text-yellow-500" />
@@ -281,24 +281,24 @@ const VenueRequests = () => {
                   <p className="text-muted-foreground">Cargando interesados...</p>
                 </div>
               ) : interested.filter(i => i.status === 'pending').length > 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-full">
                   {interested.filter(i => i.status === 'pending').map((item) => (
-                    <div key={item.id} className="rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow p-4 flex flex-col gap-2 border border-blue-200 dark:border-blue-900">
-                      <div className="flex items-center gap-3">
+                    <div key={item.id} className="rounded-2xl bg-white/90 dark:bg-zinc-900/70 shadow-lg p-3 md:p-6 flex flex-col gap-2 md:gap-4 border border-blue-300 dark:border-blue-800 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 w-full max-w-full overflow-x-auto">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mb-2">
                         <span className="font-semibold text-blue-700 dark:text-blue-300">{item.artist?.name || 'Artista'}</span>
                         {item.manager && (
                           <span className="text-xs text-muted-foreground">(Manager: {item.manager?.name})</span>
                         )}
                       </div>
-                      <div className="flex gap-4 text-sm">
+                      <div className="flex flex-wrap gap-3 md:gap-6 text-sm mb-2">
                         <span>Fecha: <b>{item.date}</b></span>
                         {item.price && <span>Oferta: <b>{item.price}€</b></span>}
                       </div>
-                      <div className="flex gap-2 items-center">
+                      <div className="flex flex-wrap gap-2 md:gap-3 items-center mb-2">
                         <Badge variant="outline" className="capitalize">{item.status}</Badge>
                         <span className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</span>
                       </div>
-                      <div className="flex gap-2 mt-2">
+                      <div className="flex flex-col sm:flex-row gap-2 md:gap-4 mt-3 md:mt-4 w-full">
                         <Button size="sm" variant="default" onClick={() => handleHireInterested(item)}>
                           Contratar
                         </Button>
@@ -323,20 +323,20 @@ const VenueRequests = () => {
                   <p className="text-muted-foreground">Cargando interesados...</p>
                 </div>
               ) : interested.filter(i => i.status === 'rejected').length > 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-full">
                   {interested.filter(i => i.status === 'rejected').map((item) => (
-                    <div key={item.id} className="rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow p-4 flex flex-col gap-2 border border-red-200 dark:border-red-900">
-                      <div className="flex items-center gap-3">
+                    <div key={item.id} className="rounded-2xl bg-white/90 dark:bg-zinc-900/70 shadow-lg p-3 md:p-6 flex flex-col gap-2 md:gap-4 border border-red-300 dark:border-red-800 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 w-full max-w-full overflow-x-auto">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mb-2">
                         <span className="font-semibold text-red-700 dark:text-red-300">{item.artist?.name || 'Artista'}</span>
                         {item.manager && (
                           <span className="text-xs text-muted-foreground">(Manager: {item.manager?.name})</span>
                         )}
                       </div>
-                      <div className="flex gap-4 text-sm">
+                      <div className="flex flex-wrap gap-3 md:gap-6 text-sm mb-2">
                         <span>Fecha: <b>{item.date}</b></span>
                         {item.price && <span>Oferta: <b>{item.price}€</b></span>}
                       </div>
-                      <div className="flex gap-2 items-center">
+                      <div className="flex flex-wrap gap-2 md:gap-3 items-center mb-2">
                         <Badge variant="outline" className="capitalize">{item.status}</Badge>
                         <span className="text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</span>
                       </div>
@@ -353,19 +353,19 @@ const VenueRequests = () => {
           </Tabs>
         </div>
           <TabsContent value="rejected">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-full">
               {rejectedRequests.length > 0 ? (
                 rejectedRequests.map((request) => (
                   <div
                     key={request.id}
-                    className="relative rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow-sm hover:shadow-lg focus-within:shadow-lg hover:bg-white/90 dark:hover:bg-zinc-900/80 ring-0 hover:ring-2 focus-within:ring-2 ring-destructive/30 border-b border-gray-300 dark:border-white/20 last:border-b-0 last:pb-0 transition-colors duration-200"
+                    className="relative rounded-2xl bg-white/90 dark:bg-zinc-900/70 shadow-lg hover:shadow-2xl focus-within:shadow-2xl hover:bg-white dark:hover:bg-zinc-900 ring-0 hover:ring-2 focus-within:ring-2 ring-destructive/30 border border-red-300 dark:border-red-800 last:border-b-0 last:pb-0 transition-all duration-300 p-3 md:p-6 w-full max-w-full overflow-x-auto"
                     tabIndex={0}
                   >
                     {/* Icono contextual grande */}
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-10 flex justify-center w-full">
                       <X className="w-12 h-12 text-red-500 bg-white dark:bg-zinc-900 rounded-full shadow-lg p-2 border-4 border-red-100 dark:border-red-900" />
                     </div>
-                    <div className="pt-8">
+                    <div className="pt-8 md:pt-10 px-1 md:px-2 pb-2">
                       <RequestCard
                         request={request}
                         isReceiver={false}
@@ -389,19 +389,19 @@ const VenueRequests = () => {
           </TabsContent>
 
           <TabsContent value="pending">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-full">
               {pendingRequests.length > 0 ? (
                 pendingRequests.map((request) => (
                   <div
                     key={request.id}
-                    className="relative group pb-4 border-b border-gray-300 dark:border-white/20 last:border-b-0 last:pb-0 transition-colors duration-200 rounded-xl bg-white/70 dark:bg-zinc-900/60 hover:bg-white/90 dark:hover:bg-zinc-900/80 ring-0 hover:ring-2 focus-within:ring-2 ring-primary/30"
+                    className="relative group pb-6 border border-primary/30 dark:border-primary/40 last:border-b-0 last:pb-0 transition-all duration-300 rounded-2xl bg-white/90 dark:bg-zinc-900/70 hover:bg-white dark:hover:bg-zinc-900 ring-0 hover:ring-2 focus-within:ring-2 ring-primary/40 shadow-lg hover:shadow-2xl p-3 md:p-6 w-full max-w-full overflow-x-auto"
                     tabIndex={0}
                   >
                     {/* Icono contextual grande */}
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-10 flex justify-center w-full">
                       <Clock className="w-12 h-12 text-yellow-400 bg-white dark:bg-zinc-900 rounded-full shadow-lg p-2 border-4 border-yellow-100 dark:border-yellow-900" />
                     </div>
-                    <div className="pt-8">
+                    <div className="pt-8 md:pt-10 px-1 md:px-2 pb-2">
                       <RequestCard
                         request={request}
                         isReceiver={false}
@@ -434,19 +434,19 @@ const VenueRequests = () => {
           </TabsContent>
 
           <TabsContent value="accepted">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-full">
               {acceptedRequests.length > 0 ? (
                 acceptedRequests.map((request) => (
                   <div
                     key={request.id}
-                    className="relative rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow-sm hover:shadow-lg focus-within:shadow-lg hover:bg-white/90 dark:hover:bg-zinc-900/80 ring-0 hover:ring-2 focus-within:ring-2 ring-primary/30 transition-colors duration-200"
+                    className="relative rounded-2xl bg-white/90 dark:bg-zinc-900/70 shadow-lg hover:shadow-2xl focus-within:shadow-2xl hover:bg-white dark:hover:bg-zinc-900 ring-0 hover:ring-2 focus-within:ring-2 ring-primary/40 border border-green-300 dark:border-green-800 transition-all duration-300 p-3 md:p-6 w-full max-w-full overflow-x-auto"
                     tabIndex={0}
                   >
                     {/* Icono contextual grande */}
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-10 flex justify-center w-full">
                       <Check className="w-12 h-12 text-green-500 bg-white dark:bg-zinc-900 rounded-full shadow-lg p-2 border-4 border-green-100 dark:border-green-900" />
                     </div>
-                    <div className="pt-8">
+                    <div className="pt-8 md:pt-10 px-1 md:px-2 pb-2">
                       {/* Estado ya mostrado en RequestCard */}
                       <RequestCard
                         request={request}
