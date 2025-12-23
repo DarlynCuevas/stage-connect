@@ -6,6 +6,11 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Calendar, MapPin, Clock, MessageSquare, Check, X, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useState } from 'react';
+
+
+import { ContractAcceptModal } from './ContractAcceptModal';
+import { useToast } from '@/hooks/use-toast';
 
 type ArtistLike = (Partial<Artist> & Partial<User> & { managerId?: string | number });
 
@@ -44,6 +49,9 @@ export function RequestCard({
   onReject,
   onNegotiate,
   onViewDetails,
+  onEdit,
+  onCancel,
+  onResend,
   isProcessing = false,
 }: RequestCardProps) {
   const status = statusConfig[request.status];
@@ -57,6 +65,39 @@ export function RequestCard({
   const displayName = isReceiver
     ? request.requester?.name
     : (request.artist?.nickName || request.artist?.name || artist?.nickName || artist?.name);
+
+  const [showContractModal, setShowContractModal] = useState(false);
+  const { toast } = useToast();
+
+  const handleAcceptClick = () => {
+    setShowContractModal(true);
+  };
+
+  const handleConfirmContract = async () => {
+    setShowContractModal(false);
+    if (onAccept) onAccept(); // Lógica existente: aceptar solicitud
+    // Nueva lógica: llamar al backend para generar el PDF del contrato
+    try {
+     await fetch(`/contracts/${request.id}/pdf`);
+      toast({
+        title: 'Contrato generado',
+        description: 'El contrato PDF está disponible para descarga.',
+        duration: 4000,
+      });
+    } catch (err) {
+      toast({
+        title: 'Error al generar contrato',
+        description: 'No se pudo generar el PDF del contrato.',
+        variant: 'destructive',
+        duration: 4000,
+      });
+      console.error('Error generando el contrato PDF', err);
+    }
+  };
+
+  const handleCancelContract = () => {
+    setShowContractModal(false);
+  };
 
   return (
     <Card variant="gradient" className="rounded-2xl shadow-lg hover:shadow-2xl border border-border/60 transition-all duration-300 bg-white/90 dark:bg-background/80">
@@ -92,6 +133,10 @@ export function RequestCard({
             <MapPin className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">{request.eventLocation}</span>
           </div>
+          <div className="flex items-center gap-1.5 text-muted-foreground col-span-2">
+            <Clock className="w-3.5 h-3.5 shrink-0" />
+            <span>Horario: {request.horaInicio || '--:--'} - {request.horaFin || '--:--'}</span>
+          </div>
         </div>
 
         <div className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/50">
@@ -100,6 +145,19 @@ export function RequestCard({
             €{request.offeredPrice?.toLocaleString() || '0'}
           </span>
         </div>
+
+        {/* Enlace para descargar contrato PDF si la solicitud está aceptada */}
+        <div className="flex justify-end pt-2">
+          <a
+            href={`http://localhost:4000/api/contracts/${request.id}/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline text-xs font-medium hover:text-primary/80"
+          >
+            Descargar contrato PDF
+          </a>
+        </div>
+
 
         {request.message && (
           <div className="flex items-start gap-2 text-xs text-muted-foreground">
@@ -111,7 +169,7 @@ export function RequestCard({
         <div className="flex gap-2 pt-1">
           {isReceiver && request.status === 'Pending' && (
             <>
-              <Button size="sm" variant="gradient" className="flex-1 h-8" onClick={onAccept} disabled={isProcessing}>
+              <Button size="sm" variant="gradient" className="flex-1 h-8" onClick={handleAcceptClick} disabled={isProcessing}>
                 <Check className="w-3.5 h-3.5 mr-1" />
                 Aceptar
               </Button>
@@ -121,6 +179,12 @@ export function RequestCard({
               <Button size="sm" variant="ghost" className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={onReject} disabled={isProcessing}>
                 <X className="w-3.5 h-3.5" />
               </Button>
+
+              <ContractAcceptModal
+                open={showContractModal}
+                onConfirm={handleConfirmContract}
+                onCancel={handleCancelContract}
+              />
             </>
           )}
 

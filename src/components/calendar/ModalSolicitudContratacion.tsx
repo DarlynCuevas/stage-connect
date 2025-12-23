@@ -17,6 +17,8 @@ interface ModalSolicitudContratacionProps {
   artistId?: number;
   onSubmit: (data: {
     fecha: Date;
+    horaInicio: string;
+    horaFin: string;
     oferta: number;
     tipoEvento: string;
     ubicacion: string;
@@ -55,6 +57,22 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
   const [ciudadLocal, setCiudadLocal] = useState('');
   const [mensaje, setMensaje] = useState('');
   const [fechaEditable, setFechaEditable] = useState('');
+  const [horaInicio, setHoraInicio] = useState('00:00');
+  const [horaFin, setHoraFin] = useState('00:00');
+  // Generar opciones de hora en intervalos de 15 minutos (de 12:00 a 04:00 del día siguiente)
+  const horas = [];
+  for (let h = 12; h <= 23; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      horas.push(label);
+    }
+  }
+  for (let h = 0; h <= 6; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      horas.push(label);
+    }
+  }
 
   React.useEffect(() => {
     if (open) {
@@ -71,6 +89,8 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
       setFechaEditable(fecha ? fecha.toISOString().slice(0, 10) : '');
       // Log para confirmar que el estado se inicializa correctamente
       console.log('[ModalSolicitudContratacion] setUbicacion inicial:', ubicacionDefault || '');
+      setHoraInicio('00:00');
+      setHoraFin('00:00');
     }
   }, [open, nombreLocalDefault, ciudadLocalDefault, ubicacionDefault, fecha, fixedPrice]);
 
@@ -81,9 +101,11 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const tipoFinal = isOtro ? tipoEventoOtro : tipoEvento;
-    if (!fechaEditable || !tipoFinal || !ubicacion) return;
+    if (!fechaEditable || !tipoFinal || !ubicacion || !horaInicio || !horaFin) return;
     const payload = {
       fecha: new Date(fechaEditable),
+      horaInicio,
+      horaFin,
       oferta: Number(oferta),
       tipoEvento: tipoFinal,
       ubicacion,
@@ -105,9 +127,39 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 px-8 pt-2 pb-8">
           <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Fecha seleccionada</label>
-              <Input type="date" value={fechaEditable} onChange={e => setFechaEditable(e.target.value)} required className="rounded-lg border-gray-200" />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Fecha seleccionada</label>
+                <Input type="date" value={fechaEditable} onChange={e => setFechaEditable(e.target.value)} required className="rounded-lg border-gray-200" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Hora de inicio</label>
+                  <Select value={horaInicio} onValueChange={setHoraInicio} required>
+                    <SelectTrigger className="w-full rounded-lg border-gray-200">
+                      <SelectValue>{horaInicio}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {horas.map((hora) => (
+                        <SelectItem key={hora} value={hora}>{hora}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Hora de fin</label>
+                  <Select value={horaFin} onValueChange={setHoraFin} required>
+                    <SelectTrigger className="w-full rounded-lg border-gray-200">
+                      <SelectValue>{horaFin}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {horas.map((hora) => (
+                        <SelectItem key={hora} value={hora}>{hora}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
             {fixedPrice === undefined || fixedPrice === null ? (
               <div>

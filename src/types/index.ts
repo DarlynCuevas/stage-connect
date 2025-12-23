@@ -152,6 +152,8 @@ export interface BookingRequest {
   message?: string;
   createdAt: Date;
   updatedAt: Date;
+  horaInicio?: string;
+  horaFin?: string;
 }
 
 export interface Negotiation {

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useBookingSocket } from '@/hooks/useBookingSocket';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +22,7 @@ interface VenueCalendarProps {
 
 export function VenueCalendarComponent({ venueId, editable = false, onDateSelect }: VenueCalendarProps) {
   // Obtener fechas y lógica a partir del venueId
+  const { user } = useAuth();
   const confirmed = venueId ? useConfirmedRequestsByVenue(venueId)?.data : [];
   const blocked = venueId ? useVenueBlockedDays(venueId)?.data : [];
   const confirmedRequests = Array.isArray(confirmed) ? confirmed : [];
@@ -168,31 +170,58 @@ export function VenueCalendarComponent({ venueId, editable = false, onDateSelect
                 <p className="text-lg font-display font-semibold mb-2">
                   {format(selectedDate, "d 'de' MMMM, yyyy", { locale: es })}
                 </p>
-                {selectedDateInfo ? (
+                {selectedDate ? (
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      {selectedDateInfo.available ? (
-                        <Badge variant="success">
-                          <Check className="w-3 h-3 mr-1" />
-                          Disponible
-                        </Badge>
-                      ) : (selectedDateInfo as any).confirmed ? (
-                        <Badge variant="destructive">
-                          <X className="w-3 h-3 mr-1" />
-                          Reserva confirmada
-                        </Badge>
-                      ) : (
-                        <Badge variant="destructive">
-                          <Lock className="w-3 h-3 mr-1" />
-                          Día bloqueado
-                        </Badge>
-                      )}
-                    </div>
-                    {selectedDateInfo.note && (
-                      <p className="text-sm text-muted-foreground">
-                        {selectedDateInfo.note}
-                      </p>
-                    )}
+                    {/* Estado principal del día */}
+                    {selectedDateInfo ? (
+                      <div className="flex items-center gap-2">
+                        {selectedDateInfo.available ? (
+                          <Badge variant="success">
+                            <Check className="w-3 h-3 mr-1" />
+                            Disponible
+                          </Badge>
+                        ) : (selectedDateInfo as any).confirmed ? (
+                          <Badge variant="destructive">
+                            <X className="w-3 h-3 mr-1" />
+                            Reserva confirmada
+                          </Badge>
+                        ) : (
+                          <Badge variant="destructive">
+                            <Lock className="w-3 h-3 mr-1" />
+                            Día bloqueado
+                          </Badge>
+                        )}
+                      </div>
+                    ) : null}
+                    {/* Detalle de eventos del día */}
+                    {(() => {
+                      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+                      const events = confirmedRequests.filter(req => req.eventDate.slice(0, 10) === dateStr);
+                      if (events.length === 0) return null;
+                      return (
+                        <div className="mt-2 space-y-2">
+                          <div className="font-semibold text-sm mb-1">Eventos confirmados:</div>
+                          <ul className="list-disc pl-4">
+                            {events.map((ev, idx) => (
+                              <li key={ev.id || idx} className="text-sm">
+                                <span className="font-medium">{ev.eventType}</span>
+                                {ev.artist?.name && (
+                                  <span> — <span className="text-primary">{ev.artist.name}</span></span>
+                                )}
+                                {/* Mostrar precio solo si el usuario es Local */}
+                                {ev.offeredPrice && user?.role === 'Local' && (
+                                  <span> — <span className="text-emerald-600 font-semibold">{ev.offeredPrice}€</span></span>
+                                )}
+                                {/* Mostrar horario si existe */}
+                                {(ev.horaInicio || ev.horaFin) && (
+                                  <span className="ml-2 text-xs text-muted-foreground">Horario: {ev.horaInicio || '--:--'} - {ev.horaFin || '--:--'}</span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <div className="space-y-3">

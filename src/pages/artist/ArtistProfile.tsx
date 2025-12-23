@@ -232,7 +232,7 @@ export default function ArtistProfile() {
     setModalOpen(true);
   }, [canSendRequest, setFechaSeleccionada, setModalOpen]);
 
-  function handleEnviarSolicitud(data: { fecha: Date; oferta: number; tipoEvento: string; ubicacion: string; nombreLocal?: string; ciudadLocal?: string; mensaje?: string; artistId?: number }) {
+  function handleEnviarSolicitud(data: { fecha: Date; horaInicio: string; horaFin: string; oferta: number; tipoEvento: string; ubicacion: string; nombreLocal?: string; ciudadLocal?: string; mensaje?: string; artistId?: number }) {
     const idToSend = data.artistId ?? artistId;
     console.log('[ENVIAR SOLICITUD] artistId:', idToSend);
     if (!idToSend) return;
@@ -242,6 +242,8 @@ export default function ArtistProfile() {
       eventLocation: data.ubicacion,
       eventType: data.tipoEvento,
       offeredPrice: data.oferta,
+      horaInicio: data.horaInicio,
+      horaFin: data.horaFin,
       message: data.mensaje || '',
       nombreLocal: data.nombreLocal || '',
       ciudadLocal: data.ciudadLocal || '',

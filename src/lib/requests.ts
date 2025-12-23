@@ -26,6 +26,8 @@ export function useCreateBookingRequest() {
       eventLocation: string;
       eventType: string;
       offeredPrice: number;
+      horaInicio?: string;
+      horaFin?: string;
       message?: string;
       nombreLocal?: string;
       ciudadLocal?: string;
@@ -36,11 +38,12 @@ export function useCreateBookingRequest() {
         eventLocation: data.eventLocation,
         eventType: data.eventType,
         offeredPrice: data.offeredPrice,
+        horaInicio: data.horaInicio,
+        horaFin: data.horaFin,
         message: data.message,
         nombreLocal: data.nombreLocal,
         ciudadLocal: data.ciudadLocal,
       };
-      // log eliminado
       return apiFetch('/requests', {
         method: 'POST',
         body: payload,

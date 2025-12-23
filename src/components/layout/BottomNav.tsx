@@ -42,7 +42,7 @@ const navItems = [
     if (role.includes('promoter')) return `/promoter/${user.id}/requests`;
     return '/';
   } },
-  { key: 'profile', icon: <User className="w-6 h-6" />, label: 'Perfil', getPath: (user: any) => {
+  { key: 'profile', icon: <User className="w-6 h-6" />, label: 'Mi Perfil', getPath: (user: any) => {
     if (!user) return '/';
     const role = String(user.role).toLowerCase();
     if (role.includes('art')) return `/artist/${user.id}/profile`;

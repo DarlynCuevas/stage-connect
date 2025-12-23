@@ -44,8 +44,10 @@ export function RequestDetailModal({ open, onOpenChange, request, onCancel, onEd
           </div>
           {/* Info evento */}
           <div className="grid grid-cols-2 gap-2 text-sm border-b pb-3">
-            <div className="flex items-center gap-2"><Clock className="w-4 h-4" /> {request.eventDate ? format(new Date(request.eventDate), 'dd/MM/yyyy HH:mm') : '-'}</div>
+            <div className="flex items-center gap-2"><Clock className="w-4 h-4" /> {request.eventDate ? format(new Date(request.eventDate), 'dd/MM/yyyy') : '-'}</div>
             <div className="flex items-center gap-2"><MapPin className="w-4 h-4" /> {request.eventLocation || '-'}</div>
+            <div className="flex items-center gap-2"><span className="font-semibold">Hora inicio:</span> {request.horaInicio || '-'}</div>
+            <div className="flex items-center gap-2"><span className="font-semibold">Hora fin:</span> {request.horaFin || '-'}</div>
             <div className="flex items-center gap-2"><Euro className="w-4 h-4" /> €{request.offeredPrice?.toLocaleString() || '-'}</div>
             <div className="flex items-center gap-2"><Badge>{request.status}</Badge></div>
             <div className="col-span-2 flex items-center gap-2"><span className="font-semibold">Tipo de evento:</span> {request.eventType || '-'}</div>

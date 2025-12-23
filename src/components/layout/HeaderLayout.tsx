@@ -168,9 +168,34 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
         >
           {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
-        <Link to={getSettingsPath()}>
-          <Settings className="w-5 h-5 text-muted-foreground" />
-        </Link>
+        {/* Menú de usuario/avatar para móvil */}
+        {user && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="relative">
+                <Avatar className="h-7 w-7 border cursor-pointer border-border">
+                  <AvatarImage src={user.avatar} />
+                  <AvatarFallback>{String(user.name || 'U').charAt(0)}</AvatarFallback>
+                </Avatar>
+                {user?.verified && (
+                  <span className="absolute -bottom-1 -right-1 bg-white dark:bg-background rounded-full p-[2px] shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  </span>
+                )}
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem asChild>
+                <Link to={getSettingsPath()} className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" /> Ajustes
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={logout} className="text-destructive flex items-center gap-2">
+                <LogOut className="w-4 h-4" /> Cerrar sesión
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </header>
       {/* Header y tabs solo en escritorio (sm+) */}
       <header className="hidden sm:block sticky top-0 z-50 bg-background/95 backdrop-blur border-b w-full">
