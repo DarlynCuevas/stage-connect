@@ -1,18 +1,18 @@
-import { useCallback } from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
-import { RequestCard } from '@/components/booking/RequestCard';
-import { ManagerRequestCard } from '@/components/manager/ManagerRequestCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockArtists } from '@/data/mockData';
-import { BookingRequest } from '@/types';
-import { useToast } from '@/hooks/use-toast';
-import { useArtistRequests, useSentRequests, useUpdateRequestStatus } from '@/lib/requests';
-import { useInterestedByArtist } from '@/lib/interested';
-import { useReceivedManagerRequests, useUpdateManagerRequestStatus } from '@/lib/manager-requests';
-import { MessageSquare, Clock, Check, X, User } from 'lucide-react';
+import { useState } from 'react';
+import { useArtistRequests } from '@/lib/requests';
+import { useInterestedByArtist, updateInterestedStatus } from '@/lib/interested';
+import { useReceivedManagerRequests } from '@/lib/manager-requests';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import CardItemRequest from '@/components/booking/CardItemRequest';
+import { Send } from 'lucide-react';
+
+const TABS = [
+  'Contratación',
+  'Ofertas',
+  'Representación',
+];
 
 export default function ArtistRequests() {
   const { id } = useParams();
@@ -21,302 +21,252 @@ export default function ArtistRequests() {
     return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
   }
   const { data: requests = [], isLoading } = useArtistRequests();
-  const { data: sentRequests = [] } = useSentRequests();
-  const { data: managerRequests = [] } = useReceivedManagerRequests();
-  const artist = mockArtists[0];
-  const { toast } = useToast();
-  const updateStatusMutation = useUpdateRequestStatus();
-  const updateManagerRequestStatus = useUpdateManagerRequestStatus();
-  const interestedQuery = useInterestedByArtist(authUser?.id);
-  const interestedList = interestedQuery.data || [];
+  const { data: interested = [], isLoading: loadingInterested } = useInterestedByArtist(Number(authUser?.id));
+  const { data: managerRequests = [], isLoading: loadingManagers } = useReceivedManagerRequests();
+  const [activeTab, setActiveTab] = useState(TABS[0]);
+  const [selected, setSelected] = useState(null);
+  const [filter, setFilter] = useState('Todas');
+  const [search, setSearch] = useState('');
+  const [date, setDate] = useState('');
 
-  const handleAccept = useCallback(async (requestId: string) => {
-    try {
-      await updateStatusMutation.mutateAsync({ id: requestId, status: 'Accepted' });
-      toast({
-        title: '¡Contratación aceptada!',
-        description: 'Has confirmado la solicitud de este evento.',
-        duration: 4000,
-      });
-    } catch (err) {
-      // error already handled by mutation
-    }
-  }, [updateStatusMutation, toast]);
+  // Filtrado por nombre y fecha
+  const filterRequests = (arr) => arr.filter(r => {
+    const name = r.artist?.name?.toLowerCase() || r.name?.toLowerCase() || r.manager?.name?.toLowerCase() || '';
+    const matchesName = name.includes(search.toLowerCase());
+    const matchesDate = date ? (r.date && r.date.startsWith(date)) : true;
+    return matchesName && matchesDate;
+  });
 
-  const handleReject = useCallback(async (requestId: string) => {
-    try {
-      await updateStatusMutation.mutateAsync({ id: requestId, status: 'Rejected' });
-    } catch (err) {
-      // error already handled by mutation
-    }
-  }, [updateStatusMutation]);
+  const filteredRequests = filterRequests((requests || []).filter(req => {
+    if (activeTab !== 'Contratación') return false;
+    if (filter === 'Todas') return true;
+    if (filter === 'Nuevas') return req.status === 'Pending';
+    if (filter === 'Pendientes') return req.status === 'Pending';
+    if (filter === 'Completadas') return req.status === 'Accepted';
+    if (filter === 'Canceladas') return req.status === 'Rejected';
+    return true;
+  }));
 
-  const handleNegotiate = (requestId: string) => {
-    toast({
-      title: 'Modo negociación',
-      description: 'Ahora puedes enviar una contraoferta.',
-      duration: 4000,
-    });
-  };
-
-  // Recibidas: todas las solicitudes recibidas
-  const receivedRequests = requests;
-  // Enviadas: todas las solicitudes enviadas
-  const allSentRequests = sentRequests;
-  // Pendientes: todas las solicitudes (recibidas o enviadas) en estado Pending
-  const pendingRequests = [
-    ...requests.filter(r => r.status === 'Pending'),
-    ...sentRequests.filter(r => r.status === 'Pending')
-  ];
-  // Completadas: todas las solicitudes (recibidas o enviadas) en estado Accepted o Rejected
-  const completedRequests = [
-    ...requests.filter(r => ['Accepted', 'Rejected'].includes(r.status)),
-    ...sentRequests.filter(r => ['Accepted', 'Rejected'].includes(r.status))
-  ];
-  const pendingManagerRequests = managerRequests.filter((r: any) => r.status === 'Pending');
-  const completedManagerRequests = managerRequests.filter((r: any) => ['Accepted', 'Rejected'].includes(r.status));
+  const filteredManagerRequests = filterRequests((managerRequests || []).filter(req => {
+    if (activeTab !== 'Representación') return false;
+    if (filter === 'Todas') return true;
+    if (filter === 'Nuevas') return req.status === 'Pending';
+    if (filter === 'Pendientes') return req.status === 'Pending';
+    if (filter === 'Completadas') return req.status === 'Accepted';
+    if (filter === 'Canceladas') return req.status === 'Rejected';
+    return true;
+  }));
 
   return (
-
     <HeaderLayout>
-      <div className="space-y-6">
-        <div className="relative rounded-2xl overflow-hidden mb-8">
-          <div className="h-48 lg:h-64">
-            <img
-              src={`https://picsum.photos/1200/400?random=1}`}
-              alt="Banner"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-          </div>
-          {/* Rating sobre la imagen, esquina inferior derecha */}
-          <div className="absolute bottom-4 right-6 flex items-center gap-2 bg-black/70 px-3 py-1.5 rounded-full shadow-lg">
+      <div className="max-w-3xl mx-auto w-full bg-card rounded-xl shadow-md border border-border mt-8 flex flex-col">
+        {/* Tabs */}
+        <div className="flex border-b border-border bg-background rounded-t-xl">
+          {TABS.map(tab => (
+            <button
+              key={tab}
+              className={`flex-1 py-3 text-center font-display font-semibold transition
+                ${activeTab === tab ? 'border-b-2 border-primary text-primary bg-background' : 'text-muted-foreground'}`}
+              onClick={() => { setActiveTab(tab); setSelected(null); }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        {/* Buscador */}
+        <div className="p-4 border-b border-border bg-background">
+          <input
+            className="w-full rounded-lg bg-muted px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Buscar..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {/* Filtros debajo del buscador */}
+          <div className="flex gap-2 mt-3">
+            {(
+              activeTab === 'Contratación'
+                ? ['Todas', 'Pendientes', 'Completadas', 'Canceladas']
+                : ['Todas', 'Pendientes', 'Aceptadas']
+            ).map(filtro => (
+              <button
+                key={filtro}
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition
+                  ${filter === filtro ? 'bg-primary text-white border-primary' : 'bg-muted text-muted-foreground border-border hover:border-primary'}`}
+                onClick={() => setFilter(filtro)}
+              >
+                {filtro}
+              </button>
+            ))}
           </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-display font-bold mb-2">
-            Solicitudes de Contratación
-          </h1>
-          <p className="text-muted-foreground">
-            Gestiona las propuestas que recibes de locales y promotores.
-          </p>
-        </div>
-
-        <Tabs defaultValue="pending" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="pending" className="gap-2">
-              <Clock className="w-4 h-4" />
-              Pendientes ({pendingRequests.length})
-            </TabsTrigger>
-            <TabsTrigger value="interest" className="gap-2">
-              <User className="w-4 h-4 text-primary" />
-              Ofertas de interés (0)
-            </TabsTrigger>
-            <TabsTrigger value="received" className="gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Recibidas ({receivedRequests.length})
-            </TabsTrigger>
-            <TabsTrigger value="sent" className="gap-2">
-              <X className="w-4 h-4" />
-              Enviadas ({allSentRequests.length})
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="gap-2">
-              <Check className="w-4 h-4" />
-              Completadas ({completedRequests.length})
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="interest">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Aquí se mostrarán las ofertas de interés. Reemplaza el array por el hook real cuando esté disponible. */}
-              <div className="col-span-2 text-center py-12 text-muted-foreground">
-                <User className="w-16 h-16 mx-auto mb-4 opacity-50 text-primary" />
-                <p className="text-lg">No tienes ofertas de interés por ahora</p>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="received">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {receivedRequests.length > 0 ? (
-                receivedRequests.map((request) => (
-                  <RequestCard
-                    key={request.id}
-                    request={request}
-                    artist={artist}
-                    isReceiver
-                    onAccept={() => handleAccept(String(request.id))}
-                    onReject={() => handleReject(String(request.id))}
-                    onNegotiate={() => handleNegotiate(String(request.id))}
+        {/* Lista de tarjetas */}
+        {activeTab === 'Contratación' ? (
+          <div className="overflow-y-auto flex flex-col gap-6 py-4 px-2" style={{ maxHeight: 400, minHeight: 240 }}>
+            {isLoading ? (
+              <div className="text-center text-muted-foreground py-10">Cargando solicitudes...</div>
+            ) : filteredRequests.length > 0 ? (
+              filteredRequests.map(request => (
+                <CardItemRequest
+                  key={request.id}
+                  item={request}
+                  onClick={() => setSelected(request)}
+                  selected={selected?.id === request.id}
+                />
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground py-10">No hay solicitudes de contratación en esta sección.</div>
+            )}
+          </div>
+        ) : activeTab === 'Ofertas' ? (
+          <div className="overflow-y-auto bg-card" style={{ maxHeight: 400, minHeight: 240 }}>
+            {filter === 'Todas' && (
+              interested.length > 0 ? (
+                interested.map(item => (
+                  <CardItemRequest
+                    key={item.id}
+                    item={{
+                      ...item,
+                      artist: undefined,
+                      name: item.venue?.name,
+                      avatar: item.venue?.avatar,
+                      city: item.venue?.city,
+                      country: item.venue?.country,
+                      price: item.price,
+                      date: item.date,
+                    }}
+                    onClick={() => setSelected(item)}
+                    selected={selected?.id === item.id}
                   />
                 ))
               ) : (
-                <div className="col-span-2 text-center py-12 text-muted-foreground">
-                  <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">No tienes solicitudes recibidas</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="pending">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {pendingRequests.length > 0 ? (
-                pendingRequests.map((request) => (
-                  <RequestCard
-                    key={request.id}
-                    request={request}
-                    artist={artist}
-                    isReceiver={!!requests.find(r => r.id === request.id)}
-                    onAccept={() => handleAccept(String(request.id))}
-                    onReject={() => handleReject(String(request.id))}
-                    onNegotiate={() => handleNegotiate(String(request.id))}
+                <div className="text-center text-muted-foreground py-10">No hay ofertas en esta sección.</div>
+              )
+            )}
+            {filter === 'Pendientes' && (
+              interested.filter(item => item.status === 'pending').length > 0 ? (
+                interested.filter(item => item.status === 'pending').map(item => (
+                  <CardItemRequest
+                    key={item.id}
+                    item={{
+                      ...item,
+                      artist: undefined,
+                      name: item.venue?.name,
+                      avatar: item.venue?.avatar,
+                      city: item.venue?.city,
+                      country: item.venue?.country,
+                      price: item.price,
+                      date: item.date,
+                    }}
+                    onClick={() => setSelected(item)}
+                    selected={selected?.id === item.id}
                   />
                 ))
               ) : (
-                <div className="col-span-2 text-center py-12 text-muted-foreground">
-                  <Clock className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">No tienes solicitudes pendientes</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="sent">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {allSentRequests.length > 0 ? (
-                allSentRequests.map((request) => (
-                  <RequestCard
-                    key={request.id}
-                    request={request}
-                    artist={artist}
+                <div className="text-center text-muted-foreground py-10">No hay ofertas pendientes.</div>
+              )
+            )}
+            {filter === 'Aceptadas' && (
+              interested.filter(item => item.status === 'accepted').length > 0 ? (
+                interested.filter(item => item.status === 'accepted').map(item => (
+                  <CardItemRequest
+                    key={item.id}
+                    item={{
+                      ...item,
+                      artist: undefined,
+                      name: item.venue?.name,
+                      avatar: item.venue?.avatar,
+                      city: item.venue?.city,
+                      country: item.venue?.country,
+                      price: item.price,
+                      date: item.date,
+                    }}
+                    onClick={() => setSelected(item)}
+                    selected={selected?.id === item.id}
                   />
                 ))
               ) : (
-                <div className="col-span-2 text-center py-12 text-muted-foreground">
-                  <X className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">No tienes solicitudes enviadas</p>
+                <div className="text-center text-muted-foreground py-10">No hay ofertas aceptadas.</div>
+              )
+            )}
+          </div>
+        ) : activeTab === 'Representación' ? (
+          <div className="overflow-y-auto bg-card" style={{ maxHeight: 400, minHeight: 240 }}>
+            {loadingManagers ? (
+              <div className="text-center text-muted-foreground py-10">Cargando solicitudes de representación...</div>
+            ) : filteredManagerRequests.length > 0 ? (
+              filteredManagerRequests.map(item => (
+                <CardItemRequest key={item.id} item={item} onClick={() => setSelected(item)} selected={selected?.id === item.id} />
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground py-10">No hay solicitudes de representación en esta sección.</div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center text-muted-foreground py-10">No hay elementos en esta sección.</div>
+        )}
+        {/* Panel de mensajes/detalle */}
+        <div className="border-t border-border bg-background">
+          {selected ? (
+            <div className="max-w-xl mx-auto p-8 flex items-center justify-between gap-4">
+              <div>
+                <h2 className="font-bold text-xl mb-2">{selected.venue?.name || selected.name}</h2>
+                <div className="text-sm text-muted-foreground mb-2">
+                  {selected.venue?.city && selected.venue?.country ? `${selected.venue.city}, ${selected.venue.country}` : selected.venue?.city || selected.venue?.country || ''}
                 </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="completed">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {completedRequests.length > 0 ? (
-                completedRequests.map((request) => (
-                  <RequestCard
-                    key={request.id}
-                    request={request}
-                    artist={artist}
-                  />
-                ))
-              ) : (
-                <div className="col-span-2 text-center py-12 text-muted-foreground">
-                  <Check className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">No hay solicitudes completadas</p>
+                <div className="text-sm text-muted-foreground mb-2">
+                  Día solicitado: <span className="font-semibold">{selected.date}</span>
                 </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
-
-     
-      {/* Sección de Ofertas de interés */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <User className="w-6 h-6 text-primary" />
-          Ofertas de interés
-        </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-          {interestedQuery.isLoading ? (
-            <div className="col-span-2 text-center py-12 text-muted-foreground">
-              <User className="w-16 h-16 mx-auto mb-4 opacity-50 text-primary" />
-              <p className="text-lg">Cargando ofertas de interés...</p>
-            </div>
-          ) : interestedList.length > 0 ? (
-            interestedList.map((item) => (
-              <div key={item.id} className="rounded-xl bg-white/70 dark:bg-zinc-900/60 shadow-sm p-6 flex flex-col gap-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <User className="w-5 h-5 text-primary" />
-                  <span className="font-semibold">{item.venue?.name || 'Local'}</span>
-                  <span className="text-xs text-muted-foreground ml-2">{item.date}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">Caché ofertado:</span>
-                  <span className="font-bold text-primary">{item.price ? `€${item.price}` : 'Sin caché'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">Estado:</span>
-                  <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">{item.status}</span>
+                <div className="text-sm text-muted-foreground mb-2">
+                  Oferta: <span className="font-semibold">{selected.price ? `${selected.price} €` : 'Sin oferta'}</span>
                 </div>
               </div>
-            ))
+              {activeTab === 'Ofertas' && selected.status !== 'accepted' && (
+                <div className="flex gap-2 items-center">
+                  <button className="px-2 py-1 rounded-md border border-destructive text-destructive text-xs font-medium bg-transparent hover:bg-destructive/10 transition-colors shadow-sm">No me interesa</button>
+                  <button
+                    className="px-2 py-1 rounded-md border border-primary text-primary text-xs font-medium bg-transparent hover:bg-primary/10 transition-colors shadow-sm"
+                    onClick={async () => {
+                      if (selected) {
+                        await updateInterestedStatus(selected.id, 'accepted');
+                      }
+                    }}
+                  >
+                    Me interesa
+                  </button>
+                </div>
+              )}
+              {activeTab === 'Contratación' && selected.status !== 'Accepted' && (
+                <div className="flex gap-2 items-center">
+                  <button
+                    className="px-2 py-1 rounded-md border border-destructive text-destructive text-xs font-medium bg-transparent hover:bg-destructive/10 transition-colors shadow-sm"
+                    onClick={async () => {
+                      // Aquí deberías llamar a la función para rechazar la solicitud
+                      // await updateRequestStatus(selected.id, 'Rejected');
+                    }}
+                  >
+                    Rechazar
+                  </button>
+                  <button
+                    className="px-2 py-1 rounded-md border border-success text-success text-xs font-medium bg-transparent hover:bg-success/10 transition-colors shadow-sm"
+                    onClick={async () => {
+                      // Aquí deberías llamar a la función para aceptar la solicitud
+                      // await updateRequestStatus(selected.id, 'Accepted');
+                    }}
+                  >
+                    Aceptar
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
-            <div className="col-span-2 text-center py-12 text-muted-foreground">
-              <User className="w-16 h-16 mx-auto mb-4 opacity-50 text-primary" />
-              <p className="text-lg">No tienes ofertas de interés por ahora</p>
+            <div className="text-center text-muted-foreground py-10">
+              <Send className="mx-auto w-16 h-16 mb-4 opacity-30" />
+              <h2 className="font-display font-bold text-lg mb-2">Tus mensajes</h2>
+              <p>Selecciona una solicitud o mensaje para ver los detalles aquí.</p>
             </div>
           )}
         </div>
       </div>
-
-      {/* Sección de Solicitudes de Representación */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <User className="w-6 h-6 text-role-manager" />
-          Solicitudes de Representación
-        </h2>
-        <Tabs defaultValue="pending-manager" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="pending-manager" className="gap-2">
-              <Clock className="w-4 h-4" />
-              Pendientes ({pendingManagerRequests.length})
-            </TabsTrigger>
-            <TabsTrigger value="assigned-manager" className="gap-2">
-              <Check className="w-4 h-4" />
-              Asignada ({completedManagerRequests.filter((r: any) => r.status === 'Accepted').length})
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="pending-manager">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-              {pendingManagerRequests.length > 0 ? (
-                pendingManagerRequests.map((request: any) => (
-                  <ManagerRequestCard
-                    key={request.id}
-                    request={request}
-                    onAccept={() => updateManagerRequestStatus.mutate({ requestId: request.id, status: 'Accepted' })}
-                    onReject={() => updateManagerRequestStatus.mutate({ requestId: request.id, status: 'Rejected' })}
-                  />
-                ))
-              ) : (
-                <div className="col-span-2 text-center py-8 text-muted-foreground">
-                  <User className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                  <p>No tienes solicitudes de representación pendientes</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-          <TabsContent value="assigned-manager">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {completedManagerRequests.filter((r: any) => r.status === 'Accepted').length > 0 ? (
-                completedManagerRequests.filter((r: any) => r.status === 'Accepted').map((request: any) => (
-                  <ManagerRequestCard
-                    key={request.id}
-                    request={request}
-                    isAssigned={true}
-                  />
-                ))
-              ) : (
-                <div className="col-span-2 text-center py-8 text-muted-foreground">
-                  <User className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                  <p>No tienes manager asignado actualmente</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-      </HeaderLayout >
+    </HeaderLayout>
   );
 }

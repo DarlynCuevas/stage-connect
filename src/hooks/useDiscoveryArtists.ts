@@ -58,7 +58,8 @@ export function useDiscoveryArtists() {
       !filters.priceMin &&
       !filters.priceMax &&
       !filters.query &&
-      !filters.date
+      !filters.date &&
+      (!filters.country || filters.country === '' || filters.country === 'all')
     );
     const fetchArtists = async () => {
       setLoading(true);
@@ -69,7 +70,7 @@ export function useDiscoveryArtists() {
         } else {
           const params = new URLSearchParams();
           if (filters.country && filters.country !== 'all') params.append('country', filters.country);
-          if (filters.city !== 'all') params.append('city', filters.city);
+          if (filters.city && filters.city !== 'all' && filters.city !== 'undefined' && filters.city !== '') params.append('city', filters.city);
           if (filters.genre && filters.genre.length > 0) {
             filters.genre.forEach((g) => params.append('genre', g));
           }

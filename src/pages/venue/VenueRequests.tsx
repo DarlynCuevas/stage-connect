@@ -5,7 +5,6 @@ import { useUpdateRequestStatus, useCreateBookingRequest } from '@/lib/requests'
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 // import { RequestCard } from '@/components/booking/RequestCard';
-import CardItemRequest from '@/components/booking/CardItemRequest';
 import { RequestDetailModal } from '@/components/booking/RequestDetailModal';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,6 +17,7 @@ import { Clock, Check, Loader2, Send } from 'lucide-react';
 import { useParams, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import ModalSolicitudContratacion from '@/components/calendar/ModalSolicitudContratacion';
+import CardItemRequest from '@/components/booking/CardItemRequest';
  // Asegúrate de tener este hook o el que corresponda
 
 
@@ -234,10 +234,10 @@ const VenueRequests = () => {
     if (activeTab !== 'Contratación') return false;
     if (filter === 'Todas') return true;
     // Ajusta los valores de status según tu backend
-    if (filter === 'Nuevas') return req.status === 'Pending' || req.status === 'pending';
-    if (filter === 'Pendientes') return req.status === 'Pending' || req.status === 'pending';
-    if (filter === 'Completadas') return req.status === 'Accepted' || req.status === 'accepted';
-    if (filter === 'Canceladas') return req.status === 'Rejected' || req.status === 'rejected';
+    if (filter === 'Nuevas') return req.status === 'Pending';
+    if (filter === 'Pendientes') return req.status === 'Pending';
+    if (filter === 'Completadas') return req.status === 'Accepted';
+    if (filter === 'Canceladas') return req.status === 'Rejected';
     return true;
   });
 

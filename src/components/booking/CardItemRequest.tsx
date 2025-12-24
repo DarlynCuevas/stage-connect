@@ -30,19 +30,6 @@ const CardItemRequest: React.FC<CardItemProps> = ({ item, onClick, selected }) =
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="font-semibold text-base text-foreground truncate">{item.eventName || name}</span>
-          {/* Badge de estado */}
-          {item.status && (
-            <span
-              className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold
-                ${item.status === 'Pendientes' ? 'bg-yellow-100 text-yellow-700' : ''}
-                ${item.status === 'Canceladas' ? 'bg-red-100 text-red-700' : ''}
-                ${item.status === 'Completadas' ? 'bg-emerald-100 text-emerald-700' : ''}
-                ${item.status === 'Nuevas' ? 'bg-primary/10 text-primary' : ''}
-              `}
-            >
-              {item.status}
-            </span>
-          )}
         </div>
         <div className="text-sm text-muted-foreground truncate flex flex-wrap gap-2 items-center">
           {name && <span className="font-medium text-primary">{name}</span>}
@@ -60,17 +47,23 @@ const CardItemRequest: React.FC<CardItemProps> = ({ item, onClick, selected }) =
           {/* Interesados: fecha de interés */}
           {!isBooking && item.date && (
             <span className="ml-2">
-              <span className="font-semibold">Interesado desde:</span> {new Date(item.date).toLocaleDateString()}
+              <span className="font-semibold">Se solicita artista para el día:</span> {new Date(item.date).toLocaleDateString()}
             </span>
           )}
           {item.summary && <span className="ml-2">{item.summary}</span>}
         </div>
       </div>
-      {/* Caché del artista si aplica */}
-      {item.artist?.basePrice && (
+      {/* Mostrar precio según tipo */}
+      {isBooking && item.offeredPrice && (
         <div className="ml-4 text-right">
           <span className="block text-xs text-muted-foreground">Caché artista</span>
-          <span className="font-bold text-foreground">{item.artist.basePrice}€</span>
+          <span className="font-bold text-foreground">{item.offeredPrice}€</span>
+        </div>
+      )}
+      {!isBooking && item.price && (
+        <div className="ml-4 text-right">
+          <span className="block text-xs text-muted-foreground">Precio ofertado</span>
+          <span className="font-bold text-foreground">{item.price}€</span>
         </div>
       )}
     </div>
