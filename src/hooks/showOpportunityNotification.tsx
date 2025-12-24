@@ -31,7 +31,13 @@ export function showOpportunityNotification({
 }: ShowOpportunityNotificationArgs & { venueId?: number, artistId?: number, managerId?: number, price?: number }) {
   const handleInterest = async () => {
     try {
-      await createInterested(venueId!, [artistId!], date, price, managerId);
+      const created = await createInterested(venueId!, [artistId!], date, price, managerId);
+      // PATCH para cambiar el status a 'accepted' y disparar la notificación
+      if (created && created[0] && created[0].id) {
+        await import('@/lib/interested').then(({ updateInterestedStatus }) =>
+          updateInterestedStatus(created[0].id, 'accepted')
+        );
+      }
       toast({
         title: '¡Interés registrado!',
         description: 'Tu interés ha sido enviado al local. Si eres seleccionado, te contactarán.',
@@ -52,63 +58,60 @@ export function showOpportunityNotification({
     description: (
       <div
         style={{
-          background: 'hsl(var(--card))',
-          color: 'hsl(var(--card-foreground))',
-          borderRadius: 'var(--radius)',
-          boxShadow: 'var(--shadow-card)',
-          padding: '1rem',
+          padding: '0.6rem 0.8rem',
           display: 'flex',
           flexDirection: 'column',
-          gap: '1rem',
+          gap: '0.5rem',
           fontFamily: 'Inter, Plus Jakarta Sans, sans-serif',
+          background: 'transparent',
+          maxWidth: 320,
+          minWidth: 0,
         }}
       >
-        <span style={{ fontWeight: 500 }}>
-          El local <span style={{ color: 'hsl(var(--primary))', fontWeight: 700 }}>{venueName}</span> en <span style={{ color: 'hsl(var(--accent))', fontWeight: 700 }}>{venueCity}</span> tiene disponible el <span style={{ color: 'hsl(var(--success))', fontWeight: 700 }}>{date}</span>.
+        <span style={{ fontWeight: 500, color: 'hsl(var(--foreground))', fontSize: '0.97em', lineHeight: 1.3 }}>
+          El local <span style={{ fontWeight: 600 }}>{venueName}</span> en <span style={{ fontWeight: 600 }}>{venueCity}</span> tiene disponible el <span style={{ fontWeight: 600 }}>{date}</span>.
         </span>
         {typeof price === 'number' && (
-          <span style={{ fontWeight: 600, color: 'hsl(var(--primary))', fontSize: '1.1em' }}>
+          <span style={{ fontWeight: 500, color: 'hsl(var(--muted-foreground))', fontSize: '0.95em' }}>
             Oferta: €{price.toLocaleString()}
           </span>
         )}
-        <div style={{ display: 'flex', gap: '0.75rem', marginTop: 4 }}>
+        <div style={{ display: 'flex', gap: '0.35rem', marginTop: 2 }}>
           <button
             style={{
-              padding: '6px 18px',
-              borderRadius: 'var(--radius)',
-              background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
-              color: 'hsl(var(--primary-foreground))',
-              border: 'none',
-              fontWeight: 600,
+              padding: '3.5px 10px',
+              borderRadius: '5px',
+              background: 'hsl(var(--secondary))',
+              color: 'hsl(var(--foreground))',
+              border: '1px solid hsl(var(--border))',
+              fontWeight: 500,
               fontFamily: 'inherit',
-              fontSize: '1rem',
-              boxShadow: 'var(--shadow-sm)',
+              fontSize: '0.92rem',
+              boxShadow: 'none',
               cursor: 'pointer',
-              transition: 'filter 0.2s',
+              transition: 'background 0.2s',
+              minWidth: 0,
             }}
             onClick={onDetails}
-            onMouseOver={e => (e.currentTarget.style.filter = 'brightness(1.08)')}
-            onMouseOut={e => (e.currentTarget.style.filter = 'none')}
           >
             Ver detalles
           </button>
           <button
             style={{
-              padding: '6px 18px',
-              borderRadius: 'var(--radius)',
-              background: 'hsl(var(--success))',
-              color: 'hsl(var(--success-foreground))',
-              border: 'none',
-              fontWeight: 600,
+              padding: '3.5px 10px',
+              borderRadius: '5px',
+              background: 'hsl(var(--secondary))',
+              color: 'hsl(var(--foreground))',
+              border: '1px solid hsl(var(--border))',
+              fontWeight: 500,
               fontFamily: 'inherit',
-              fontSize: '1rem',
-              boxShadow: 'var(--shadow-sm)',
+              fontSize: '0.92rem',
+              boxShadow: 'none',
               cursor: 'pointer',
-              transition: 'filter 0.2s',
+              transition: 'background 0.2s',
+              minWidth: 0,
             }}
             onClick={handleInterest}
-            onMouseOver={e => (e.currentTarget.style.filter = 'brightness(1.08)')}
-            onMouseOut={e => (e.currentTarget.style.filter = 'none')}
           >
             Me interesa
           </button>

@@ -28,10 +28,16 @@ export interface DiscoveryFilters {
 }
 
 export function useDiscoveryVenues() {
-  const [venues, setVenues] = useState<DiscoveryVenue[]>([]);
+  const [populares, setPopulares] = useState<DiscoveryVenue[]>([]);
+  const [destacados, setDestacados] = useState<DiscoveryVenue[]>([]);
+  const [recienLlegados, setRecienLlegados] = useState<DiscoveryVenue[]>([]);
+  const [enCiudad, setEnCiudad] = useState<DiscoveryVenue[]>([]);
+  const [resto, setResto] = useState<DiscoveryVenue[]>([]);
+  const [pagination, setPagination] = useState<any>({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<DiscoveryFilters>({ city: 'all', type: 'all', query: '', date: undefined });
+  const [filters, setFilters] = useState<DiscoveryFilters>({ city: '', type: '', query: '', date: undefined });
   const { token } = useAuth();
+  const venues = [...populares, ...destacados, ...enCiudad, ...resto];
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -39,20 +45,29 @@ export function useDiscoveryVenues() {
       try {
         const params = new URLSearchParams();
         if (filters.city && filters.city !== 'all') params.append('city', filters.city);
-        // 'type' no se usa en el backend actual, se omite
         if (filters.query && filters.query.trim() !== '') params.append('query', filters.query.trim());
-        // 'date' tampoco se usa en el backend actual, se omite salvo que se añada soporte
-        const url = `/public/venues${params.toString() ? '?' + params.toString() : ''}`;
+        if (filters.date) params.append('date', filters.date);
+        const url = `/public/venues/discover${params.toString() ? '?' + params.toString() : ''}`;
         const response = await apiFetch(url, token ? { token } : undefined);
-        setVenues(response || []);
+        setPopulares(response.populares || []);
+        setDestacados(response.destacados || []);
+        setRecienLlegados(response.recienLlegados || []);
+        setEnCiudad(response.enCiudad || []);
+        setResto(response.resto || []);
+        setPagination(response.pagination || { page: 1, pageSize: 20, total: 0, hasNextPage: false });
       } catch (error) {
-        setVenues([]);
+        setPopulares([]);
+        setDestacados([]);
+        setRecienLlegados([]);
+        setEnCiudad([]);
+        setResto([]);
+        setPagination({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
       } finally {
         setLoading(false);
       }
     };
     fetchVenues();
-  }, [filters]);
+  }, [filters, token]);
 
-  return { venues, setVenues, loading, filters, setFilters };
+  return { populares, destacados, recienLlegados, enCiudad, resto, pagination, venues, loading, setFilters, filters, setPopulares, setDestacados, setRecienLlegados, setEnCiudad, setResto };
 }

@@ -3,7 +3,7 @@ import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Music, Bell, Sun, Moon,  User,Settings, LogOut } from 'lucide-react';
+import { Music, Bell, Sun, Moon,  User,Settings, LogOut, MessageCircle } from 'lucide-react';
 import { BottomNav } from './BottomNav';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
@@ -285,15 +285,13 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
               >
                 {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
-              <button
-                onClick={logout}
-                className="w-9 h-9 rounded-full border flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
-                title="Cerrar sesión"
+              <Link
+                to="/messages"
+                className="w-9 h-9 rounded-full border flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+                title="Mensajes"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
-                </svg>
-              </button>
+                <MessageCircle className="w-5 h-5" />
+              </Link>
 
               {user && (
                 <DropdownMenu>

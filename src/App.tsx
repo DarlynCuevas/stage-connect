@@ -13,6 +13,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { API_BASE_URL } from "@/config";
 import apiFetch from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import Messages from "./pages/Messages";
+
+import { useDynamicPrimaryColor } from "@/hooks/useDynamicPrimaryColor";
 
 // Public pages
 import Landing from "./pages/Landing";
@@ -54,6 +57,7 @@ import VenueDiscover from './pages/venue/VenueDiscover';
 const queryClient = new QueryClient();
 
 function RealtimeToasts() {
+   
   const { token, user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -208,6 +212,18 @@ function RealtimeToasts() {
       invalidateManagerRelations();
     });
 
+       // Notificación: artista interesado en la propuesta del local
+      socket.on('notification.artist-interested', (payload: any) => {
+        if (user?.role === 'Local' && user?.id) {
+          toast({
+            title: 'Nuevo interés recibido',
+            description: payload?.message || 'Un artista está interesado en tu propuesta.',
+            duration: 5000,
+          });
+          invalidateInterested();
+        }
+      });
+
     // Notificación global de oportunidad de actuación
     socket.on('notification.available-date', (payload: any) => {
       const { venueName, venueCity, date, price } = payload;
@@ -230,9 +246,10 @@ function RealtimeToasts() {
               navigate(`/artist/${user.id}/discover`);
             }
           },
+          onInterest: () => {},
           venueId: payload.venueId || payload.venue_id || undefined,
-          artistId: user?.role === 'Artista' ? user.id : undefined,
-          managerId: user?.role === 'Manager' ? user.id : undefined,
+          artistId: user?.role === 'Artista' ? Number(user.id) : undefined,
+          managerId: user?.role === 'Manager' ? Number(user.id) : undefined,
         });
       });
     });
@@ -323,27 +340,42 @@ function AppRoutes() {
       <Route path="/manager/:managerId/promoter/:promoterId/profile" element={<PromoterProfile />} />
       <Route path="/artist/:artistId/promoter/:id/profile" element={<PromoterProfile />} />
 
+      {/* Messages page (all roles) */}
+      <Route path="/messages" element={<Messages />} />
+
       {/* Catch all */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <HashRouter>
-          <ErrorBoundary>
-            <RealtimeToasts />
-            <AppRoutes />
-          </ErrorBoundary>
-        </HashRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+
+
+
+
+function DynamicThemeProvider() {
+  useDynamicPrimaryColor();
+  return null;
+}
+
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <DynamicThemeProvider />
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <HashRouter>
+            <ErrorBoundary>
+              <RealtimeToasts />
+              <AppRoutes />
+            </ErrorBoundary>
+          </HashRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

@@ -120,7 +120,7 @@ const ArtistCalendarComponent = ({ artistId, editable = false, onDateToggle, onD
               <span className="text-muted-foreground">Reservado</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(38, 92%, 50%)' }} />
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--destructive))' }} />
               <span className="text-muted-foreground">Bloqueado</span>
             </div>
           </div>
@@ -153,13 +153,13 @@ const ArtistCalendarComponent = ({ artistId, editable = false, onDateToggle, onD
                 color: 'inherit',
               },
               unavailable: {
-                backgroundColor: 'hsl(var(--destructive) / 0.3)',
-                color: 'hsl(var(--destructive))',
+                backgroundColor: 'hsl(var(--destructive))',
+                color: 'white',
                 fontWeight: 600,
                 borderRadius: '50%',
               },
               blocked: {
-                backgroundColor: 'hsl(38, 92%, 50%)',
+                backgroundColor: 'hsl(var(--destructive))',
                 color: 'white',
                 fontWeight: 600,
                 borderRadius: '50%',

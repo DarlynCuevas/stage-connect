@@ -16,8 +16,14 @@
     --popover: 220 16% 6%;
     --popover-foreground: 0 0% 98%;
 
-    /* Vibrant coral/orange primary */
-    --primary: 16 90% 58%;
+
+    /* Primary colors by role */
+    --artistPrimary: 16 90% 58%; /* coral/orange (por defecto) */
+    --venuePrimary: 168 72% 56%; /* verde claro */
+    --promoterPrimary: 210 100% 62%; /* azul claro según imagen */
+    --managerPrimary: 262 83% 74%; /* violeta claro según imagen */
+
+    --primary: var(--artistPrimary);
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 12%;

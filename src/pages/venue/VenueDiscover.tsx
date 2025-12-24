@@ -153,133 +153,131 @@ export default function VenueDiscover() {
               onPageChange={(page) => setFilters((prev: any) => ({ ...prev, page }))}
               renderGrid={(children) => (
                 <>
-                  {/* Reemplazo de la sección de "Artistas Destacados" con el componente genérico */}
-                  <HorizontalScrollSection                              
-                    title={<span className="flex items-center gap-2"><Star className="text-yellow-400 w-5 h-5" />Artistas Destacados</span>}
-                    items={destacados}
-                    containerId="destacados-scroll"
-                    onScrollRight={() => {
-                      const el = document.getElementById('destacados-scroll');
-                      if (el) {
-                        console.log('Scrolling destacados-scroll');
-                        el.scrollBy({ left: 220, behavior: 'smooth' });
-                      } else {
-                        console.error('Element with id destacados-scroll not found');
-                      }
-                    }}
-                    onScrollLeft={() => {
-                      const el = document.getElementById('destacados-scroll');
-                      if (el) {
-                        console.log('Scrolling destacados-scroll left');
-                        el.scrollBy({ left: -220, behavior: 'smooth' });
-                      } else {
-                        console.error('Element with id destacados-scroll not found');
-                      }
-                    }}
-                    renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
-                  />
-                  {/* Reemplazo de la sección de "Artistas Populares" con el componente genérico */}
-                  <HorizontalScrollSection
-                    title={<span className="flex items-center gap-2"><Users className="text-blue-500 w-5 h-5" />Artistas Populares</span>}
-                    items={populares.slice(0, 5)}
-                    containerId="populares-scroll"
-                    onScrollRight={() => {
-                      const el = document.getElementById('populares-scroll');
-                      if (el) {
-                        console.log('Scrolling populares-scroll');
-                        el.scrollBy({ left: 220, behavior: 'smooth' });
-                      } else {
-                        console.error('Element with id populares-scroll not found');
-                      }
-                    }}
-                    onScrollLeft={() => {
-                      const el = document.getElementById('populares-scroll');
-                      if (el) {
-                        console.log('Scrolling populares-scroll left');
-                        el.scrollBy({ left: -220, behavior: 'smooth' });
-                      } else {
-                        console.error('Element with id populares-scroll not found');
-                      }
-                    }}
-                    renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
-                  />
-
-                  {/* Sección En tu ciudad */}
-                  <HorizontalScrollSection
-                    title={<span className="flex items-center gap-2"><MapPin className="text-green-500 w-5 h-5" />En tu ciudad</span>}
-                    items={enCiudad.slice(0, 5)}
-                    containerId="enCiudad-scroll"
-                    onScrollRight={() => {
-                      const el = document.getElementById('enCiudad-scroll');
-                      if (el) {
-                        console.log('Scrolling enCiudad-scroll');
-                        el.scrollBy({ left: 220, behavior: 'smooth' });
-                      } else {
-                        console.error('Element with id enCiudad-scroll not found');
-                      }
-                    }}
-                    onScrollLeft={() => {
-                      const el = document.getElementById('enCiudad-scroll');
-                      if (el) {
-                        console.log('Scrolling enCiudad-scroll left');
-                        el.scrollBy({ left: -220, behavior: 'smooth' });
-                      } else {
-                        console.error('Element with id enCiudad-scroll not found');
-                      }
-                    }}
-                    renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
-                  />
-                   {/* Sección Recién llegados */}
-                  <HorizontalScrollSection
-                    title={<span className="flex items-center gap-2"><Sparkles className="text-purple-500 w-5 h-5" />Recién llegados</span>}
-                    items={recienLlegados.slice(0, 5)}
-                    containerId="recienLlegados-scroll"
-                    onScrollRight={() => {
-                      const el = document.getElementById('recienLlegados-scroll');
-                      if (el) {
-                        el.scrollBy({ left: 220, behavior: 'smooth' });
-                      }
-                    }}
-                    onScrollLeft={() => {
-                      const el = document.getElementById('recienLlegados-scroll');
-                      if (el) {
-                        el.scrollBy({ left: -220, behavior: 'smooth' });
-                      }
-                    }}
-                    renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
-                  />
-                   {/* Sección mas contratados */}
-                  <HorizontalScrollSection
-                    title={<span className="flex items-center gap-2"><Trophy  className="text-purple-500 w-5 h-5" />Mas contratados</span>}
-                    items={masContratados.slice(0, 5)}
-                    containerId="masContratados-scroll"
-                    onScrollRight={() => {
-                      const el = document.getElementById('masContratados-scroll');
-                      if (el) {
-                        el.scrollBy({ left: 220, behavior: 'smooth' });
-                      }
-                    }}
-                    onScrollLeft={() => {
-                      const el = document.getElementById('masContratados-scroll');
-                      if (el) {
-                        el.scrollBy({ left: -220, behavior: 'smooth' });
-                      }
-                    }}
-                    renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
-                  />
-
+                  {destacados && destacados.length > 0 && (
+                    <HorizontalScrollSection                              
+                      title={<span className="text-lg font-semibold text-gray-800 dark:text-white">Artistas Destacados</span>}
+                      items={destacados}
+                      containerId="destacados-scroll"
+                      onScrollRight={() => {
+                        const el = document.getElementById('destacados-scroll');
+                        if (el) {
+                          console.log('Scrolling destacados-scroll');
+                          el.scrollBy({ left: 220, behavior: 'smooth' });
+                        } else {
+                          console.error('Element with id destacados-scroll not found');
+                        }
+                      }}
+                      onScrollLeft={() => {
+                        const el = document.getElementById('destacados-scroll');
+                        if (el) {
+                          console.log('Scrolling destacados-scroll left');
+                          el.scrollBy({ left: -220, behavior: 'smooth' });
+                        } else {
+                          console.error('Element with id destacados-scroll not found');
+                        }
+                      }}
+                      renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
+                    />
+                  )}
+                  {populares && populares.length > 0 && (
+                    <HorizontalScrollSection
+                      title={<span className="text-lg font-semibold text-gray-800 dark:text-white">Artistas Populares</span>}
+                      items={populares.slice(0, 5)}
+                      containerId="populares-scroll"
+                      onScrollRight={() => {
+                        const el = document.getElementById('populares-scroll');
+                        if (el) {
+                          console.log('Scrolling populares-scroll');
+                          el.scrollBy({ left: 220, behavior: 'smooth' });
+                        } else {
+                          console.error('Element with id populares-scroll not found');
+                        }
+                      }}
+                      onScrollLeft={() => {
+                        const el = document.getElementById('populares-scroll');
+                        if (el) {
+                          console.log('Scrolling populares-scroll left');
+                          el.scrollBy({ left: -220, behavior: 'smooth' });
+                        } else {
+                          console.error('Element with id populares-scroll not found');
+                        }
+                      }}
+                      renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
+                    />
+                  )}
+                  {enCiudad && enCiudad.length > 0 && (
+                    <HorizontalScrollSection
+                      title={<span className="text-lg font-semibold text-gray-800 dark:text-white">En tu ciudad</span>}
+                      items={enCiudad.slice(0, 5)}
+                      containerId="enCiudad-scroll"
+                      onScrollRight={() => {
+                        const el = document.getElementById('enCiudad-scroll');
+                        if (el) {
+                          console.log('Scrolling enCiudad-scroll');
+                          el.scrollBy({ left: 220, behavior: 'smooth' });
+                        } else {
+                          console.error('Element with id enCiudad-scroll not found');
+                        }
+                      }}
+                      onScrollLeft={() => {
+                        const el = document.getElementById('enCiudad-scroll');
+                        if (el) {
+                          console.log('Scrolling enCiudad-scroll left');
+                          el.scrollBy({ left: -220, behavior: 'smooth' });
+                        } else {
+                          console.error('Element with id enCiudad-scroll not found');
+                        }
+                      }}
+                      renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
+                    />
+                  )}
+                  {recienLlegados && recienLlegados.length > 0 && (
+                    <HorizontalScrollSection
+                      title={<span className="text-lg font-semibold text-gray-800 dark:text-white">Recién llegados</span>}
+                      items={recienLlegados.slice(0, 5)}
+                      containerId="recienLlegados-scroll"
+                      onScrollRight={() => {
+                        const el = document.getElementById('recienLlegados-scroll');
+                        if (el) {
+                          el.scrollBy({ left: 220, behavior: 'smooth' });
+                        }
+                      }}
+                      onScrollLeft={() => {
+                        const el = document.getElementById('recienLlegados-scroll');
+                        if (el) {
+                          el.scrollBy({ left: -220, behavior: 'smooth' });
+                        }
+                      }}
+                      renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
+                    />
+                  )}
+                  {masContratados && masContratados.length > 0 && (
+                    <HorizontalScrollSection
+                      title={<span className="text-lg font-semibold text-gray-800 dark:text-white">Más contratados</span>}
+                      items={masContratados.slice(0, 5)}
+                      containerId="masContratados-scroll"
+                      onScrollRight={() => {
+                        const el = document.getElementById('masContratados-scroll');
+                        if (el) {
+                          el.scrollBy({ left: 220, behavior: 'smooth' });
+                        }
+                      }}
+                      onScrollLeft={() => {
+                        const el = document.getElementById('masContratados-scroll');
+                        if (el) {
+                          el.scrollBy({ left: -220, behavior: 'smooth' });
+                        }
+                      }}
+                      renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
+                    />
+                  )}
                   {/* Sección de favoritos (mover debajo de populares) */}
                   <div className="mb-6 relative">
                     <button
-                      className="flex items-center gap-2 text-lg font-semibold text-red-500 mb-2 focus:outline-none hover:underline"
+                      className="flex items-center gap-2 text-lg font-semibold mb-2 focus:outline-none hover:underline"
                       onClick={() => setShowFavorites(!showFavorites)}
                     >
-                      <span className="text-red-400 text-xl">❤️</span> Favoritos
-                      {showFavorites ? (
-                        <ChevronUp className="h-4 w-4 text-red-400" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4 text-red-400" />
-                      )}
+                      Favoritos
                     </button>
                     {showFavorites && (
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
@@ -328,47 +326,49 @@ export default function VenueDiscover() {
             onPageChange={(page) => setManagerFilters((prev: any) => ({ ...prev, page }))}
             renderGrid={(children) => (
               <>
-                {/* Sección visual para managers verificados */}
-                <HorizontalScrollSection
-                  title={<span className="flex items-center gap-2"><BadgeCheck className="text-green-500 w-5 h-5" />Managers verificados</span>}
-                  items={verificadosManagers.slice(0, 5)}
-                  containerId="verificadosManagers-scroll"
-                  onScrollRight={() => {
-                    const el = document.getElementById('verificadosManagers-scroll');
-                    if (el) {
-                      el.scrollBy({ left: 220, behavior: 'smooth' });
-                    }
-                  }}
-                  onScrollLeft={() => {
-                    const el = document.getElementById('verificadosManagers-scroll');
-                    if (el) {
-                      el.scrollBy({ left: -220, behavior: 'smooth' });
-                    }
-                  }}
-                  renderItem={(manager) => <ManagerCard manager={mapToManagerCard(manager)} />}
-                />
-                {/* Card visual para los primeros 5 managers destacados */}
-                <HorizontalScrollSection                              
-                  title={<span className="flex items-center gap-2"><Star className="text-yellow-400 w-5 h-5" />Managers Destacados</span>}
-                  items={destacadosManagers}
-                  containerId="destacados-scroll"
-                  onScrollRight={() => {
-                    const el = document.getElementById('destacados-scroll');
-                    if (el) {
-                      el.scrollBy({ left: 220, behavior: 'smooth' });
-                    }
-                  }}
-                  onScrollLeft={() => {
-                    const el = document.getElementById('destacados-scroll');
-                    if (el) {
-                      el.scrollBy({ left: -220, behavior: 'smooth' });
-                    }
-                  }}
-                  renderItem={(manager) => <ManagerCard manager={mapToManagerCard(manager)} />}
-                />
-                {/* Card visual para los primeros 5 managers populares */}
+                {verificadosManagers && verificadosManagers.length > 0 && (
                   <HorizontalScrollSection
-                    title={<span className="flex items-center gap-2"><Users className="text-blue-500 w-5 h-5" />Managers Populares</span>}
+                    title={<span className="text-lg font-semibold text-gray-800 dark:text-white">Managers verificados</span>}
+                    items={verificadosManagers.slice(0, 5)}
+                    containerId="verificadosManagers-scroll"
+                    onScrollRight={() => {
+                      const el = document.getElementById('verificadosManagers-scroll');
+                      if (el) {
+                        el.scrollBy({ left: 220, behavior: 'smooth' });
+                      }
+                    }}
+                    onScrollLeft={() => {
+                      const el = document.getElementById('verificadosManagers-scroll');
+                      if (el) {
+                        el.scrollBy({ left: -220, behavior: 'smooth' });
+                      }
+                    }}
+                    renderItem={(manager) => <ManagerCard manager={mapToManagerCard(manager)} />}
+                  />
+                )}
+                {destacadosManagers && destacadosManagers.length > 0 && (
+                  <HorizontalScrollSection                              
+                    title={<span className="text-lg font-semibold text-gray-800 dark:text-white">Managers Destacados</span>}
+                    items={destacadosManagers}
+                    containerId="destacados-scroll"
+                    onScrollRight={() => {
+                      const el = document.getElementById('destacados-scroll');
+                      if (el) {
+                        el.scrollBy({ left: 220, behavior: 'smooth' });
+                      }
+                    }}
+                    onScrollLeft={() => {
+                      const el = document.getElementById('destacados-scroll');
+                      if (el) {
+                        el.scrollBy({ left: -220, behavior: 'smooth' });
+                      }
+                    }}
+                    renderItem={(manager) => <ManagerCard manager={mapToManagerCard(manager)} />}
+                  />
+                )}
+                {popularesManagers && popularesManagers.length > 0 && (
+                  <HorizontalScrollSection
+                    title={<span className="text-lg font-semibold text-gray-800 dark:text-white">Managers Populares</span>}
                     items={popularesManagers.slice(0, 5)}
                     containerId="populares-scroll"
                     onScrollRight={() => {
@@ -391,18 +391,14 @@ export default function VenueDiscover() {
                     }}
                     renderItem={(artist) => <ArtistCard artist={mapToArtistCard(artist)} showPrice={true} />}
                   />
+                )}
                 {/* Sección de favoritos para managers */}
                 <div className="mb-6 relative">
                   <button
-                    className="flex items-center gap-2 text-lg font-semibold text-red-500 mb-2 focus:outline-none hover:underline"
+                    className="flex items-center gap-2 text-lg font-semibold mb-2 focus:outline-none hover:underline"
                     onClick={() => setShowFavoritesManagers(!showFavoritesManagers)}
                   >
-                    <span className="text-red-400 text-xl">❤️</span> Favoritos
-                    {showFavoritesManagers ? (
-                      <ChevronUp className="h-4 w-4 text-red-400" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-red-400" />
-                    )}
+                    Favoritos
                   </button>
                   {showFavoritesManagers && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">

@@ -35,7 +35,7 @@ const roles = [
   },
   {
     icon: Building2,
-    title: 'Locales',
+    title: 'Salas',
     description: 'Busca artistas con filtros avanzados. Envía propuestas y negocia contrataciones.',
     color: 'text-role-venue',
     bgColor: 'bg-role-venue/10',

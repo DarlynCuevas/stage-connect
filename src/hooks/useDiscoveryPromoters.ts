@@ -19,32 +19,43 @@ export interface DiscoveryPromoterFilters {
   query?: string;
 }
 export function useDiscoveryPromoters() {
-  const [promoters, setPromoters] = useState<DiscoveryPromoter[]>([]);
+  const [populares, setPopulares] = useState<DiscoveryPromoter[]>([]);
+  const [destacados, setDestacados] = useState<DiscoveryPromoter[]>([]);
+  const [verificados, setVerificados] = useState<DiscoveryPromoter[]>([]);
+  const [resto, setResto] = useState<DiscoveryPromoter[]>([]);
+  const [pagination, setPagination] = useState<any>({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
   const [loading, setLoading] = useState(true);
-  // Por defecto, ciudad vacía (no 'all')
   const [filters, setFilters] = useState<DiscoveryPromoterFilters>({ city: '' });
   const { token } = useAuth();
+  const promoters = [...populares, ...destacados, ...verificados, ...resto];
 
   useEffect(() => {
     const fetchPromoters = async () => {
       setLoading(true);
       try {
         const params = new URLSearchParams();
-        if (filters.city !== 'all') params.append('city', filters.city);
-
+        if (filters.city && filters.city !== 'all') params.append('city', filters.city);
         if (filters.query && filters.query.trim() !== '') params.append('query', filters.query.trim());
-        const url = `/public/promoters${params.toString() ? '?' + params.toString() : ''}`;
+        const url = `/public/promoters/discover${params.toString() ? '?' + params.toString() : ''}`;
         const response = await apiFetch(url, token ? { token } : undefined);
-        setPromoters(response);
+        setPopulares(response.populares || []);
+        setDestacados(response.destacados || []);
+        setVerificados(response.verificados || []);
+        setResto(response.resto || []);
+        setPagination(response.pagination || { page: 1, pageSize: 20, total: 0, hasNextPage: false });
       } catch (error) {
-        setPromoters([]);
+        setPopulares([]);
+        setDestacados([]);
+        setVerificados([]);
+        setResto([]);
+        setPagination({ page: 1, pageSize: 20, total: 0, hasNextPage: false });
       } finally {
         setLoading(false);
       }
     };
     fetchPromoters();
-  }, [filters]);
+  }, [filters, token]);
 
-  return { promoters, setPromoters, loading, setFilters, filters };
+  return { populares, destacados, verificados, resto, pagination, promoters, loading, setFilters, filters, setPopulares, setDestacados, setVerificados, setResto };
 }
 

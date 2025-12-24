@@ -100,7 +100,7 @@ export function ManagerCard({ manager, onViewProfile, onFavoriteChange }: Manage
         <CardContent className="px-0 py-2 space-y-2">
           <div className="space-y-1">
             <div className="flex items-start justify-between">
-              <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
+              <h3 className="font-semibold text-base text-gray-600 leading-tight">
                 {manager.name}
               </h3>
               {/* No rating in Manager type, add if needed */}

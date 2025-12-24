@@ -26,7 +26,7 @@ interface ArtistSearchProps {
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
   filterConfig: any[];
-  type: 'artists' | 'managers';
+  type: 'artists' | 'managers' | 'promoters' | 'venues';
 }
 
 export function ArtistSearch({ filters, onFiltersChange, filterConfig, type }: ArtistSearchProps) {

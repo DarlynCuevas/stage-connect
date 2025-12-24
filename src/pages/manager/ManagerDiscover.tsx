@@ -105,7 +105,7 @@ export default function ManagerDiscover() {
       <div className="mb-6">
         <Tabs value={searchType} onValueChange={(v) => setSearchType(v as 'venues' | 'promoters' | 'artists')}>
           <TabsList>
-            <TabsTrigger value="venues">Locales</TabsTrigger>
+            <TabsTrigger value="venues">Salas</TabsTrigger>
             <TabsTrigger value="promoters">Promotores</TabsTrigger>
             <TabsTrigger value="artists">Artistas</TabsTrigger>
           </TabsList>
