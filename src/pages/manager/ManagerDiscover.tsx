@@ -166,7 +166,7 @@ export default function ManagerDiscover() {
           onFavoriteChange={handleFavoriteArtist}
           mapToCard={mapToArtistCard}
           onSearchBar={
-            <ArtistSearch filters={artistFilters} onFiltersChange={handleArtistSearch} />
+            <ArtistSearch filters={artistFilters} onFiltersChange={handleArtistSearch} filterConfig={[]} />
           }
           totalCount={artists.length}
           sectionTitle="Descubre artistas para tu roster"

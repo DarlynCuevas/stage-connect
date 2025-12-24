@@ -225,6 +225,19 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
               const path = item.getPath(user);
               if (!path || path === '/') return null;
               const isActive = location.pathname.startsWith(path);
+              // Badges para la opción Solicitudes
+              let showBadges: string[] = [];
+              if (item.key === 'request' && user && String(user.role).toLowerCase().includes('art')) {
+                // Lógica igual que en BottomNav
+                const pendingManagerRequests = receivedManagerRequests.filter((r: any) => r.status === 'Pending');
+                const pendingReceived = artistRequests.filter((r: any) => r.status === 'Pending');
+                const hasManager = pendingManagerRequests.length > 0;
+                const hasLocal = pendingReceived.some((r: any) => r.requester?.role === 'Local');
+                const hasPromoter = pendingReceived.some((r: any) => r.requester?.role === 'Promotor');
+                if (hasManager) showBadges.push('bg-role-manager');
+                if (hasLocal) showBadges.push('bg-role-venue');
+                if (hasPromoter) showBadges.push('bg-role-promoter');
+              }
               return (
                 <Link
                   key={item.key}
@@ -237,7 +250,27 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
                   )}
                   style={{ minWidth: 100, textAlign: 'center', letterSpacing: '-0.01em' }}
                 >
-                  {item.label}
+                  <span className="relative">
+                    {item.label}
+                    {item.key === 'request' && showBadges.length > 0 && (
+                      <span
+                        className="hidden sm:flex absolute -top-3 -right-4 flex-row items-center"
+                        style={{ minWidth: `${showBadges.length * 22}px` }}
+                      >
+                        {showBadges.map((color, idx) => (
+                          <span
+                            key={color}
+                            className={`w-4 h-4 rounded-full ${color} border-2 border-white shadow-lg ${idx === showBadges.length - 1 ? 'animate-pulse' : ''}`}
+                            style={{
+                              marginLeft: idx > 0 ? '-8px' : 0,
+                              boxShadow: '0 2px 8px 0 rgba(0,0,0,0.18)',
+                              zIndex: 10 + idx,
+                            }}
+                          />
+                        ))}
+                      </span>
+                    )}
+                  </span>
                 </Link>
               );
             })}
