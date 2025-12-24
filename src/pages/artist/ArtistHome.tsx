@@ -35,6 +35,8 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { format, isThisYear, isFuture, parseISO, isThisMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { ArtistSpendingChart } from '@/components/venue-dashboard/ArtistSpendingChart';
+import { getArtistMonthlyIncomeData } from './getArtistMonthlyIncomeData';
 
 
 export default function ArtistHome() {
@@ -284,85 +286,52 @@ export default function ArtistHome() {
 
     <HeaderLayout>
       <div>
-        {/* Banner con rating sobre la imagen */}
-        <div className="relative rounded-2xl overflow-hidden mb-8">
-          <div className="h-48 lg:h-64">
-            <img
-              src={`https://picsum.photos/1200/400?random=${artist?.id || 1}`}
-              alt="Banner de estadísticas"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-          </div>
-          {/* Rating sobre la imagen, esquina inferior derecha */}
-          <div className="absolute bottom-4 right-6 flex items-center gap-2 bg-black/70 px-3 py-1.5 rounded-full shadow-lg">
-            <Star className="w-5 h-5 text-yellow-400" fill="#facc15" />
-            <span className="text-lg font-semibold text-yellow-400">
-              {ratingLoading ? '...' : averageRating !== null ? averageRating.toFixed(1) : '—'}
-            </span>
-            <span className="text-sm text-[#facc15]/80">({ratingLoading ? '...' : totalReviews !== null ? totalReviews : 0})</span>
-          </div>
-        </div>
+
 
         {/* Dashboard header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-display font-bold mb-2">Panel de Artista</h1>
-            <p className="text-muted-foreground">Bienvenido, {artist?.nickName || artist?.name || ''}</p>
+            <h1 className="text-3xl font-display font-bold mb-2 text-center">Panel de Artista</h1>
+            <p className="text-muted-foreground text-center">Bienvenido, {artist?.nickName || artist?.name || ''}</p>
           </div>
       
         </div>
             <div className="mb-10">
-              <h2 className="text-2xl font-semibold mb-6 tracking-tight text-yellow-400 drop-shadow-sm">Resumen Económico</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-                {economicStats.map((stat) => (
+              <h2 className="text-2xl font-semibold mb-6 tracking-tight text-yellow-400 drop-shadow-sm text-center">Resumen Económico</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 px-2 sm:px-6">
+                {economicStats.slice(0, 4).map((stat) => (
                   <div
                     key={stat.label}
-                    className="bg-gradient-to-br from-[#23272f] to-[#181a20] rounded-2xl shadow-lg p-7 flex items-center gap-5 border border-[#23272f]/60 hover:shadow-2xl transition-shadow duration-200 min-h-[120px]"
+                    className="bg-background border border-border/20 rounded-xl shadow-sm p-4 flex flex-col items-center gap-2 transition hover:shadow-md w-full min-w-[140px] max-w-[180px] h-[140px] justify-center mx-auto"
                   >
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-white/5`}>
-                      <stat.icon className={`w-6 h-6 ${stat.color} opacity-80`} />
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${stat.color}`}> 
+                      <stat.icon className="w-5 h-5" />
                     </div>
-                    <div>
-                      <p className="text-3xl font-light text-white mb-1">{stat.value}</p>
-                      <p className="text-sm text-[#bfc9d4] tracking-wide font-medium">{stat.label}</p>
-                    </div>
+                    <span className="text-xs text-muted-foreground mb-1 text-center">{stat.label}</span>
+                    <span className="text-xl font-bold text-center">{stat.value}</span>
                   </div>
                 ))}
-
-                {/* Tarjeta destacada de valoración media */}
-                <div className="bg-gradient-to-br from-[#23272f] to-[#181a20] rounded-2xl shadow-lg p-7 flex flex-col items-center justify-center border border-[#23272f]/60 hover:shadow-2xl transition-shadow duration-200 min-h-[120px]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-3xl font-semibold text-yellow-400">
-                      {ratingLoading ? '...' : averageRating !== null ? averageRating.toFixed(1) : '—'}
-                    </span>
-                    <Star className="w-7 h-7 text-yellow-400" fill="#facc15" />
-                  </div>
-                  <span className="text-xs text-[#bfc9d4] tracking-wide font-medium">
-                    {ratingLoading ? '...' : totalReviews !== null ? totalReviews : 0} reseñas
-                  </span>
-                  <span className="text-sm text-[#bfc9d4] mt-1">Valoración media</span>
-                </div>
               </div>
+
+              {/* Gráfico de ingresos por mes (reutiliza ArtistSpendingChart) */}
+              <ArtistSpendingChart data={getArtistMonthlyIncomeData(confirmedRequests)} />
             </div>
 
 
             {/* Sección Shows y Fechas - estilo elegante */}
             <div className="mb-10">
-              <h2 className="text-2xl font-semibold mb-6 tracking-tight text-blue-400 drop-shadow-sm">Resumen de Shows y Fechas</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-                {showStats.map((stat) => (
+              <h2 className="text-2xl font-semibold mb-6 tracking-tight text-blue-400 drop-shadow-sm text-center">Resumen de Shows y Fechas</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 px-2 sm:px-6">
+                {showStats.slice(0, 4).map((stat) => (
                   <div
                     key={stat.label}
-                    className="bg-gradient-to-br from-[#23272f] to-[#181a20] rounded-2xl shadow-lg p-7 flex items-center gap-5 border border-[#23272f]/60 hover:shadow-2xl transition-shadow duration-200 min-h-[120px]"
+                    className="bg-background border border-border/20 rounded-xl shadow-sm p-4 flex flex-col items-center gap-2 transition hover:shadow-md w-full min-w-[140px] max-w-[180px] h-[140px] justify-center mx-auto"
                   >
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-white/5`}>
-                      <stat.icon className={`w-6 h-6 ${stat.color} opacity-80`} />
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${stat.color}`}> 
+                      <stat.icon className="w-5 h-5" />
                     </div>
-                    <div>
-                      <p className={`text-3xl font-light mb-1 ${stat.label === 'Solicitudes pendientes' && pendingRequests.length > 0 ? 'text-red-400' : 'text-white'}`}>{stat.value}</p>
-                      <p className="text-sm text-[#bfc9d4] tracking-wide font-medium">{stat.label}</p>
-                    </div>
+                    <span className="text-xs text-muted-foreground mb-1 text-center">{stat.label}</span>
+                    <span className="text-xl font-bold text-center">{stat.value}</span>
                   </div>
                 ))}
               </div>
@@ -485,8 +454,8 @@ export default function ArtistHome() {
                     )}
                   </CardContent>
                 </Card>
-            </div>
-          </div>
+            </div> 
+            </div>        
           </HeaderLayout>
   );
 }
