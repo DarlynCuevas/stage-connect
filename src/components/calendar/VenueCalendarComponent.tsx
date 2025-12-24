@@ -87,25 +87,11 @@ export function VenueCalendarComponent({ venueId, editable = false, onDateSelect
   return (
     <Card variant="gradient">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           <CardTitle className="flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 text-primary" />
             Calendario de Disponibilidad (Local)
           </CardTitle>
-          <div className="flex items-center gap-3 text-sm">
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-emerald-500" />
-              <span className="text-muted-foreground">Disponible</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--destructive))' }} />
-              <span className="text-muted-foreground">Reservado</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(38, 92%, 50%)' }} />
-              <span className="text-muted-foreground">Bloqueado</span>
-            </div>
-          </div>
         </div>
       </CardHeader>
       <CardContent>

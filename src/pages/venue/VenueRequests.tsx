@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useUpdateRequestStatus, useCreateBookingRequest } from '@/lib/requests';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { RequestCard } from '@/components/booking/RequestCard';
+// import { RequestCard } from '@/components/booking/RequestCard';
+import CardItemRequest from '@/components/booking/CardItemRequest';
 import { RequestDetailModal } from '@/components/booking/RequestDetailModal';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,18 +14,45 @@ import { useEffect, useCallback } from 'react';
 import { getInterestedByVenue, Interested } from '@/lib/interested';
 import { updateInterestedStatus } from '@/lib/interested';
 import { useQuery } from '@tanstack/react-query';
-import { Clock, Check, Loader2, HelpCircle, X, Inbox } from 'lucide-react';
+import { Clock, Check, Loader2, Send } from 'lucide-react';
 import { useParams, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import ModalSolicitudContratacion from '@/components/calendar/ModalSolicitudContratacion';
+ // Asegúrate de tener este hook o el que corresponda
 
+
+const TABS = [
+  'Contratación',
+  'Interesados',
+  'Representación',
+  'Bandeja',
+];
+
+// Dummy data para ejemplo visual
+const dummyItems = [
+  { id: 1, type: 'Contratación', name: 'Evento Rock', summary: 'Solicitud de contratación para el 10/01/2026', status: 'Nuevas' },
+  { id: 2, type: 'Interesados', name: 'Artista Blue', summary: 'Interesado en tocar en tu sala', status: 'Leídas' },
+  { id: 3, type: 'Representación', name: 'Manager Pro', summary: 'Solicitud de representación', status: 'Pendientes' },
+  { id: 4, type: 'Bandeja de solicitudes', name: 'Artista Pop', summary: 'Mensaje recibido: ¿Hay fechas libres?', status: 'Nuevas' },
+];
+function RequestDetail({ item }) {
+  return (
+    <div className="max-w-xl mx-auto p-8">
+      <h2 className="font-bold text-xl mb-2">{item.name}</h2>
+      <p className="text-gray-600 mb-4">{item.summary}</p>
+      {/* Aquí puedes renderizar más detalles según el tipo de item */}
+      <div className="text-sm text-gray-400">Tipo: {item.type}</div>
+    </div>
+  );
+}
 
 const VenueRequests = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [selectedInterested, setSelectedInterested] = useState<Interested | null>(null); // Nuevo estado
-
-
+  const [activeTab, setActiveTab] = useState(TABS[0]);
+  const [selected, setSelected] = useState(null);
+  const [filter, setFilter] = useState('Todas');
 
   // Acción editar (abre modal de edición, placeholder)
   const handleEdit = (request) => {
@@ -187,181 +215,145 @@ const VenueRequests = () => {
     );
   }
 
-return (
-  <HeaderLayout profileTabs={localNav}>
-    <div className="space-y-6 max-w-full overflow-x-hidden px-1 sm:px-0">
-      {/* ...eliminado resumen superior duplicado... */}
-      <div className="flex justify-end">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2">
-              <HelpCircle className="w-5 h-5" /> Ayuda
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <h2 className="text-lg font-bold mb-2">¿Necesitas ayuda?</h2>
-            <p className="mb-2">Si tienes problemas con las solicitudes o necesitas soporte, contáctanos:</p>
-            <ul className="text-sm space-y-1">
-              <li>Email: <a href="mailto:soporte@tusitio.com" className="text-primary underline">soporte@tusitio.com</a></li>
-              <li>Teléfono: <span className="text-primary">+34 600 000 000</span></li>
-            </ul>
-          </DialogContent>
-        </Dialog>
+  // Filtra los items según el tab activo y el filtro
+  const items = dummyItems.filter(i =>
+    i.type === activeTab &&
+    (filter === 'Todas' || i.status === filter)
+  );
+
+   // Usa la misma data para bookingRequests
+   const bookingRequests = requests;
+   const loadingRequests = isLoading;
+   // Debug: Verificar si basePrice está disponible en las contrataciones
+   if (bookingRequests && bookingRequests.length > 0) {
+     console.log('bookingRequests:', bookingRequests.map(r => ({ id: r.id, artist: r.artist })));
+   }
+
+  // Filtra por tab y filtro
+  const filteredRequests = (bookingRequests || []).filter(req => {
+    if (activeTab !== 'Contratación') return false;
+    if (filter === 'Todas') return true;
+    // Ajusta los valores de status según tu backend
+    if (filter === 'Nuevas') return req.status === 'Pending' || req.status === 'pending';
+    if (filter === 'Pendientes') return req.status === 'Pending' || req.status === 'pending';
+    if (filter === 'Completadas') return req.status === 'Accepted' || req.status === 'accepted';
+    if (filter === 'Canceladas') return req.status === 'Rejected' || req.status === 'rejected';
+    return true;
+  });
+
+  return (
+    <HeaderLayout profileTabs={localNav}>
+ <div className="max-w-3xl mx-auto w-full bg-card rounded-xl shadow-md border border-border mt-8 flex flex-col">
+      {/* Tabs */}
+      <div className="flex border-b border-border bg-background rounded-t-xl">
+        {TABS.map(tab => (
+          <button
+            key={tab}
+            className={`flex-1 py-3 text-center font-display font-semibold transition
+              ${activeTab === tab ? 'border-b-2 border-primary text-primary bg-background' : 'text-muted-foreground'}`}
+            onClick={() => { setActiveTab(tab); setSelected(null); }}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
-      {/* --- Sección 1: Mis Solicitudes de contratación --- */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-          <Check className="w-6 h-6 text-primary" /> Mis Solicitudes de contratación
-        </h2>
-        <p className="text-muted-foreground mb-4">Revisa el estado de las solicitudes que has enviado a artistas o managers.</p>
-        <div className="flex flex-col md:flex-row gap-4 mb-4 items-start md:items-end w-full max-w-full">
-          <Input
-            placeholder="Buscar por artista..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="max-w-xs"
-          />
-          <Input
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-            className="max-w-xs"
-          />
-          <Button onClick={exportToCSV} variant="outline" className="ml-0 md:ml-4 mt-2 md:mt-0">
-            Exportar a Excel
-          </Button>
-        </div>
-        <Tabs defaultValue="pending" className="w-full max-w-full overflow-x-hidden">
-          <TabsList className="mb-6">
-            <TabsTrigger
-              value="pending"
-              className="gap-2 px-4 py-2 text-gray-700 dark:text-gray-200 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary bg-transparent font-medium transition-colors"
+      {/* Buscador */}
+      <div className="p-4 border-b border-border bg-background">
+        <input
+          className="w-full rounded-lg bg-muted px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          placeholder="Buscar..."
+        />
+        {/* Filtros debajo del buscador */}
+        <div className="flex gap-2 mt-3">
+          {(
+            activeTab === 'Contratación'
+              ? ['Todas', 'Nuevas', 'Pendientes', 'Completadas', 'Canceladas']
+              : ['Todas', 'Nuevas', 'Leídas', 'Pendientes']
+          ).map(filtro => (
+            <button
+              key={filtro}
+              className={`px-3 py-1 rounded-full text-xs font-semibold border transition
+                ${filter === filtro ? 'bg-primary text-white border-primary' : 'bg-muted text-muted-foreground border-border hover:border-primary'}`}
+              onClick={() => setFilter(filtro)}
             >
-              <Clock className="w-4 h-4" />
-              Pendientes ({pendingRequests.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="accepted"
-              className="gap-2 px-4 py-2 text-gray-700 dark:text-gray-200 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary bg-transparent font-medium transition-colors"
-            >
-              <Check className="w-4 h-4" />
-              Aceptadas ({acceptedRequests.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="rejected"
-              className="gap-2 px-4 py-2 text-gray-700 dark:text-gray-200 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary bg-transparent font-medium transition-colors"
-            >
-              <X className="w-4 h-4" />
-              Canceladas ({rejectedRequests.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="interested"
-              className="gap-2 px-4 py-2 text-gray-700 dark:text-gray-200 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary bg-transparent font-medium transition-colors"
-            >
-              <HelpCircle className="w-4 h-4" />
-              Interesados ({interested.length})
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="pending">
-            {/* ...contenido de pendientes... */}
-          </TabsContent>
-          <TabsContent value="accepted">
-            {/* ...contenido de aceptadas... */}
-          </TabsContent>
-          <TabsContent value="rejected">
-            {/* ...contenido de canceladas... */}
-          </TabsContent>
-          <TabsContent value="interested">
-            {/* ...contenido de interesados... */}
-          </TabsContent>
-        </Tabs>
-      </section>
-      {/* --- Sección 2: Interesados --- */}
-      <section className="mt-16 mb-12">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <HelpCircle className="w-6 h-6 text-primary" /> Interesados
-        </h2>
-        <Tabs defaultValue="pending-interested" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger
-              value="pending-interested"
-              className="gap-2 px-4 py-2 text-gray-700 dark:text-gray-200 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary bg-transparent font-medium transition-colors"
-            >
-              Pendientes ({interested.filter(i => i.status === 'pending').length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="rejected-interested"
-              className="gap-2 px-4 py-2 text-gray-700 dark:text-gray-200 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary bg-transparent font-medium transition-colors"
-            >
-              Rechazados ({interested.filter(i => i.status === 'rejected').length})
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="pending-interested">
-            {/* ...contenido de interesados pendientes... */}
-          </TabsContent>
-          <TabsContent value="rejected-interested">
-            {/* ...contenido de interesados rechazados... */}
-          </TabsContent>
-        </Tabs>
-      </section>
-      {/* --- Sección 3: Bandeja de solicitudes --- */}
-      <section className="mt-16">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <Inbox className="w-6 h-6 text-primary" /> Bandeja de solicitudes
-        </h2>
-        <p className="text-muted-foreground mb-6">Aquí verás las peticiones de artistas que quieren actuar en tu sala. Estas tarjetas muestran mensajes personalizados enviados por los artistas.</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-full">
-          {/* Mock de tarjetas de solicitudes */}
-          {[{
-            id: 1,
-            artist: { name: 'Luna Rivera', avatar: 'https://randomuser.me/api/portraits/women/65.jpg' },
-            message: '¡Hola! Me encantaría tocar en tu sala el próximo mes. Mi banda tiene un show enérgico y repertorio propio. ¿Podemos agendar una fecha?',
-            date: '2025-01-15',
-          }, {
-            id: 2,
-            artist: { name: 'Diego Torres', avatar: 'https://randomuser.me/api/portraits/men/41.jpg' },
-            message: 'Buenas, soy Diego. Estoy de gira y busco fechas en tu ciudad. ¿Te gustaría que toquemos en tu local? ¡Gracias!',
-            date: '2025-02-10',
-          }].map((req) => (
-            <div key={req.id} className="rounded-2xl bg-white/90 dark:bg-zinc-900/70 shadow-lg p-6 flex flex-col gap-3 border border-gray-200 dark:border-zinc-800 transition-all hover:shadow-2xl hover:-translate-y-1">
-              <div className="flex items-center gap-3 mb-2">
-                <img src={req.artist.avatar} alt={req.artist.name} className="w-12 h-12 rounded-full object-cover border" />
-                <div>
-                  <div className="font-semibold text-gray-900 dark:text-gray-100">{req.artist.name}</div>
-                  <div className="text-xs text-muted-foreground">{new Date(req.date).toLocaleDateString()}</div>
-                </div>
-              </div>
-              <div className="text-gray-700 dark:text-gray-200 text-sm mb-2">{req.message}</div>
-              <div className="flex gap-2 mt-2">
-                <Button size="sm" variant="default">Ver perfil</Button>
-                <Button size="sm" variant="outline">Responder</Button>
-              </div>
-            </div>
+              {filtro}
+            </button>
           ))}
         </div>
-      </section>
+      </div>
+      {/* Lista de tarjetas */}
+      {activeTab === 'Contratación' ? (
+        <div className="overflow-y-auto flex flex-col gap-6 py-4 px-2" style={{ maxHeight: 400, minHeight: 240 }}>
+          {loadingRequests ? (
+            <div className="text-center text-muted-foreground py-10">Cargando solicitudes...</div>
+          ) : filteredRequests.length > 0 ? (
+            filteredRequests.map(request => (
+              <CardItemRequest
+                key={request.id}
+                item={request}
+                onClick={() => setSelected(request)}
+                selected={selected?.id === request.id}
+              />
+            ))
+          ) : (
+            <div className="text-center text-muted-foreground py-10">No hay solicitudes de contratación en esta sección.</div>
+          )}
+        </div>
+      ) : (
+        <div className="overflow-y-auto bg-card" style={{ maxHeight: 400, minHeight: 240 }}>
+          {activeTab === 'Interesados' ? (
+            interested.length > 0 ? (
+              interested.map(item => (
+                <CardItemRequest key={item.id} item={item} onClick={() => setSelected(item)} selected={selected?.id === item.id} />
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground py-10">No hay interesados en esta sección.</div>
+            )
+          ) : (
+            items.length > 0 ? (
+              items.map(item => (
+                <CardItemRequest key={item.id} item={item} onClick={() => setSelected(item)} selected={selected?.id === item.id} />
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground py-10">No hay elementos en esta sección.</div>
+            )
+          )}
+        </div>
+      )}
+      {/* Panel de mensajes/detalle */}
+      <div className="border-t border-border bg-background">
+        {selected ? (
+          <RequestDetail item={selected} />
+        ) : (
+          <div className="text-center text-muted-foreground py-10">
+            <Send className="mx-auto w-16 h-16 mb-4 opacity-30" />
+            <h2 className="font-display font-bold text-lg mb-2">Tus mensajes</h2>
+            <p>Selecciona una solicitud o mensaje para ver los detalles aquí.</p>
+          </div>
+        )}
+      </div>
     </div>
-    <RequestDetailModal
-      open={modalOpen}
-      onOpenChange={setModalOpen}
-      request={selectedRequest}
-      onCancel={selectedRequest ? () => handleCancel(selectedRequest.id) : undefined}
-      onEdit={selectedRequest ? () => handleEdit(selectedRequest) : undefined}
-      onResend={selectedRequest ? () => handleResend(selectedRequest) : undefined}
-    />
-    <ModalSolicitudContratacion
-      open={modalOpen}
-      onClose={() => { setModalOpen(false); setSelectedInterested(null); }}
-      fecha={selectedInterested ? (selectedInterested.date ? new Date(selectedInterested.date) : null) : null}
-      cacheBase={selectedInterested?.artist?.basePrice || 0}
-      allowNegotiation={false}
-      nombreLocalDefault={authUser?.name || ''}
-      ciudadLocalDefault={authUser?.city || ''}
-      ubicacionDefault={authUser?.address || ''}
-      fixedPrice={selectedInterested?.price}
-      onSubmit={handleSubmitContratacion}
-    />
-  </HeaderLayout>
-);}
+      <RequestDetailModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        request={selectedRequest}
+        onCancel={selectedRequest ? () => handleCancel(selectedRequest.id) : undefined}
+        onEdit={selectedRequest ? () => handleEdit(selectedRequest) : undefined}
+        onResend={selectedRequest ? () => handleResend(selectedRequest) : undefined}
+      />
+      <ModalSolicitudContratacion
+        open={modalOpen}
+        onClose={() => { setModalOpen(false); setSelectedInterested(null); }}
+        fecha={selectedInterested ? (selectedInterested.date ? new Date(selectedInterested.date) : null) : null}
+        cacheBase={selectedInterested?.artist?.basePrice || 0}
+        allowNegotiation={false}
+        nombreLocalDefault={authUser?.name || ''}
+        ciudadLocalDefault={authUser?.city || ''}
+        ubicacionDefault={authUser?.address || ''}
+        fixedPrice={selectedInterested?.price}
+        onSubmit={handleSubmitContratacion}
+      />
+    </HeaderLayout>
+  );}
 
 export default VenueRequests;

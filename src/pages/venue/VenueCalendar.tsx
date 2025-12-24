@@ -20,7 +20,7 @@ export default function VenueCalendar() {
   ];
   return (
     <HeaderLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 px-2 sm:px-0">
         <div className="text-center mt-10">
           <h1 className="text-2xl sm:text-3xl font-display font-bold mb-2">
             Calendario de la sala
@@ -29,11 +29,15 @@ export default function VenueCalendar() {
             Gestiona la disponibilidad de tu sala
           </p>
         </div>
-        {venueId && authUser ? (
-          <VenueCalendarComponent venueId={venueId} editable={true} />
-        ) : (
-          <div className="text-center text-muted-foreground py-10">Cargando calendario...</div>
-        )}
+        <div className="flex justify-center w-full">
+          <div className="w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl">
+            {venueId && authUser ? (
+              <VenueCalendarComponent venueId={venueId} editable={true} />
+            ) : (
+              <div className="text-center text-muted-foreground py-10">Cargando calendario...</div>
+            )}
+          </div>
+        </div>
       </div>
     </HeaderLayout>
   );
