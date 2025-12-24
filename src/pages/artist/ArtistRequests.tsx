@@ -1,6 +1,7 @@
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
+import { ContractAcceptModal } from '@/components/booking/ContractAcceptModal';
 import { useState } from 'react';
-import { useArtistRequests } from '@/lib/requests';
+import { useArtistRequests, useUpdateRequestStatus } from '@/lib/requests';
 import { useInterestedByArtist, updateInterestedStatus } from '@/lib/interested';
 import { useReceivedManagerRequests } from '@/lib/manager-requests';
 import { useParams } from 'react-router-dom';
@@ -25,9 +26,11 @@ export default function ArtistRequests() {
   const { data: managerRequests = [], isLoading: loadingManagers } = useReceivedManagerRequests();
   const [activeTab, setActiveTab] = useState(TABS[0]);
   const [selected, setSelected] = useState(null);
-  const [filter, setFilter] = useState('Todas');
+  const [filter, setFilter] = useState('Pendientes');
   const [search, setSearch] = useState('');
   const [date, setDate] = useState('');
+  const [showContractModal, setShowContractModal] = useState(false);
+  const { mutateAsync: acceptRequest } = useUpdateRequestStatus();
 
   // Filtrado por nombre y fecha
   const filterRequests = (arr) => arr.filter(r => {
@@ -85,7 +88,7 @@ export default function ArtistRequests() {
           <div className="flex gap-2 mt-3">
             {(
               activeTab === 'Contratación'
-                ? ['Todas', 'Pendientes', 'Completadas', 'Canceladas']
+                ? ['Pendientes', 'Completadas', 'Canceladas']
                 : ['Todas', 'Pendientes', 'Aceptadas']
             ).map(filtro => (
               <button
@@ -236,26 +239,40 @@ export default function ArtistRequests() {
                 </div>
               )}
               {activeTab === 'Contratación' && selected.status !== 'Accepted' && (
+
                 <div className="flex gap-2 items-center">
                   <button
                     className="px-2 py-1 rounded-md border border-destructive text-destructive text-xs font-medium bg-transparent hover:bg-destructive/10 transition-colors shadow-sm"
                     onClick={async () => {
                       // Aquí deberías llamar a la función para rechazar la solicitud
-                      // await updateRequestStatus(selected.id, 'Rejected');
+                      // await acceptRequest({ id: selected.id, status: 'Rejected' });
                     }}
                   >
                     Rechazar
                   </button>
                   <button
                     className="px-2 py-1 rounded-md border border-success text-success text-xs font-medium bg-transparent hover:bg-success/10 transition-colors shadow-sm"
-                    onClick={async () => {
-                      // Aquí deberías llamar a la función para aceptar la solicitud
-                      // await updateRequestStatus(selected.id, 'Accepted');
-                    }}
+                    onClick={() => setShowContractModal(true)}
                   >
                     Aceptar
                   </button>
                 </div>
+              )}
+              {activeTab === 'Contratación' && selected.status === 'Accepted' && (
+                <div className="flex flex-col items-end text-success text-xs font-semibold">
+                  Solicitud aceptada
+                </div>
+              )}
+              {/* Modal de confirmación de contrato */}
+              {selected && showContractModal && (
+                <ContractAcceptModal
+                  open={showContractModal}
+                  onCancel={() => setShowContractModal(false)}
+                  onConfirm={async () => {
+                    await acceptRequest({ id: selected.id, status: 'Accepted' });
+                    setShowContractModal(false);
+                  }}
+                />
               )}
             </div>
           ) : (

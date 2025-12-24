@@ -1,4 +1,6 @@
+
 import React, { useState } from 'react';
+import { HeaderLayout } from '@/components/layout/HeaderLayout';
 
 // Mocked conversations data
 const mockManagers = [
@@ -73,30 +75,33 @@ function ConversationList({ conversations }: { conversations: typeof mockManager
   );
 }
 
+
 const Messages: React.FC = () => {
   const [tab, setTab] = useState<'managers' | 'artists'>('managers');
 
   return (
-    <div className="max-w-xl mx-auto bg-white rounded-lg shadow mt-8">
-      <div className="flex border-b">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            className={`flex-1 py-3 text-center font-semibold transition-colors ${tab === t.key ? 'border-b-2 border-blue-500 text-blue-600 bg-gray-50' : 'text-gray-500 hover:bg-gray-50'}`}
-            onClick={() => setTab(t.key as 'managers' | 'artists')}
-          >
-            {t.label}
-          </button>
-        ))}
+    <HeaderLayout>
+      <div className="max-w-xl mx-auto bg-white rounded-lg shadow mt-8">
+        <div className="flex border-b">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              className={`flex-1 py-3 text-center font-semibold transition-colors ${tab === t.key ? 'border-b-2 border-blue-500 text-blue-600 bg-gray-50' : 'text-gray-500 hover:bg-gray-50'}`}
+              onClick={() => setTab(t.key as 'managers' | 'artists')}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <div className="h-[420px] overflow-y-auto">
+          {tab === 'managers' ? (
+            <ConversationList conversations={mockManagers} />
+          ) : (
+            <ConversationList conversations={mockArtists} />
+          )}
+        </div>
       </div>
-      <div className="h-[420px] overflow-y-auto">
-        {tab === 'managers' ? (
-          <ConversationList conversations={mockManagers} />
-        ) : (
-          <ConversationList conversations={mockArtists} />
-        )}
-      </div>
-    </div>
+    </HeaderLayout>
   );
 };
 

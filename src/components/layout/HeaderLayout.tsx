@@ -3,7 +3,7 @@ import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Music, Bell, Sun, Moon,  User,Settings, LogOut, MessageCircle } from 'lucide-react';
+import { Music, Bell, Sun, Moon,  User,Settings, LogOut, MessageCircle, BarChart } from 'lucide-react';
 import { BottomNav } from './BottomNav';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
@@ -168,6 +168,13 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
         >
           {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
+        <Link
+          to="/messages"
+          className="w-7 h-7 rounded-full border flex items-center justify-center text-muted-foreground hover:text-primary transition-colors mr-2"
+          title="Mensajes"
+        >
+          <MessageCircle className="w-4 h-4" />
+        </Link>
         {/* Menú de usuario/avatar para móvil */}
         {user && (
           <DropdownMenu>
@@ -185,6 +192,16 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem asChild>
+                <Link to="/billing" className="flex items-center gap-2">
+                  <BarChart className="w-4 h-4" /> Facturación
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to={user ? `/artist/${user.id}/invite` : '/'} className="flex items-center gap-2">
+                  <User className="w-4 h-4" /> Invita a un amigo
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to={getSettingsPath()} className="flex items-center gap-2">
                   <Settings className="w-4 h-4" /> Ajustes
