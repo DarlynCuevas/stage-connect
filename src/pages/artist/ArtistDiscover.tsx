@@ -50,7 +50,7 @@ export default function ArtistDiscover() {
     if (!user) return;
     try {
       await handleFavorite({ targetId: venueId, favorite });
-      setVenues((prevVenues: any[]) =>
+      setResto && setResto((prevVenues: any[]) =>
         prevVenues.map((venue) =>
           venue.id === venueId ? { ...venue, favorite } : venue
         )
@@ -66,7 +66,7 @@ export default function ArtistDiscover() {
     if (!user) return;
     try {
       await handleFavorite({ targetId: promoterId, favorite });
-      setPromoters && setPromoters((prevPromoters: any[]) =>
+      setRestoPromoters && setRestoPromoters((prevPromoters: any[]) =>
         prevPromoters.map((promoter) =>
           promoter.id === promoterId ? { ...promoter, favorite } : promoter
         )
@@ -199,7 +199,7 @@ export default function ArtistDiscover() {
               <>
                 {verificadosPromoters && verificadosPromoters.length > 0 && (
                   <HorizontalScrollSection
-                    title={<span className="text-lg font-semibold text-black">Promotores verificados</span>}
+                    title={<span className="text-lg font-semibold text-black dark:text-white">Promotores verificados</span>}
                     items={verificadosPromoters}
                     containerId="verificadosPromoters-scroll"
                     onScrollRight={() => {
@@ -219,7 +219,7 @@ export default function ArtistDiscover() {
                 )}
                 {destacadosPromoters && destacadosPromoters.length > 0 && (
                   <HorizontalScrollSection
-                    title={<span className="text-lg font-semibold text-black">Promotores Destacados</span>}
+                    title={<span className="text-lg font-semibold text-black dark:text-white">Promotores Destacados</span>}
                     items={destacadosPromoters}
                     containerId="destacadosPromoters-scroll"
                     onScrollRight={() => {
@@ -239,7 +239,7 @@ export default function ArtistDiscover() {
                 )}
                 {popularesPromoters && popularesPromoters.length > 0 && (
                   <HorizontalScrollSection
-                    title={<span className="text-lg font-semibold text-black">Promotores Populares</span>}
+                    title={<span className="text-lg font-semibold text-black dark:text-white">Promotores Populares</span>}
                     items={popularesPromoters}
                     containerId="popularesPromoters-scroll"
                     onScrollRight={() => {
@@ -406,7 +406,7 @@ export default function ArtistDiscover() {
             <>
               {verificadosManagers && verificadosManagers.length > 0 && (
                 <HorizontalScrollSection
-                  title={<span className="text-lg font-semibold text-black">Managers verificados</span>}
+                  title={<span className="text-lg font-semibold text-black dark:text-white">Managers verificados</span>}
                   items={verificadosManagers}
                   containerId="verificadosManagers-scroll"
                   onScrollRight={() => {
@@ -426,7 +426,7 @@ export default function ArtistDiscover() {
               )}
               {destacadosManagers && destacadosManagers.length > 0 && (
                 <HorizontalScrollSection
-                  title={<span className="text-lg font-semibold text-black">Managers Destacados</span>}
+                  title={<span className="text-lg font-semibold text-black dark:text-white">Managers Destacados</span>}
                   items={destacadosManagers}
                   containerId="destacadosManagers-scroll"
                   onScrollRight={() => {
@@ -446,7 +446,7 @@ export default function ArtistDiscover() {
               )}
               {popularesManagers && popularesManagers.length > 0 && (
                 <HorizontalScrollSection
-                  title={<span className="text-lg font-semibold text-black">Managers Populares</span>}
+                  title={<span className="text-lg font-semibold text-black dark:text-white">Managers Populares</span>}
                   items={popularesManagers}
                   containerId="popularesManagers-scroll"
                   onScrollRight={() => {
