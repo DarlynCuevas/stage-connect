@@ -259,8 +259,22 @@ export default function ArtistRequests() {
                 </div>
               )}
               {activeTab === 'Contratación' && selected.status === 'Accepted' && (
-                <div className="flex flex-col items-end text-success text-xs font-semibold">
-                  Solicitud aceptada
+                <div className="flex flex-col items-end text-success text-xs font-semibold gap-2">
+                  <span>Solicitud aceptada</span>
+                  <a
+                    href="#"
+                    className="text-primary underline text-xs cursor-pointer"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      // Aquí se debe implementar la llamada al backend para obtener la URL del contrato
+                      // Por ejemplo:
+                      // const url = await getContractPdfUrl(selected.id);
+                      // window.open(url, '_blank');
+                      alert('Funcionalidad de descarga de PDF pendiente de implementar.');
+                    }}
+                  >
+                    Descargar PDF
+                  </a>
                 </div>
               )}
               {/* Modal de confirmación de contrato */}
