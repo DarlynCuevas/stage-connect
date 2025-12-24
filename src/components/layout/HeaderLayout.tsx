@@ -227,16 +227,28 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
               const isActive = location.pathname.startsWith(path);
               // Badges para la opción Solicitudes
               let showBadges: string[] = [];
-              if (item.key === 'request' && user && String(user.role).toLowerCase().includes('art')) {
-                // Lógica igual que en BottomNav
-                const pendingManagerRequests = receivedManagerRequests.filter((r: any) => r.status === 'Pending');
-                const pendingReceived = artistRequests.filter((r: any) => r.status === 'Pending');
-                const hasManager = pendingManagerRequests.length > 0;
-                const hasLocal = pendingReceived.some((r: any) => r.requester?.role === 'Local');
-                const hasPromoter = pendingReceived.some((r: any) => r.requester?.role === 'Promotor');
-                if (hasManager) showBadges.push('bg-role-manager');
-                if (hasLocal) showBadges.push('bg-role-venue');
-                if (hasPromoter) showBadges.push('bg-role-promoter');
+              if (item.key === 'request' && user) {
+                const role = String(user.role).toLowerCase();
+                showBadges = [];
+                if (role.includes('art')) {
+                  // Artista: solicitudes + manager
+                  const pendingManagerRequests = receivedManagerRequests.filter((r: any) => r.status === 'Pending');
+                  const pendingReceived = artistRequests.filter((r: any) => r.status === 'Pending');
+                  const hasManager = pendingManagerRequests.length > 0;
+                  const hasLocal = pendingReceived.some((r: any) => r.requester?.role === 'Local');
+                  const hasPromoter = pendingReceived.some((r: any) => r.requester?.role === 'Promotor');
+                  if (hasManager) showBadges.push('bg-role-manager');
+                  if (hasLocal) showBadges.push('bg-role-venue');
+                  if (hasPromoter) showBadges.push('bg-role-promoter');
+                } else if (role.includes('local')) {
+                  // Venue: solicitudes de artistas y managers
+                  // Artistas: requests recibidas con requester.role === 'Artista'
+                  const pendingArtistRequests = artistRequests.filter((r: any) => r.status === 'Pending' && r.requester?.role === 'Artista');
+                  // Managers: requests recibidas con requester.role === 'Manager'
+                  const pendingManagerRequests = artistRequests.filter((r: any) => r.status === 'Pending' && r.requester?.role === 'Manager');
+                  if (pendingArtistRequests.length > 0) showBadges.push('bg-role-artist');
+                  if (pendingManagerRequests.length > 0) showBadges.push('bg-role-manager');
+                }
               }
               return (
                 <Link

@@ -62,21 +62,34 @@ export const BottomNav: React.FC = () => {
 
   // Solo para artista: obtener solicitudes pendientes y su origen
   let showBadges: string[] = [];
-  if (user && String(user.role).toLowerCase().includes('art')) {
-    const { data: requests = [] } = useArtistRequests();
-    const { data: sentRequests = [] } = useSentRequests();
-    const { data: managerRequests = [] } = useReceivedManagerRequests();
-    // Solicitudes de representación pendientes
-    const pendingManagerRequests = managerRequests.filter((r: any) => r.status === 'Pending');
-    const pendingReceived = requests.filter((r: any) => r.status === 'Pending');
-    // Flags para cada tipo
-    const hasManager = pendingManagerRequests.length > 0;
-    const hasLocal = pendingReceived.some((r: any) => r.requester?.role === 'Local');
-    const hasPromoter = pendingReceived.some((r: any) => r.requester?.role === 'Promotor');
-    showBadges = [];
-    if (hasManager) showBadges.push('bg-role-manager');
-    if (hasLocal) showBadges.push('bg-role-venue');
-    if (hasPromoter) showBadges.push('bg-role-promoter');
+  if (user) {
+    const role = String(user.role).toLowerCase();
+    if (role.includes('art')) {
+      const { data: requests = [] } = useArtistRequests();
+      const { data: sentRequests = [] } = useSentRequests();
+      const { data: managerRequests = [] } = useReceivedManagerRequests();
+      // Solicitudes de representación pendientes
+      const pendingManagerRequests = managerRequests.filter((r: any) => r.status === 'Pending');
+      const pendingReceived = requests.filter((r: any) => r.status === 'Pending');
+      // Flags para cada tipo
+      const hasManager = pendingManagerRequests.length > 0;
+      const hasLocal = pendingReceived.some((r: any) => r.requester?.role === 'Local');
+      const hasPromoter = pendingReceived.some((r: any) => r.requester?.role === 'Promotor');
+      showBadges = [];
+      if (hasManager) showBadges.push('bg-role-manager');
+      if (hasLocal) showBadges.push('bg-role-venue');
+      if (hasPromoter) showBadges.push('bg-role-promoter');
+    } else if (role.includes('local')) {
+      // Venue: solicitudes de artistas y managers
+      const { data: requests = [] } = useArtistRequests();
+      // Artistas: requests recibidas con requester.role === 'Artista'
+      const pendingArtistRequests = requests.filter((r: any) => r.status === 'Pending' && r.requester?.role === 'Artista');
+      // Managers: requests recibidas con requester.role === 'Manager'
+      const pendingManagerRequests = requests.filter((r: any) => r.status === 'Pending' && r.requester?.role === 'Manager');
+      showBadges = [];
+      if (pendingArtistRequests.length > 0) showBadges.push('bg-role-artist');
+      if (pendingManagerRequests.length > 0) showBadges.push('bg-role-manager');
+    }
   }
 
   return (
