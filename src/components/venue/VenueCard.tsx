@@ -138,16 +138,7 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
               <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground hover:text-red-500'}`} />
             </button>
 
-            {/* Capacity badge */}
-            {venue.capacity && (
-              <Badge 
-                variant="secondary" 
-                className="absolute bottom-3 left-3 bg-background/90 text-xs"
-              >
-                <Users className="h-3 w-3 mr-1" />
-                {venue.capacity}
-              </Badge>
-            )}
+            {/* Capacity badge eliminado para evitar duplicidad */}
           </div>
         </div>
 
@@ -155,9 +146,14 @@ export function VenueCard({ venue, onFavoriteChange }: VenueCardProps) {
           {/* Nombre + calificación */}
           <div className="space-y-1">
             <div className="flex items-start justify-between">
-              <h3 className="font-semibold text-base text-gray-600 leading-tight">
-                {venue.name}
-              </h3>
+              <div className="flex flex-col">
+                <h3 className="font-semibold text-base text-gray-600 leading-tight">
+                  {venue.name}
+                </h3>
+                {venue.type && (
+                  <div className="text-xs text-muted-foreground leading-tight mt-1 mb-0.5">{venue.type}</div>
+                )}
+              </div>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <Star className="h-3 w-3 fill-current text-amber-400" />
                 <span>{venue.rating ?? 4.5}</span>

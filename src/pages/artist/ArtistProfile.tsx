@@ -284,7 +284,6 @@ export default function ArtistProfile() {
                       placeholder="Nombre artístico"
                       className="text-2xl font-display font-bold max-w-md"
                     />
-
                   ) : (
                     <h1 className="text-3xl font-display font-bold">{currentArtist?.nickName || currentArtist?.name || 'Artista'}</h1>
                   )}
@@ -292,7 +291,29 @@ export default function ArtistProfile() {
                     <CheckCircle className="w-6 h-6 text-primary" />
                   )}
                 </div>
-                <p className="text-muted-foreground">{currentArtist?.name}</p>
+                {/* Tipo de artista debajo del nickname */}
+                <div className="flex items-center gap-2 mb-1">
+                  {isEditing ? (
+                    <Select
+                      value={editData?.type || ''}
+                      onValueChange={value => setEditData({ ...editData, type: value })}
+                    >
+                      <SelectTrigger className="h-8 min-w-[140px]">
+                        <SelectValue placeholder="Selecciona tipo de artista" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Artista">Artista</SelectItem>
+                        <SelectItem value="DJ">DJ</SelectItem>
+                        <SelectItem value="Banda">Banda</SelectItem>
+                        <SelectItem value="Músico">Músico</SelectItem>
+                        <SelectItem value="Orquesta">Orquesta</SelectItem>
+                        <SelectItem value="Showman">Showman</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span className="text-base">{currentArtist?.type || 'Artista'}</span>
+                  )}
+                </div>
                 <div className="flex items-center gap-3 mt-2 flex-wrap">
                   <div className="flex items-center gap-1 text-muted-foreground">
                     <MapPin className="w-4 h-4" />
@@ -510,10 +531,7 @@ export default function ArtistProfile() {
                 {/* Multimedia Tab */}
                 <TabsContent value="multimedia" className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <Video className="w-4 h-4 text-red-500" />
-                      Video Demo / Showreel
-                    </Label>
+                    
                     {isEditing ? (
                       <Input
                         value={editData?.showreelUrl || ''}
@@ -553,18 +571,46 @@ export default function ArtistProfile() {
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <Youtube className="w-4 h-4 text-red-500" />
-                      Canal de YouTube
+                      Canales de YouTube
                     </Label>
                     {isEditing ? (
-                      <Input
-                        value={editData?.youtubeChannel || ''}
-                        onChange={(e) => setEditData({ ...editData, youtubeChannel: e.target.value })}
-                        placeholder="https://youtube.com/@tucanal"
-                      />
-                    ) : currentArtist?.youtubeChannel ? (
-                      <a href={currentArtist.youtubeChannel} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
-                        Ver canal
-                      </a>
+                      <div className="space-y-2">
+                        <Input
+                          value={editData?.youtubeChannels?.join('\n') || ''}
+                          onChange={e => setEditData({ ...editData, youtubeChannels: e.target.value.split('\n').map(v => v.trim()).filter(Boolean) })}
+                          placeholder="Pega uno o varios enlaces de YouTube, uno por línea"
+                          as="textarea"
+                          rows={2}
+                        />
+                      </div>
+                    ) : Array.isArray(currentArtist?.youtubeChannels) && currentArtist.youtubeChannels.length > 0 ? (
+                      <div className="flex flex-col gap-4">
+                        {currentArtist.youtubeChannels.map((url, idx) => {
+                          // Extraer el ID del video de YouTube
+                          let videoId = null;
+                          const match = url.match(/(?:youtu.be\/|youtube.com\/(?:watch\?v=|embed\/|v\/|shorts\/)?)([\w-]{11})/);
+                          if (match) videoId = match[1];
+                          return (
+                            <div key={idx}>
+                              {videoId ? (
+                                <div className="aspect-video w-full max-w-xl">
+                                  <iframe
+                                    src={`https://www.youtube.com/embed/${videoId}`}
+                                    title="YouTube video preview"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    className="w-full h-full rounded-lg border"
+                                  />
+                                </div>
+                              ) : (
+                                <a href={url} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
+                                  {url}
+                                </a>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     ) : (
                       <p className="text-muted-foreground">No configurado</p>
                     )}

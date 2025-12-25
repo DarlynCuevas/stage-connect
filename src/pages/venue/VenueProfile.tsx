@@ -358,37 +358,58 @@ export default function VenueProfile() {
                 </h1>
               </div>
             )}
-            {/* Tipo de local */}
+            {/* Tipo de negocio y capacidad en la misma línea */}
             <div className="flex flex-wrap items-center gap-4 text-muted-foreground mt-1 justify-center">
-              <div className="flex items-center gap-2">
-                {isEditing ? (
-                  <Input
+              {/* Vista pública: tipo de negocio y capacidad juntos */}
+              {!isEditing && (
+                <>
+                  {venue?.type && (
+                    <span className="text-base font-semibold">{venue.type}</span>
+                  )}
+                  <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-muted/40 text-muted-foreground text-sm font-medium">
+                    <Users className="w-4 h-4 text-primary" />
+                    <span>{venue?.capacity || '—'}</span>
+                  </div>
+                </>
+              )}
+              {/* Edición: selector y capacidad */}
+              {isEditing && (
+                <>
+                  <select
                     value={editData?.type || ''}
                     onChange={e => setEditData({ ...editData, type: e.target.value })}
-                    placeholder="Tipo de local"
-                    className="max-w-xs text-center"
-                  />
-                ) : (
-                  venue?.type ? (
-                    <span className="text-base">{venue.type}</span>
-                  ) : null
-                )}
-              </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-muted/40 text-muted-foreground text-sm font-medium">
-                <Users className="w-4 h-4 text-primary" />
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    min={1}
-                    value={editData?.capacity || ''}
-                    onChange={e => setEditData({ ...editData, capacity: e.target.value })}
-                    placeholder="Capacidad"
-                    className="w-16 text-center bg-transparent border-none shadow-none focus:ring-0 p-0"
-                  />
-                ) : (
-                  <span>{venue?.capacity || '—'}</span>
-                )}
-              </div>
+                    className="max-w-xs text-center rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary bg-muted mb-1"
+                  >
+                    <option value="">Seleccionar tipo de negocio</option>
+                    <option value="Bar">Bar</option>
+                    <option value="Discoteca">Discoteca</option>
+                    <option value="Sala de conciertos">Sala de conciertos</option>
+                    <option value="Teatro">Teatro</option>
+                    <option value="Pub">Pub</option>
+                    <option value="Club social">Club social</option>
+                    <option value="Centro cultural">Centro cultural</option>
+                    <option value="Restaurante con música en vivo">Restaurante con música en vivo</option>
+                    <option value="Terraza/Rooftop">Terraza/Rooftop</option>
+                    <option value="Espacio multiusos">Espacio multiusos</option>
+                    <option value="Auditorio">Auditorio</option>
+                    <option value="Café concierto">Café concierto</option>
+                    <option value="Lounge">Lounge</option>
+                    <option value="Carpa/Espacio al aire libre">Carpa/Espacio al aire libre</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                  <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-muted/40 text-muted-foreground text-sm font-medium">
+                    <Users className="w-4 h-4 text-primary" />
+                    <Input
+                      type="number"
+                      min={1}
+                      value={editData?.capacity || ''}
+                      onChange={e => setEditData({ ...editData, capacity: e.target.value })}
+                      placeholder="Capacidad"
+                      className="w-16 text-center bg-transparent border-none shadow-none focus:ring-0 p-0"
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex items-center gap-2 text-muted-foreground mt-1 justify-center">
               <MapPin className="w-5 h-5" />
@@ -766,22 +787,44 @@ export default function VenueProfile() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-muted-foreground mb-2">
-              {(venue as any)?.address || 'No especificado'}<br />
-              {(venue as any)?.city || ''}{(venue as any)?.city ? ', ' : ''}{(venue as any)?.country || ''}
-            </div>
-            {(venue as any)?.mapUrl && (
-              <div className="rounded-lg overflow-hidden border border-border h-40">
-                <iframe
-                  src={(venue as any).mapUrl}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
+            {isEditing ? (
+              <div className="flex flex-col gap-2 mb-2">
+                <input
+                  type="text"
+                  className="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary bg-muted"
+                  placeholder="Dirección (calle, número, etc)"
+                  value={editData?.address || ''}
+                  onChange={e => setEditData({ ...editData, address: e.target.value })}
                 />
+                <input
+                  type="text"
+                  className="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary bg-muted"
+                  placeholder="URL de Google Maps (opcional)"
+                  value={editData?.mapUrl || ''}
+                  onChange={e => setEditData({ ...editData, mapUrl: e.target.value })}
+                />
+                <div className="text-xs text-muted-foreground">Pega aquí la URL de Google Maps para mostrar el mapa en tu perfil.</div>
               </div>
+            ) : (
+              <>
+                <div className="text-sm text-muted-foreground mb-2">
+                  {(venue as any)?.address || 'No especificado'}<br />
+                  {(venue as any)?.city || ''}{(venue as any)?.city ? ', ' : ''}{(venue as any)?.country || ''}
+                </div>
+                {(venue as any)?.mapUrl && (
+                  <div className="rounded-lg overflow-hidden border border-border h-40">
+                    <iframe
+                      src={(venue as any).mapUrl}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
