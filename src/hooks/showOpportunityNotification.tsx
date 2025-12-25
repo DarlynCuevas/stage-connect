@@ -35,7 +35,7 @@ export function showOpportunityNotification({
       // PATCH para cambiar el status a 'accepted' y disparar la notificación
       if (created && created[0] && created[0].id) {
         await import('@/lib/interested').then(({ updateInterestedStatus }) =>
-          updateInterestedStatus(created[0].id, 'accepted')
+          updateInterestedStatus(created[0].id, 'interested')
         );
       }
       toast({

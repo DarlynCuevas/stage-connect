@@ -36,23 +36,100 @@ const dummyItems = [
   { id: 4, type: 'Bandeja de solicitudes', name: 'Artista Pop', summary: 'Mensaje recibido: ¿Hay fechas libres?', status: 'Nuevas' },
 ];
 function RequestDetail({ item }) {
+  // Botones aceptar/rechazar solo para interesados con estado 'interested'
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const handleAccept = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await updateInterestedStatus(item.id, 'accepted');
+      // Abrir modal de contratación correctamente
+      if (window && window.dispatchEvent) {
+        // Custom event para VenueRequests
+        window.dispatchEvent(new CustomEvent('openHireModal', { detail: item }));
+      }
+      // Ocultar el detalle de la solicitud
+      if (typeof setSelected === 'function') {
+        setSelected(null);
+      }
+    } catch (err) {
+      setError('Error al aceptar la solicitud');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleReject = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await updateInterestedStatus(item.id, 'rejected');
+    } catch (err) {
+      setError('Error al rechazar la solicitud');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div className="max-w-xl mx-auto p-8">
-      <h2 className="font-bold text-xl mb-2">{item.name}</h2>
-      <p className="text-gray-600 mb-4">{item.summary}</p>
-      {/* Aquí puedes renderizar más detalles según el tipo de item */}
-      <div className="text-sm text-gray-400">Tipo: {item.type}</div>
+      <h2 className="font-bold text-xl mb-2">
+        {item.artist?.nickname || item.artist?.name || item.artist?.nickmane || item.name}
+      </h2>
+      <p className="text-gray-600 mb-4">{item.summary || 'Solicitud de interés para tu sala.'}</p>
+      <div className="flex flex-row items-start justify-between gap-4">
+        <div>
+          <div className="text-sm text-gray-400 mb-2">Tipo: {item.type || 'Interesado'}</div>
+          <div className="mb-2">
+            <span className="font-semibold">Artista:</span> {item.artist?.nickname || item.artist?.name || item.artist?.nickmane || item.name}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Fecha solicitada:</span> {item.date ? new Date(item.date).toLocaleDateString('es-ES') : 'Sin fecha'}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Oferta:</span> {item.price ? `${item.price} €` : 'Sin oferta'}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Estado:</span> {item.status}
+          </div>
+          <div className="mb-2">
+            <span className="font-semibold">Solicitado el:</span> {item.createdAt ? new Date(item.createdAt).toLocaleString('es-ES') : 'Desconocido'}
+          </div>
+        </div>
+        {item.status === 'interested' && (
+          <div className="flex flex-row gap-2 items-start ml-4">
+            <Button variant="destructive" onClick={handleReject} disabled={isLoading}>
+              {isLoading ? 'Procesando...' : 'Rechazar'}
+            </Button>
+            <Button variant="default" onClick={handleAccept} disabled={isLoading}>
+              {isLoading ? 'Procesando...' : 'Aceptar'}
+            </Button>
+          </div>
+        )}
+      </div>
+      {error && <div className="text-destructive mt-2">{error}</div>}
     </div>
   );
 }
 
 const VenueRequests = () => {
+    // Escuchar evento para abrir el modal de contratación desde RequestDetail
+    useEffect(() => {
+      const handler = (e) => {
+        setSelectedInterested(e.detail);
+        setModalOpen(true);
+      };
+      window.addEventListener('openHireModal', handler);
+      return () => window.removeEventListener('openHireModal', handler);
+    }, []);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [selectedInterested, setSelectedInterested] = useState<Interested | null>(null); // Nuevo estado
   const [activeTab, setActiveTab] = useState(TABS[0]);
   const [selected, setSelected] = useState(null);
-  const [filter, setFilter] = useState('Todas');
+  const [filter, setFilter] = useState(() => {
+    // Si la pestaña activa es 'Interesados', por defecto 'Nuevas', si no 'Todas'
+    return TABS[1] === 'Interesados' ? 'Nuevas' : 'Todas';
+  });
 
   // Acción editar (abre modal de edición, placeholder)
   const handleEdit = (request) => {
@@ -265,10 +342,9 @@ const VenueRequests = () => {
         />
         {/* Filtros debajo del buscador */}
         <div className="flex gap-2 mt-3">
-          {(
-            activeTab === 'Contratación'
-              ? ['Todas', 'Nuevas', 'Pendientes', 'Completadas', 'Canceladas']
-              : ['Todas', 'Nuevas', 'Leídas', 'Pendientes']
+          {(activeTab === 'Contratación'
+            ? ['Todas', 'Nuevas', 'Pendientes', 'Completadas', 'Canceladas']
+            : ['Nuevas', 'Aceptadas']
           ).map(filtro => (
             <button
               key={filtro}
@@ -302,13 +378,56 @@ const VenueRequests = () => {
       ) : (
         <div className="overflow-y-auto bg-card" style={{ maxHeight: 400, minHeight: 240 }}>
           {activeTab === 'Interesados' ? (
-            interested.length > 0 ? (
-              interested.map(item => (
-                <CardItemRequest key={item.id} item={item} onClick={() => setSelected(item)} selected={selected?.id === item.id} />
-              ))
-            ) : (
-              <div className="text-center text-muted-foreground py-10">No hay interesados en esta sección.</div>
-            )
+            (() => {
+              let filtered = [];
+              if (filter === 'Nuevas') {
+                filtered = interested.filter(item => item.status === 'interested');
+              } else if (filter === 'Aceptadas') {
+                filtered = interested.filter(item => item.status === 'accepted');
+              }
+              if (filter === 'Nuevas' && filtered.length > 0) {
+                // Agrupar por fecha
+                const grouped = filtered.reduce((acc, item) => {
+                  const dateKey = item.date ? new Date(item.date).toISOString().split('T')[0] : 'Sin fecha';
+                  if (!acc[dateKey]) acc[dateKey] = [];
+                  acc[dateKey].push(item);
+                  return acc;
+                }, {});
+                return Object.entries(grouped).map(([date, items]) => {
+                  const itemsArray = items as typeof filtered;
+                  // Formato elegante: ejemplo 'Jueves, 25 de diciembre de 2025'
+                  let formatted = 'Sin fecha';
+                  if (date !== 'Sin fecha') {
+                    const d = new Date(date);
+                    formatted = d.toLocaleDateString('es-ES', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    });
+                    // Capitalizar la primera letra
+                    formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+                  }
+                  return (
+                    <div key={date} className="mb-6">
+                      <div className="mb-2 text-xs font-normal" style={{marginLeft: 2, marginBottom: 8}}>{formatted}</div>
+                      <div className="flex flex-col gap-2">
+                        {itemsArray.map(item => (
+                          <CardItemRequest key={item.id} item={item} onClick={() => setSelected(item)} selected={selected?.id === item.id} />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                });
+              }
+              return filtered.length > 0 ? (
+                filtered.map(item => (
+                  <CardItemRequest key={item.id} item={item} onClick={() => setSelected(item)} selected={selected?.id === item.id} />
+                ))
+              ) : (
+                <div className="text-center text-muted-foreground py-10">No hay interesados en esta sección.</div>
+              );
+            })()
           ) : (
             items.length > 0 ? (
               items.map(item => (

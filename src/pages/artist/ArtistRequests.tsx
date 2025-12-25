@@ -230,7 +230,7 @@ export default function ArtistRequests() {
                     className="px-2 py-1 rounded-md border border-primary text-primary text-xs font-medium bg-transparent hover:bg-primary/10 transition-colors shadow-sm"
                     onClick={async () => {
                       if (selected) {
-                        await updateInterestedStatus(selected.id, 'accepted');
+                        await updateInterestedStatus(selected.id, 'interested');
                       }
                     }}
                   >

@@ -9,10 +9,12 @@ export interface Interested {
   artist: any;
   date: string;
   price: number | null;
-  status: 'pending' | 'accepted' | 'rejected' | 'withdrawn';
+  status: InterestedStatus;
   createdAt: string;
   artistId: number;
 }
+
+export type InterestedStatus = 'pending' | 'interested' | 'accepted' | 'rejected' | 'withdrawn';
 
 export async function createInterested(
   venueId: number,
@@ -31,7 +33,7 @@ export async function getInterestedByVenue(venueId: number, token?: string | nul
   return apiFetch<Interested[]>(`/interested/venue/${venueId}`, { token });
 }
 
-export async function updateInterestedStatus(id: number, status: Interested['status']) {
+export async function updateInterestedStatus(id: number, status: InterestedStatus) {
   return apiFetch(`/interested/${id}`, {
     method: 'PATCH',
     body: { status },

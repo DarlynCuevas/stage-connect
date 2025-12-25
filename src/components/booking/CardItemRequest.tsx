@@ -10,9 +10,16 @@ const CardItemRequest: React.FC<CardItemProps> = ({ item, onClick, selected }) =
   // Determinar si es contratación o interesado
   const isBooking = !!item.eventDate || item.type === 'Contratación' || item.eventName;
   // Para interesados, puede venir como item.artist o item.manager
-  // Prioridad: artista.user > artista > manager > user > name
+  // Prioridad: artist.name > artist.nickName > artist.user.name > manager.name > item.name > item.user.name
   const avatar = item.artist?.user?.avatar || item.artist?.avatar || item.manager?.avatar || item.avatar || item.user?.avatar || null;
-  const name = item.artist?.user?.name || item.artist?.name || item.manager?.name || item.name || item.user?.name || '';
+  const name = item.artist?.name || item.artist?.nickName || item.artist?.user?.name || item.manager?.name || item.name || item.user?.name || 'Sin nombre';
+  // Determinar el rol del interesado
+  let role = '';
+  if (item.artist) role = 'Artista';
+  else if (item.manager) role = 'Manager';
+  else if (item.venue) role = 'Local';
+  else if (item.promoter) role = 'Promotor';
+
   return (
     <div
       className={`cursor-pointer px-5 py-4 mb-3 rounded-xl border border-border shadow-sm bg-background hover:bg-muted transition flex items-center gap-4 ${selected ? 'ring-2 ring-primary bg-muted' : ''}`}
@@ -32,7 +39,7 @@ const CardItemRequest: React.FC<CardItemProps> = ({ item, onClick, selected }) =
           <span className="font-semibold text-base text-foreground truncate">{item.eventName || name}</span>
         </div>
         <div className="text-sm text-muted-foreground truncate flex flex-wrap gap-2 items-center">
-          {name && <span className="font-medium text-primary">{name}</span>}
+          {role && <span className="font-medium text-primary">{role}</span>}
           {/* Contratación: fechas y resumen */}
           {isBooking && item.eventDate && (
             <span className="ml-2">
