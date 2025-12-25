@@ -13,7 +13,7 @@ const TABS = [
   'Contratación',
   'Ofertas',
   'Representación',
-];
+]; // 'Bandeja' tab removed
 
 export default function ArtistRequests() {
   const { id } = useParams();
@@ -204,9 +204,7 @@ export default function ArtistRequests() {
               <div className="text-center text-muted-foreground py-10">No hay solicitudes de representación en esta sección.</div>
             )}
           </div>
-        ) : (
-          <div className="text-center text-muted-foreground py-10">No hay elementos en esta sección.</div>
-        )}
+        ) : null}
         {/* Panel de mensajes/detalle */}
         <div className="border-t border-border bg-background">
           {selected ? (

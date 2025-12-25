@@ -24,9 +24,7 @@ import CardItemRequest from '@/components/booking/CardItemRequest';
 const TABS = [
   'Contratación',
   'Interesados',
-  'Representación',
-  'Bandeja',
-];
+]; // 'Bandeja' tab removed
 
 // Dummy data para ejemplo visual
 const dummyItems = [
@@ -296,7 +294,7 @@ const VenueRequests = () => {
   const items = dummyItems.filter(i =>
     i.type === activeTab &&
     (filter === 'Todas' || i.status === filter)
-  );
+  ); // 'Representación' tab removed, so this is safe
 
    // Usa la misma data para bookingRequests
    const bookingRequests = requests;
@@ -375,70 +373,60 @@ const VenueRequests = () => {
             <div className="text-center text-muted-foreground py-10">No hay solicitudes de contratación en esta sección.</div>
           )}
         </div>
-      ) : (
+      ) : activeTab === 'Interesados' ? (
         <div className="overflow-y-auto bg-card" style={{ maxHeight: 400, minHeight: 240 }}>
-          {activeTab === 'Interesados' ? (
-            (() => {
-              let filtered = [];
-              if (filter === 'Nuevas') {
-                filtered = interested.filter(item => item.status === 'interested');
-              } else if (filter === 'Aceptadas') {
-                filtered = interested.filter(item => item.status === 'accepted');
-              }
-              if (filter === 'Nuevas' && filtered.length > 0) {
-                // Agrupar por fecha
-                const grouped = filtered.reduce((acc, item) => {
-                  const dateKey = item.date ? new Date(item.date).toISOString().split('T')[0] : 'Sin fecha';
-                  if (!acc[dateKey]) acc[dateKey] = [];
-                  acc[dateKey].push(item);
-                  return acc;
-                }, {});
-                return Object.entries(grouped).map(([date, items]) => {
-                  const itemsArray = items as typeof filtered;
-                  // Formato elegante: ejemplo 'Jueves, 25 de diciembre de 2025'
-                  let formatted = 'Sin fecha';
-                  if (date !== 'Sin fecha') {
-                    const d = new Date(date);
-                    formatted = d.toLocaleDateString('es-ES', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    });
-                    // Capitalizar la primera letra
-                    formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
-                  }
-                  return (
-                    <div key={date} className="mb-6">
-                      <div className="mb-2 text-xs font-normal" style={{marginLeft: 2, marginBottom: 8}}>{formatted}</div>
-                      <div className="flex flex-col gap-2">
-                        {itemsArray.map(item => (
-                          <CardItemRequest key={item.id} item={item} onClick={() => setSelected(item)} selected={selected?.id === item.id} />
-                        ))}
-                      </div>
+          {(() => {
+            let filtered = [];
+            if (filter === 'Nuevas') {
+              filtered = interested.filter(item => item.status === 'interested');
+            } else if (filter === 'Aceptadas') {
+              filtered = interested.filter(item => item.status === 'accepted');
+            }
+            if (filter === 'Nuevas' && filtered.length > 0) {
+              // Agrupar por fecha
+              const grouped = filtered.reduce((acc, item) => {
+                const dateKey = item.date ? new Date(item.date).toISOString().split('T')[0] : 'Sin fecha';
+                if (!acc[dateKey]) acc[dateKey] = [];
+                acc[dateKey].push(item);
+                return acc;
+              }, {});
+              return Object.entries(grouped).map(([date, items]) => {
+                const itemsArray = items as typeof filtered;
+                // Formato elegante: ejemplo 'Jueves, 25 de diciembre de 2025'
+                let formatted = 'Sin fecha';
+                if (date !== 'Sin fecha') {
+                  const d = new Date(date);
+                  formatted = d.toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  });
+                  // Capitalizar la primera letra
+                  formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+                }
+                return (
+                  <div key={date} className="mb-6">
+                    <div className="mb-2 text-xs font-normal" style={{marginLeft: 2, marginBottom: 8}}>{formatted}</div>
+                    <div className="flex flex-col gap-2">
+                      {itemsArray.map(item => (
+                        <CardItemRequest key={item.id} item={item} onClick={() => setSelected(item)} selected={selected?.id === item.id} />
+                      ))}
                     </div>
-                  );
-                });
-              }
-              return filtered.length > 0 ? (
-                filtered.map(item => (
-                  <CardItemRequest key={item.id} item={item} onClick={() => setSelected(item)} selected={selected?.id === item.id} />
-                ))
-              ) : (
-                <div className="text-center text-muted-foreground py-10">No hay interesados en esta sección.</div>
-              );
-            })()
-          ) : (
-            items.length > 0 ? (
-              items.map(item => (
+                  </div>
+                );
+              });
+            }
+            return filtered.length > 0 ? (
+              filtered.map(item => (
                 <CardItemRequest key={item.id} item={item} onClick={() => setSelected(item)} selected={selected?.id === item.id} />
               ))
             ) : (
-              <div className="text-center text-muted-foreground py-10">No hay elementos en esta sección.</div>
-            )
-          )}
+              <div className="text-center text-muted-foreground py-10">No hay interesados en esta sección.</div>
+            );
+          })()}
         </div>
-      )}
+      ) : null}
       {/* Panel de mensajes/detalle */}
       <div className="border-t border-border bg-background">
         {selected ? (
