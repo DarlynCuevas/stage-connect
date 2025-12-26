@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { AvatarBannerUploader } from '@/components/ui/AvatarBannerUploader';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -257,7 +258,7 @@ export default function ArtistProfile() {
       <div className="relative rounded-2xl overflow-hidden">
         <div className="h-48 lg:h-64">
           <img
-            src={`https://picsum.photos/1200/400?random=${Math.random()}`}
+            src={currentArtist?.banner || `https://picsum.photos/1200/400?random=${Math.random()}`}
             alt="Banner"
             className="w-full h-full object-cover"
           />
@@ -269,12 +270,22 @@ export default function ArtistProfile() {
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
             <div className="flex items-end gap-4">
-              <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                <AvatarImage src={currentArtist?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
-                <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                  {currentArtist?.nickName?.charAt(0) || freshArtist?.name?.charAt(0) || 'A'}
-                </AvatarFallback>
-              </Avatar>
+              {isEditing ? (
+                <AvatarBannerUploader
+                  token={token}
+                  initialAvatar={editData?.avatar}
+                  initialBanner={editData?.banner}
+                  onAvatarChange={url => setEditData({ ...editData, avatar: url })}
+                  onBannerChange={url => setEditData({ ...editData, banner: url })}
+                />
+              ) : (
+                <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
+                  <AvatarImage src={currentArtist?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
+                  <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+                    {currentArtist?.nickName?.charAt(0) || freshArtist?.name?.charAt(0) || 'A'}
+                  </AvatarFallback>
+                </Avatar>
+              )}
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   {isEditing ? (

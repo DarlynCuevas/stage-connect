@@ -75,7 +75,10 @@ export default function ArtistDiscover() {
       // Manejo de error opcional
     }
   };
-  const mapToVenueCard = (venue: any) => ({ ...venue });
+  const mapToVenueCard = (venue: any) => ({
+    ...venue,
+    id: venue.id ?? venue.user_id,
+  });
   const handleVenueSearch = ({ query, city, dateRange, type }: any) => {
     setFilters({
       city: city || '',
