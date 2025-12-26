@@ -300,6 +300,7 @@ function AppRoutes() {
       <Route path="/artist/:id/requests" element={<ArtistRequests />} />
       <Route path="/artist/:id/settings" element={<Settings />} />
       <Route path="/artist/:id/invite" element={<InviteFriend />} />
+      <Route path="/artist/:id/pages" element={<Messages />} />
       {/* Ruta pública: venue o promotor pueden ver perfil de artista */}
       <Route path="/venue/:venueId/artist/:id/profile" element={<ArtistProfile />} />
       <Route path="/promoter/:promoterId/artist/:id/profile" element={<ArtistProfile />} />
@@ -312,6 +313,7 @@ function AppRoutes() {
       <Route path="/venue/:id/requests" element={<VenueRequests />} />
       <Route path="/venue/:id/dashboard" element={<VenueDashboard />} />
       <Route path="/venue/:id/settings" element={<Settings />} />
+      <Route path="/venue/:id/pages" element={<Messages />} />
       {/* Ruta pública: artista o manager pueden ver perfil de venue */}
       <Route path="/artist/:id/venue/:venueId/profile" element={<VenueProfile />} />
       <Route path="/manager/:id/venue/:venueId/profile" element={<VenueProfile />} />
@@ -324,6 +326,7 @@ function AppRoutes() {
       <Route path="/manager/:id/artists" element={<ManagerArtists />} />
       <Route path="/manager/:id/requests" element={<ManagerRequests />} />
       <Route path="/manager/:id/settings" element={<Settings />} />
+      <Route path="/manager/:id/pages" element={<Messages />} />
       {/* Ruta pública: promotor, locales o artista pueden ver perfil de manager */}
       <Route path="/promoter/:id/manager/:managerId/profile" element={<ManagerProfile />} />
       <Route path="/artist/:artistId/manager/:id/profile" element={<ManagerProfile />} />
@@ -336,12 +339,10 @@ function AppRoutes() {
       <Route path="/promoter/:id/dashboard" element={<PromoterHome />} />
       <Route path="/promoter/:id/requests" element={<PromoterRequests />} />
       <Route path="/promoter/:id/settings" element={<Settings />} />
+      <Route path="/promoter/:id/pages" element={<Messages />} />
       {/* Ruta pública: manager o artista pueden ver perfil de promoter */}
       <Route path="/manager/:managerId/promoter/:promoterId/profile" element={<PromoterProfile />} />
       <Route path="/artist/:artistId/promoter/:id/profile" element={<PromoterProfile />} />
-
-      {/* Messages page (all roles) */}
-      <Route path="/messages" element={<Messages />} />
 
       {/* Catch all */}
       <Route path="*" element={<NotFound />} />

@@ -16,6 +16,9 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+// Detect base path for routing
+const BASE_PATH = (import.meta as any).env?.BASE_URL || '/stage-connect/';
 import { useUpdateProfile, useArtist, useUser } from '@/lib/users';
 import useUploadImage from '@/hooks/useUploadImage';
 import { useConfirmedRequests } from '@/lib/requests';
@@ -55,6 +58,7 @@ import ModalSolicitudContratacion from '@/components/calendar/ModalSolicitudCont
 import { FollowButton } from '@/components/ui/FollowButton';
 
 export default function ArtistProfile() {
+  const navigate = useNavigate();
   // Estado para mostrar el modal de seguidores
   const [followersOpen, setFollowersOpen] = useState(false);
   // Mock de seguidores
@@ -365,14 +369,34 @@ export default function ArtistProfile() {
                   <CheckCircle className="w-6 h-6 text-primary" />
                 )}
                 {/* Mostrar solo el botón de seguir en perfiles ajenos y solo el de seguidores en el propio perfil */}
-                {authUser && currentArtist?.id && String(currentArtist.id) !== String(authUser.id) ? (
-                  <FollowButton
-                    isFollowing={isFollowing}
-                    onFollow={handleFollow}
-                    onUnfollow={handleUnfollow}
-                    loading={followLoading}
-                  />
-                ) : (
+                {authUser && currentArtist?.id && String(currentArtist.id) !== String(authUser.id) && (
+                  <>
+                    <FollowButton
+                      isFollowing={isFollowing}
+                      onFollow={handleFollow}
+                      onUnfollow={handleUnfollow}
+                      loading={followLoading}
+                    />
+                    <button
+                      className="ml-2 px-3 py-1.5 text-sm rounded-full font-semibold border border-primary text-primary bg-white hover:bg-primary/10 transition min-w-[80px]"
+                      type="button"
+                      onClick={() => {
+                        let path = '';
+                        const uid = authUser?.id;
+                        const role = authUser?.role;
+                        if (role === 'Artista') path = `/artist/${uid}/pages?userId=${currentArtist.id}`;
+                        else if (role === 'Local') path = `/venue/${uid}/pages?userId=${currentArtist.id}`;
+                        else if (role === 'Manager') path = `/manager/${uid}/pages?userId=${currentArtist.id}`;
+                        else if (role === 'Promotor') path = `/promoter/${uid}/pages?userId=${currentArtist.id}`;
+                        else path = `/artist/${uid}/pages?userId=${currentArtist.id}`;
+                        navigate(path);
+                      }}
+                    >
+                      Enviar mensaje
+                    </button>
+                  </>
+                )}
+                {authUser && currentArtist?.id && String(currentArtist.id) === String(authUser.id) && (
                   <span className="ml-2">
                     <FollowersModal
                       open={followersOpen}

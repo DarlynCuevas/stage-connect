@@ -30,6 +30,18 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
   React.useEffect(() => {}, [user, isAuthenticated]);
   const location = useLocation();
 
+  // Extraer venueId o artistId dinámicamente de la URL si estamos en un perfil de venue o artista
+  let venueIdFromUrl: string | null = null;
+  let artistIdFromUrl: string | null = null;
+  const venueProfileMatch = location.pathname.match(/^\/venue\/(\d+)/);
+  if (venueProfileMatch) {
+    venueIdFromUrl = venueProfileMatch[1];
+  }
+  const artistProfileMatch = location.pathname.match(/^\/artist\/(\d+)/);
+  if (artistProfileMatch) {
+    artistIdFromUrl = artistProfileMatch[1];
+  }
+
   // Mapeo de rutas a títulos amigables
   const getMobileTitle = () => {
     const path = location.pathname;
@@ -169,7 +181,13 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
           {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
         <Link
-          to="/messages"
+          to={
+            artistIdFromUrl
+              ? `/artist/${artistIdFromUrl}/pages`
+              : venueIdFromUrl
+                ? `/venue/${venueIdFromUrl}/pages`
+                : "/messages"
+          }
           className="w-7 h-7 rounded-full border flex items-center justify-center text-muted-foreground hover:text-primary transition-colors mr-2"
           title="Mensajes"
         >
@@ -348,7 +366,13 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
                 {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
               <Link
-                to="/messages"
+                to={
+                  artistIdFromUrl
+                    ? `/artist/${artistIdFromUrl}/pages`
+                    : venueIdFromUrl
+                      ? `/venue/${venueIdFromUrl}/pages`
+                      : "/messages"
+                }
                 className="w-9 h-9 rounded-full border flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
                 title="Mensajes"
               >
