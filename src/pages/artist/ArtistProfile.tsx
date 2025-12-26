@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateProfile, useArtist, useUser } from '@/lib/users';
+import useUploadImage from '@/hooks/useUploadImage';
 import { useConfirmedRequests } from '@/lib/requests';
 import { useRemoveManagerRelation, useReceivedManagerRequests, useCreateManagerRequest } from '@/lib/manager-requests';
 import { useCreateBookingRequest } from '@/lib/requests';
@@ -46,6 +47,7 @@ import {
   Clock,
   Users,
   PlayCircle,
+  ImagePlus,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ModalSolicitudContratacion from '@/components/calendar/ModalSolicitudContratacion';
@@ -55,6 +57,7 @@ export default function ArtistProfile() {
     const [activeTab, setActiveTab] = useState('perfil');
   const params = useParams();
   const { user: authUser, token, setUser } = useAuth();
+  const uploadImage = useUploadImage(token);
 
   // --- Detección robusta de contexto y mainContext igual que VenueProfile ---
   let mainContext: 'artist' | 'venue' = 'artist';
@@ -254,20 +257,65 @@ export default function ArtistProfile() {
             alt="Banner"
             className="w-full h-full object-cover"
           />
+         {isEditing && (
+            <label className="absolute left-1/2 -translate-x-1/2 bottom-2 w-2/3 flex items-center justify-center cursor-pointer group" style={{ zIndex: 20 }}>
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 dark:bg-background/90 border border-border shadow text-xs font-medium text-primary hover:bg-primary hover:text-white transition">
+                <ImagePlus className="w-4 h-4" /> Cambiar banner
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={async e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const url = await uploadImage(file);
+                    if (url) {
+                      setEditData((prev: any) => ({ ...prev, banner: url }));
+                    }
+                  }
+                }}
+                className="hidden"
+              />
+            </label>
+          )}
         </div>
-
       </div>
 
      
 
         {/* Avatar e información principal */}
         <div className="w-full max-w-6xl mx-auto flex items-end gap-6 mt-[-60px]">
-          <Avatar className="h-36 w-36 border-4 border-background shadow-2xl bg-white dark:bg-background">
-            <AvatarImage src={currentArtist?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
-            <AvatarFallback className="text-4xl bg-primary text-primary-foreground">
-              {currentArtist?.nickName?.charAt(0) || currentArtist?.name?.charAt(0) || 'A'}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-36 w-36 border-4 border-background shadow-2xl bg-white dark:bg-background">
+              <AvatarImage src={currentArtist?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=artist'} />
+              <AvatarFallback className="text-4xl bg-primary text-primary-foreground">
+                {currentArtist?.nickName?.charAt(0) || currentArtist?.name?.charAt(0) || 'A'}
+              </AvatarFallback>
+            </Avatar>
+           {isEditing && (
+              <>
+                <label className="absolute left-1/2 -translate-x-1/2 bottom-0 w-48 flex items-center justify-center cursor-pointer group" style={{ zIndex: 20 }}>
+                  <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 dark:bg-background/90 border border-border shadow text-xs font-medium text-primary hover:bg-primary hover:text-white transition">
+                    <ImagePlus className="w-4 h-4" /> Cambiar foto
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async e => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const url = await uploadImage(file);
+                        if (url) {
+                          setEditData((prev: any) => ({ ...prev, avatar: url }));
+                        }
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </label>
+              </>
+            )}
+          </div>
           <div className="flex-1 flex flex-col justify-end">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
               <div className="flex items-center gap-3 flex-wrap">
