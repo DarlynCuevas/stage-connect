@@ -1,3 +1,4 @@
+
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
@@ -33,7 +34,7 @@ const dummyItems = [
   { id: 3, type: 'Representación', name: 'Manager Pro', summary: 'Solicitud de representación', status: 'Pendientes' },
   { id: 4, type: 'Bandeja de solicitudes', name: 'Artista Pop', summary: 'Mensaje recibido: ¿Hay fechas libres?', status: 'Nuevas' },
 ];
-function RequestDetail({ item }) {
+function RequestDetail({ item, setSelected }) {
   // Botones aceptar/rechazar solo para interesados con estado 'interested'
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +43,7 @@ function RequestDetail({ item }) {
     if (window && window.dispatchEvent) {
       window.dispatchEvent(new CustomEvent('openHireModal', { detail: item }));
     }
-    if (typeof setSelected === 'function') {
+    if (setSelected) {
       setSelected(null);
     }
   };
@@ -98,25 +99,35 @@ function RequestDetail({ item }) {
   );
 }
 
+
 const VenueRequests = () => {
-    // Escuchar evento para abrir el modal de contratación desde RequestDetail
-    useEffect(() => {
-      const handler = (e) => {
-        setSelectedInterested(e.detail);
-        setModalOpen(true);
-      };
-      window.addEventListener('openHireModal', handler);
-      return () => window.removeEventListener('openHireModal', handler);
-    }, []);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [selectedInterested, setSelectedInterested] = useState<Interested | null>(null); // Nuevo estado
-  const [activeTab, setActiveTab] = useState(TABS[0]);
+  const [activeTab, setActiveTab] = useState('Contratación');
   const [selected, setSelected] = useState(null);
-  const [filter, setFilter] = useState(() => {
-    // Si la pestaña activa es 'Interesados', por defecto 'Nuevas', si no 'Todas'
-    return TABS[1] === 'Interesados' ? 'Nuevas' : 'Todas';
-  });
+  const [filter, setFilter] = useState('Pendientes');
+
+  // Cambia el filtro por defecto según la pestaña activa
+  useEffect(() => {
+    if (activeTab === 'Interesados') {
+      setFilter('Nuevas');
+    }
+    if (activeTab === 'Contratación') {
+      setFilter('Pendientes');
+    }
+  }, [activeTab]);
+
+  // Escuchar evento para abrir el modal de contratación desde RequestDetail
+  useEffect(() => {
+    const handler = (e) => {
+      setSelectedInterested(e.detail);
+      setModalOpen(true);
+    };
+    window.addEventListener('openHireModal', handler);
+    return () => window.removeEventListener('openHireModal', handler);
+  }, []);
+
 
   // Acción editar (abre modal de edición, placeholder)
   const handleEdit = (request) => {
@@ -124,6 +135,7 @@ const VenueRequests = () => {
     setEditModalOpen(true);
     alert('Funcionalidad de editar: aquí se abriría un modal para editar la solicitud.');
   };
+
 
   // Contratar interesado: ahora abre el modal en vez de enviar directamente
   const handleHireInterested = (interested: Interested) => {
@@ -338,7 +350,7 @@ const VenueRequests = () => {
         {/* Filtros debajo del buscador */}
         <div className="flex gap-2 mt-3">
           {(activeTab === 'Contratación'
-            ? ['Todas', 'Nuevas', 'Pendientes', 'Completadas', 'Canceladas']
+            ? ['Pendientes', 'Completadas', 'Canceladas']
             : ['Nuevas', 'Aceptadas']
           ).map(filtro => (
             <button
@@ -427,7 +439,7 @@ const VenueRequests = () => {
       {/* Panel de mensajes/detalle */}
       <div className="border-t border-border bg-background">
         {selected ? (
-          <RequestDetail item={selected} />
+            <RequestDetail item={selected} setSelected={setSelected} />
         ) : (
           <div className="text-center text-muted-foreground py-10">
             <Send className="mx-auto w-16 h-16 mb-4 opacity-30" />

@@ -1,3 +1,5 @@
+import { FollowersModal } from '@/components/ui/FollowersModal';
+import { FollowButton } from '@/components/ui/FollowButton';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
@@ -45,6 +47,33 @@ import useUploadImage from '@/hooks/useUploadImage';
 
 
 export default function VenueProfile() {
+  // Estado para mostrar el modal de seguidores
+  const [followersOpen, setFollowersOpen] = useState(false);
+  // Mock de seguidores
+  const followersMock = [
+    { id: 1, name: 'Usuario 1' },
+    { id: 2, name: 'Usuario 2' },
+    { id: 3, name: 'Usuario 3' },
+  ];
+  // Estado de seguimiento (mock, reemplazar por lógica real de backend)
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+
+  const handleFollow = async () => {
+    setFollowLoading(true);
+    setTimeout(() => {
+      setIsFollowing(true);
+      setFollowLoading(false);
+    }, 500);
+  };
+
+  const handleUnfollow = async () => {
+    setFollowLoading(true);
+    setTimeout(() => {
+      setIsFollowing(false);
+      setFollowLoading(false);
+    }, 500);
+  };
   const [tabValue, setTabValue] = useState('info');
    const { user: authUser, token, setUser } = useAuth();
   // Hook para subir imágenes
@@ -352,6 +381,34 @@ export default function VenueProfile() {
                         <circle cx="10" cy="10" r="10" fill="#111" />
                         <path d="M6 10.5L9 13.5L14 8.5" stroke="#22c55e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
+                    </span>
+                  )}
+                  {/* Botón de seguir solo si no es tu propio perfil */}
+                  {/* Mostrar solo el botón de seguir en perfiles ajenos y solo el de seguidores en el propio perfil */}
+                  {authUser && venueIdParam && String(authUser.id) !== String(venueIdParam) ? (
+                    <span className="ml-4">
+                      <FollowButton
+                        isFollowing={isFollowing}
+                        onFollow={handleFollow}
+                        onUnfollow={handleUnfollow}
+                        loading={followLoading}
+                      />
+                    </span>
+                  ) : (
+                    <span className="ml-2">
+                      <FollowersModal
+                        open={followersOpen}
+                        setOpen={setFollowersOpen}
+                        followers={followersMock}
+                        trigger={
+                          <button
+                            className="px-3 py-1.5 text-sm rounded-full font-semibold border border-primary text-primary bg-white hover:bg-primary/10 transition min-w-[80px]"
+                            type="button"
+                          >
+                            Seguidores
+                          </button>
+                        }
+                      />
                     </span>
                   )}
                 </h1>
