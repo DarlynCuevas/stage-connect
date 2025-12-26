@@ -38,23 +38,12 @@ function RequestDetail({ item }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const handleAccept = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      await updateInterestedStatus(item.id, 'accepted');
-      // Abrir modal de contratación correctamente
-      if (window && window.dispatchEvent) {
-        // Custom event para VenueRequests
-        window.dispatchEvent(new CustomEvent('openHireModal', { detail: item }));
-      }
-      // Ocultar el detalle de la solicitud
-      if (typeof setSelected === 'function') {
-        setSelected(null);
-      }
-    } catch (err) {
-      setError('Error al aceptar la solicitud');
-    } finally {
-      setIsLoading(false);
+    // Solo abrir el modal de contratación, sin cambiar el estado del interesado
+    if (window && window.dispatchEvent) {
+      window.dispatchEvent(new CustomEvent('openHireModal', { detail: item }));
+    }
+    if (typeof setSelected === 'function') {
+      setSelected(null);
     }
   };
   const handleReject = async () => {
@@ -155,8 +144,20 @@ const VenueRequests = () => {
   }) => {
     if (!selectedInterested || !authUser) return;
     const artistId = selectedInterested.artist?.user_id ?? selectedInterested.artistId ?? selectedInterested.id;
+    console.log('[handleSubmitContratacion] Enviando solicitud:', {
+      artistId,
+      eventDate: data.fecha,
+      eventLocation: data.ubicacion,
+      eventType: data.tipoEvento,
+      offeredPrice: data.oferta,
+      nombreLocal: data.nombreLocal,
+      ciudadLocal: data.ciudadLocal,
+      message: data.mensaje || '',
+      selectedInterested,
+      authUser
+    });
     createBookingRequest({
-      artistId: selectedInterested.artist?.user_id,
+      artistId,
       eventDate: data.fecha.toISOString(),
       eventLocation: data.ubicacion,
       eventType: data.tipoEvento,
@@ -299,10 +300,6 @@ const VenueRequests = () => {
    // Usa la misma data para bookingRequests
    const bookingRequests = requests;
    const loadingRequests = isLoading;
-   // Debug: Verificar si basePrice está disponible en las contrataciones
-   if (bookingRequests && bookingRequests.length > 0) {
-     console.log('bookingRequests:', bookingRequests.map(r => ({ id: r.id, artist: r.artist })));
-   }
 
   // Filtra por tab y filtro
   const filteredRequests = (bookingRequests || []).filter(req => {
