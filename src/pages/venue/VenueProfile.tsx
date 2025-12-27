@@ -121,10 +121,12 @@ export default function VenueProfile() {
   }, [isOwnProfile, authUser, venue]);
 
   if (!editData) {
+    // Inicializa editData con valores mínimos para evitar render vacío
+    setEditData({ name: '', country: '', city: '' });
     return (
       <HeaderLayout>
         <div className="flex items-center justify-center h-screen">
-          <p className="text-muted-foreground">No se encontró el local</p>
+          <p className="text-muted-foreground">Cargando datos del local...</p>
         </div>
       </HeaderLayout>
     );
@@ -469,10 +471,40 @@ export default function VenueProfile() {
             </div>
             <div className="flex items-center gap-2 text-muted-foreground mt-1 justify-center">
               <MapPin className="w-5 h-5" />
-              <span className="text-base">{isEditing
-                ? ((editData as any)?.city || 'Ciudad') + ', ' + ((editData as any)?.country || 'País')
-                : ((venue as any)?.city || 'Ciudad') + ', ' + ((venue as any)?.country || 'País')
-              }</span>
+              {isEditing ? (
+                <>
+                  <select
+                    value={editData?.country || ''}
+                    onChange={e => {
+                      const newCountry = e.target.value;
+                      setEditData({
+                        ...editData,
+                        country: newCountry,
+                        city: '' // Reset city when country changes
+                      });
+                    }}
+                    className="rounded-lg border border-border px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary bg-muted mr-2"
+                  >
+                    <option value="">Selecciona país</option>
+                    {countries.map((country: string) => (
+                      <option key={country} value={country}>{country}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={editData?.city || ''}
+                    onChange={e => setEditData({ ...editData, city: e.target.value })}
+                    className="rounded-lg border border-border px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary bg-muted"
+                    disabled={!editData?.country || !cities[editData?.country]}
+                  >
+                    <option value="">Selecciona ciudad</option>
+                    {editData?.country && cities[editData.country]?.map((city: string) => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </select>
+                </>
+              ) : (
+                <span className="text-base">{((venue as any)?.city || 'Ciudad') + ', ' + ((venue as any)?.country || 'País')}</span>
+              )}
             </div>
             {/* Horario de apertura y cierre */}
             <div className="flex flex-wrap items-center gap-4 text-muted-foreground mt-1 justify-center">

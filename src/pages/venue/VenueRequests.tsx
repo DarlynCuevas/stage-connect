@@ -457,15 +457,37 @@ const VenueRequests = () => {
         onEdit={selectedRequest ? () => handleEdit(selectedRequest) : undefined}
         onResend={selectedRequest ? () => handleResend(selectedRequest) : undefined}
       />
+      {/* LOG de props para ModalSolicitudContratacion */}
+      {(() => {
+        const logProps = {
+          open: modalOpen,
+          fecha: selectedInterested ? (selectedInterested.date ? new Date(selectedInterested.date) : null) : null,
+          cacheBase: selectedInterested?.artist?.basePrice || 0,
+          allowNegotiation: false,
+          nombreLocalDefault: selectedInterested?.venue?.name || authUser?.name || '',
+          ciudadLocalDefault: selectedInterested?.venue?.city || authUser?.city || '',
+          ubicacionDefault:
+            selectedInterested?.venue?.address
+            || authUser?.address
+            || ((authUser?.city && authUser?.country) ? `${authUser.city}, ${authUser.country}` : (authUser?.city || authUser?.country || '')),
+          fixedPrice: selectedInterested?.price
+        };
+        console.log('[VenueRequests] Props ModalSolicitudContratacion:', logProps);
+        return null;
+      })()}
       <ModalSolicitudContratacion
         open={modalOpen}
         onClose={() => { setModalOpen(false); setSelectedInterested(null); }}
         fecha={selectedInterested ? (selectedInterested.date ? new Date(selectedInterested.date) : null) : null}
         cacheBase={selectedInterested?.artist?.basePrice || 0}
         allowNegotiation={false}
-        nombreLocalDefault={authUser?.name || ''}
-        ciudadLocalDefault={authUser?.city || ''}
-        ubicacionDefault={authUser?.address || ''}
+        nombreLocalDefault={selectedInterested?.venue?.name || authUser?.name || ''}
+        ciudadLocalDefault={selectedInterested?.venue?.city || authUser?.city || ''}
+        ubicacionDefault={
+          selectedInterested?.venue?.address
+          || authUser?.address
+          || ((authUser?.city && authUser?.country) ? `${authUser.city}, ${authUser.country}` : (authUser?.city || authUser?.country || ''))
+        }
         fixedPrice={selectedInterested?.price}
         onSubmit={handleSubmitContratacion}
       />

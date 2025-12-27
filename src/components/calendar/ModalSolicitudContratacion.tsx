@@ -49,11 +49,28 @@ interface ModalSolicitudContratacionProps {
 }
 
 
+import { useAuth } from '@/contexts/AuthContext';
+
 export default function ModalSolicitudContratacion({ open, onClose, fecha, cacheBase, allowNegotiation = true, nombreLocalDefault = '', ciudadLocalDefault = '', ubicacionDefault = '', fixedPrice, artistId, onSubmit }: ModalSolicitudContratacionProps) {
+  const { authUser } = useAuth();
   // Log para confirmar que la prop llega correctamente
   React.useEffect(() => {
     console.log('[ModalSolicitudContratacion] ubicacionDefault prop:', ubicacionDefault);
   }, [ubicacionDefault]);
+
+  // Log para rastrear el estado al abrir el modal
+  React.useEffect(() => {
+    if (open) {
+      console.log('[ModalSolicitudContratacion] Modal abierto con props:', {
+        nombreLocalDefault,
+        ciudadLocalDefault,
+        ubicacionDefault,
+        fecha,
+        fixedPrice
+      });
+      console.log('[ModalSolicitudContratacion] authUser:', authUser);
+    }
+  }, [open, nombreLocalDefault, ciudadLocalDefault, ubicacionDefault, fecha, fixedPrice, authUser]);
   const [oferta, setOferta] = useState('');
   const [tipoEvento, setTipoEvento] = useState('');
   const [tipoEventoOtro, setTipoEventoOtro] = useState('');
@@ -105,6 +122,8 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
       setFechaEditable(fecha ? fecha.toISOString().slice(0, 10) : '');
       // Log para confirmar que el estado se inicializa correctamente
       console.log('[ModalSolicitudContratacion] setUbicacion inicial:', ubicacionDefault || '');
+      console.log('[ModalSolicitudContratacion] setNombreLocal inicial:', nombreLocalDefault || '');
+      console.log('[ModalSolicitudContratacion] setCiudadLocal inicial:', ciudadLocalDefault || '');
       setHoraInicio('00:00');
       setHoraFin('00:00');
     }
@@ -130,6 +149,8 @@ export default function ModalSolicitudContratacion({ open, onClose, fecha, cache
       artistId,
     };
     if (oferta) payload.oferta = Number(oferta);
+    // Log para ver el payload enviado
+    console.log('[ModalSolicitudContratacion] handleSubmit payload:', payload);
     onSubmit(payload);
     onClose();
   };

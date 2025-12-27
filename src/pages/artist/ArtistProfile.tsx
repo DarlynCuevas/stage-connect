@@ -827,7 +827,19 @@ export default function ArtistProfile() {
           </div>
         )}
 
-        <ModalSolicitudContratacion open={modalOpen && canSendRequest} onClose={() => setModalOpen(false)} fecha={fechaSeleccionada} cacheBase={cacheBase} onSubmit={handleEnviarSolicitud} />
+        <ModalSolicitudContratacion
+          open={modalOpen && canSendRequest}
+          onClose={() => setModalOpen(false)}
+          fecha={fechaSeleccionada}
+          cacheBase={cacheBase}
+          nombreLocalDefault={authUser?.name || ''}
+          ciudadLocalDefault={authUser?.city || ''}
+          ubicacionDefault={
+            authUser?.address
+            || ((authUser?.city && authUser?.country) ? `${authUser.city}, ${authUser.country}` : (authUser?.city || authUser?.country || ''))
+          }
+          onSubmit={handleEnviarSolicitud}
+        />
     
       {/* Sección de Reseñas: solo mostrar si el tab activo es 'resenas' */}
       {activeTab === 'resenas' && (
