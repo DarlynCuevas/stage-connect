@@ -22,7 +22,8 @@ export default function ArtistRequests() {
     return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-lg font-semibold">Acceso denegado</p></div>;
   }
   const { data: requests = [], isLoading } = useArtistRequests();
-  const { data: interested = [], isLoading: loadingInterested } = useInterestedByArtist(Number(authUser?.id));
+  const { data: interested = [], isLoading: loadingInterested, refetch: refetchInterested } = useInterestedByArtist(Number(authUser?.id));
+  const [optimisticInterested, setOptimisticInterested] = useState(null);
   const { data: managerRequests = [], isLoading: loadingManagers } = useReceivedManagerRequests();
   const [activeTab, setActiveTab] = useState(TABS[0]);
   const [selected, setSelected] = useState(null);
@@ -89,7 +90,7 @@ export default function ArtistRequests() {
             {(
               activeTab === 'Contratación'
                 ? ['Pendientes', 'Completadas', 'Canceladas']
-                : ['Todas', 'Pendientes', 'Aceptadas']
+                : ['Pendientes', 'Me interesan', 'Aceptadas']
             ).map(filtro => (
               <button
                 key={filtro}
@@ -122,32 +123,10 @@ export default function ArtistRequests() {
           </div>
         ) : activeTab === 'Ofertas' ? (
           <div className="overflow-y-auto bg-card" style={{ maxHeight: 400, minHeight: 240 }}>
-            {filter === 'Todas' && (
-              interested.length > 0 ? (
-                interested.map(item => (
-                  <CardItemRequest
-                    key={item.id}
-                    item={{
-                      ...item,
-                      artist: undefined,
-                      name: item.venue?.name,
-                      avatar: item.venue?.avatar,
-                      city: item.venue?.city,
-                      country: item.venue?.country,
-                      price: item.price,
-                      date: item.date,
-                    }}
-                    onClick={() => setSelected(item)}
-                    selected={selected?.id === item.id}
-                  />
-                ))
-              ) : (
-                <div className="text-center text-muted-foreground py-10">No hay ofertas en esta sección.</div>
-              )
-            )}
+
             {filter === 'Pendientes' && (
-              interested.filter(item => item.status === 'pending').length > 0 ? (
-                interested.filter(item => item.status === 'pending').map(item => (
+              (optimisticInterested ? optimisticInterested : interested).filter(item => item.status === 'pending').length > 0 ? (
+                (optimisticInterested ? optimisticInterested : interested).filter(item => item.status === 'pending').map(item => (
                   <CardItemRequest
                     key={item.id}
                     item={{
@@ -166,6 +145,29 @@ export default function ArtistRequests() {
                 ))
               ) : (
                 <div className="text-center text-muted-foreground py-10">No hay ofertas pendientes.</div>
+              )
+            )}
+            {filter === 'Me interesan' && (
+              (optimisticInterested ? optimisticInterested : interested).filter(item => item.status === 'interested').length > 0 ? (
+                (optimisticInterested ? optimisticInterested : interested).filter(item => item.status === 'interested').map(item => (
+                  <CardItemRequest
+                    key={item.id}
+                    item={{
+                      ...item,
+                      artist: undefined,
+                      name: item.venue?.name,
+                      avatar: item.venue?.avatar,
+                      city: item.venue?.city,
+                      country: item.venue?.country,
+                      price: item.price,
+                      date: item.date,
+                    }}
+                    onClick={() => setSelected(item)}
+                    selected={selected?.id === item.id}
+                  />
+                ))
+              ) : (
+                <div className="text-center text-muted-foreground py-10">No hay ofertas marcadas como "Me interesan".</div>
               )
             )}
             {filter === 'Aceptadas' && (
@@ -221,14 +223,21 @@ export default function ArtistRequests() {
                   Oferta: <span className="font-semibold">{selected.price ? `${selected.price} €` : 'Sin oferta'}</span>
                 </div>
               </div>
-              {activeTab === 'Ofertas' && selected.status !== 'accepted' && (
+              {activeTab === 'Ofertas' && selected.status === 'pending' && (
                 <div className="flex gap-2 items-center">
                   <button className="px-2 py-1 rounded-md border border-destructive text-destructive text-xs font-medium bg-transparent hover:bg-destructive/10 transition-colors shadow-sm">No me interesa</button>
                   <button
                     className="px-2 py-1 rounded-md border border-primary text-primary text-xs font-medium bg-transparent hover:bg-primary/10 transition-colors shadow-sm"
                     onClick={async () => {
                       if (selected) {
+                        // Optimistic update: cambiar el estado localmente
+                        setOptimisticInterested((prev) => {
+                          const base = prev || interested;
+                          return base.map(item => item.id === selected.id ? { ...item, status: 'interested' } : item);
+                        });
                         await updateInterestedStatus(selected.id, 'interested');
+                        // Refrescar datos reales después
+                        refetchInterested();
                       }
                     }}
                   >
