@@ -83,13 +83,34 @@ export function useDiscoveryArtists() {
           const url = `/public/artists${params.toString() ? '?' + params.toString() : ''}`;
           response = await apiFetch(url, token ? { token } : undefined);
         }
-        setPopulares(response.populares || []);
-        setDestacados(response.destacados || []);
-        setRecienLlegados(response.recienLlegados || []);
-        setEnCiudad(response.enCiudad || []);
-        setMasContratados(response.masContratados || []);
-        setResto(response.resto || []);
-        setPagination(response.pagination || { page: 1, pageSize: 20, total: 0, hasNextPage: false });
+        if (response.results) {
+          // Respuesta plana con filtros
+          setPopulares([]);
+          setDestacados([]);
+          setRecienLlegados([]);
+          setEnCiudad([]);
+          setMasContratados([]);
+          setResto(response.results);
+          setPagination(response.pagination || { page: 1, pageSize: 20, total: 0, hasNextPage: false });
+        } else if (Array.isArray(response.resto) && response.pagination) {
+          // Respuesta agrupada sin filtros
+          setPopulares(response.populares || []);
+          setDestacados(response.destacados || []);
+          setRecienLlegados(response.recienLlegados || []);
+          setEnCiudad(response.enCiudad || []);
+          setMasContratados(response.masContratados || []);
+          setResto(response.resto || []);
+          setPagination(response.pagination || { page: 1, pageSize: 20, total: 0, hasNextPage: false });
+        } else if (Array.isArray(response)) {
+          // Respuesta completamente plana
+          setPopulares([]);
+          setDestacados([]);
+          setRecienLlegados([]);
+          setEnCiudad([]);
+          setMasContratados([]);
+          setResto(response);
+          setPagination({ page: 1, pageSize: 20, total: response.length, hasNextPage: false });
+        }
       } catch (error) {
         setPopulares([]);
         setDestacados([]);

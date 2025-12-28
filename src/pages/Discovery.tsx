@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { useParams } from 'react-router-dom';
 import { VenueCard } from '@/components/venue/VenueCard';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 import { ManagerCard } from '@/components/manager/ManagerCard';
@@ -51,9 +52,12 @@ export default function Discovery({
   onPageChange,
   renderGrid
 }: DiscoveryProps) {
+  const { category } = useParams();
   const { user } = useAuth();
   const artistId = user && user.role && String(user.role).toLowerCase().includes('art') ? user.id : undefined;
   const venueId = user && user.role && String(user.role).toLowerCase().includes('venue') ? user.id : undefined;
+  // Puedes usar el parámetro 'category' para filtrar o mostrar la categoría correspondiente
+  // Ejemplo: const currentCategory = category || 'populares';
   return (
     <div className="w-full max-w-[1800px] mx-auto px-4 py-6">
       {onSearchBar}
@@ -165,9 +169,25 @@ export default function Discovery({
               {/* Otros */}
               {others.length > 0 && (
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-muted-foreground mb-2">
-                    {cardType === 'artist' ? 'Artistas' : 'Salas'}
-                  </h2>
+                  <div className="flex items-center mb-2 group">
+                    <span
+                      className="text-lg font-semibold text-muted-foreground mb-0 cursor-pointer transition hover:text-primary hover:underline flex items-center gap-1"
+                      onClick={() => window.location.href = `/artist/discover/otros`}
+                      title="Ver todos los artistas"
+                    >
+                      {cardType === 'artist' ? 'Artistas' : cardType === 'manager' ? 'Managers' : cardType === 'promoter' ? 'Promotores' : 'Salas'}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-opacity opacity-0 group-hover:opacity-100"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <circle cx="11" cy="11" r="8" strokeWidth="2" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" strokeWidth="2" />
+                      </svg>
+                    </span>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                     {others.map((item) => (
                       cardType === 'artist' ? (
@@ -201,6 +221,17 @@ export default function Discovery({
                       </button>
                     </div>
                   )}
+                </div>
+              )}
+              {/* Artistas destacados */}
+              {cardType === 'artist' && featured && featured.length > 0 && (
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-muted-foreground mb-2">Artistas destacados</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    {featured.map((item) => (
+                      <ArtistCard key={item.id} artist={mapToCard(item)} showPrice onFavoriteChange={onFavoriteChange} venueId={venueId} />
+                    ))}
+                  </div>
                 </div>
               )}
             </>

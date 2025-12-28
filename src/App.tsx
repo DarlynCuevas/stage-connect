@@ -53,6 +53,7 @@ import PromoterProfile from "./pages/promoter/PromoterProfile";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import VenueDiscover from './pages/venue/VenueDiscover';
+import DiscoveryCategory from './pages/DiscoveryCategory';
 
 const queryClient = new QueryClient();
 
@@ -346,6 +347,7 @@ function AppRoutes() {
 
       {/* Catch all */}
       <Route path="*" element={<NotFound />} />
+      <Route path=":role/discover/:category" element={<DiscoveryCategory />} />
     </Routes>
   );
 }

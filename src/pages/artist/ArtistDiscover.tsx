@@ -294,87 +294,101 @@ export default function ArtistDiscover() {
             onPageChange={(page) => setFilters((prev: any) => ({ ...prev, page }))}
             renderGrid={(children) => (
               <>
-                {destacados && destacados.length > 0 && (
-                  <HorizontalScrollSection
-                    title={<span className="text-lg font-semibold text-black">Salas Destacadas</span>}
-                    items={destacados}
-                    containerId="destacados-scroll"
-                    onScrollRight={() => {
-                      const el = document.getElementById('destacados-scroll');
-                      if (el) {
-                        el.scrollBy({ left: 220, behavior: 'smooth' });
-                      }
-                    }}
-                    onScrollLeft={() => {
-                      const el = document.getElementById('destacados-scroll');
-                      if (el) {
-                        el.scrollBy({ left: -220, behavior: 'smooth' });
-                      }
-                    }}
-                    renderItem={(venue) => <VenueCard venue={mapToVenueCard(venue)} />}
-                  />
+                {/* Mostrar solo resto si hay filtros activos */}
+                {(filters.city || filters.type !== 'all' || filters.query || filters.date) ? (
+                  <div className="mb-6">
+                    <h2 className="text-lg font-semibold text-muted-foreground mb-2">Resultados</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                      {resto.map((venue) => (
+                        <VenueCard key={venue.id} venue={mapToVenueCard(venue)} />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {destacados && destacados.length > 0 && (
+                      <HorizontalScrollSection
+                        title={<span className="text-lg font-semibold text-black">Salas Destacadas</span>}
+                        items={destacados}
+                        containerId="destacados-scroll"
+                        onScrollRight={() => {
+                          const el = document.getElementById('destacados-scroll');
+                          if (el) {
+                            el.scrollBy({ left: 220, behavior: 'smooth' });
+                          }
+                        }}
+                        onScrollLeft={() => {
+                          const el = document.getElementById('destacados-scroll');
+                          if (el) {
+                            el.scrollBy({ left: -220, behavior: 'smooth' });
+                          }
+                        }}
+                        renderItem={(venue) => <VenueCard venue={mapToVenueCard(venue)} />}
+                      />
+                    )}
+                    {populares && populares.length > 0 && (
+                      <HorizontalScrollSection
+                        title={<span className="text-lg font-semibold text-black dark:text-white">Salas Populares</span>}
+                        items={populares}
+                        containerId="populares-scroll"
+                        onScrollRight={() => {
+                          const el = document.getElementById('populares-scroll');
+                          if (el) {
+                            el.scrollBy({ left: 220, behavior: 'smooth' });
+                          }
+                        }}
+                        onScrollLeft={() => {
+                          const el = document.getElementById('populares-scroll');
+                          if (el) {
+                            el.scrollBy({ left: -220, behavior: 'smooth' });
+                          }
+                        }}
+                        renderItem={(venue) => <VenueCard venue={mapToVenueCard(venue)} />}
+                      />
+                    )}
+                    {enCiudad && enCiudad.length > 0 && (
+                      <HorizontalScrollSection
+                        title={<span className="text-lg font-semibold text-black dark:text-white">En tu ciudad</span>}
+                        items={enCiudad}
+                        containerId="enCiudad-scroll"
+                        onScrollRight={() => {
+                          const el = document.getElementById('enCiudad-scroll');
+                          if (el) {
+                            el.scrollBy({ left: 220, behavior: 'smooth' });
+                          }
+                        }}
+                        onScrollLeft={() => {
+                          const el = document.getElementById('enCiudad-scroll');
+                          if (el) {
+                            el.scrollBy({ left: -220, behavior: 'smooth' });
+                          }
+                        }}
+                        renderItem={(venue) => <VenueCard venue={mapToVenueCard(venue)} />}
+                      />
+                    )}
+                    {recienLlegados && recienLlegados.length > 0 && (
+                      <HorizontalScrollSection
+                        title={<span className="text-lg font-semibold text-black dark:text-white">Recién llegados</span>}
+                        items={recienLlegados}
+                        containerId="recienLlegados-scroll"
+                        onScrollRight={() => {
+                          const el = document.getElementById('recienLlegados-scroll');
+                          if (el) {
+                            el.scrollBy({ left: 220, behavior: 'smooth' });
+                          }
+                        }}
+                        onScrollLeft={() => {
+                          const el = document.getElementById('recienLlegados-scroll');
+                          if (el) {
+                            el.scrollBy({ left: -220, behavior: 'smooth' });
+                          }
+                        }}
+                        renderItem={(venue) => <VenueCard venue={mapToVenueCard(venue)} />}
+                      />
+                    )}
+                    {children}
+                  </>
                 )}
-                {populares && populares.length > 0 && (
-                  <HorizontalScrollSection
-                    title={<span className="text-lg font-semibold text-black dark:text-white">Salas Populares</span>}
-                    items={populares}
-                    containerId="populares-scroll"
-                    onScrollRight={() => {
-                      const el = document.getElementById('populares-scroll');
-                      if (el) {
-                        el.scrollBy({ left: 220, behavior: 'smooth' });
-                      }
-                    }}
-                    onScrollLeft={() => {
-                      const el = document.getElementById('populares-scroll');
-                      if (el) {
-                        el.scrollBy({ left: -220, behavior: 'smooth' });
-                      }
-                    }}
-                    renderItem={(venue) => <VenueCard venue={mapToVenueCard(venue)} />}
-                  />
-                )}
-                {enCiudad && enCiudad.length > 0 && (
-                  <HorizontalScrollSection
-                    title={<span className="text-lg font-semibold text-black dark:text-white">En tu ciudad</span>}
-                    items={enCiudad}
-                    containerId="enCiudad-scroll"
-                    onScrollRight={() => {
-                      const el = document.getElementById('enCiudad-scroll');
-                      if (el) {
-                        el.scrollBy({ left: 220, behavior: 'smooth' });
-                      }
-                    }}
-                    onScrollLeft={() => {
-                      const el = document.getElementById('enCiudad-scroll');
-                      if (el) {
-                        el.scrollBy({ left: -220, behavior: 'smooth' });
-                      }
-                    }}
-                    renderItem={(venue) => <VenueCard venue={mapToVenueCard(venue)} />}
-                  />
-                )}
-                {recienLlegados && recienLlegados.length > 0 && (
-                  <HorizontalScrollSection
-                    title={<span className="text-lg font-semibold text-black dark:text-white">Recién llegados</span>}
-                    items={recienLlegados}
-                    containerId="recienLlegados-scroll"
-                    onScrollRight={() => {
-                      const el = document.getElementById('recienLlegados-scroll');
-                      if (el) {
-                        el.scrollBy({ left: 220, behavior: 'smooth' });
-                      }
-                    }}
-                    onScrollLeft={() => {
-                      const el = document.getElementById('recienLlegados-scroll');
-                      if (el) {
-                        el.scrollBy({ left: -220, behavior: 'smooth' });
-                      }
-                    }}
-                    renderItem={(venue) => <VenueCard venue={mapToVenueCard(venue)} />}
-                  />
-                )}
-                {children}
               </>
             )}
           />
