@@ -24,11 +24,17 @@ function ConversationList({ conversations, selectedId, onSelect }: { conversatio
       {conversations.map((conv) => {
         // Buscar el otro participante (que no soy yo)
         let other = null;
+        const myId = String(user?.id ?? user?.user_id);
         if (conv.participants.length === 2) {
-          other = conv.participants.find((p: any) => String(p.id) !== String(user?.id));
+          other = conv.participants.find((p: any) => String(p.id ?? p.user_id) !== myId);
         } else if (conv.participants.length === 1) {
           // Si solo hay uno, y es el propio usuario, no mostrar como "otro"
-          other = null;
+          const only = conv.participants[0];
+          if (String(only.id ?? only.user_id) !== myId) {
+            other = only;
+          } else {
+            other = null;
+          }
         }
         return (
           <li
@@ -157,8 +163,18 @@ const Messages = () => {
               {/* Header del chat */}
               {(() => {
                 // Lógica robusta: busca el primer participante que NO sea el usuario autenticado
-                let other = selectedConv.participants.find((p: any) => String(p.id ?? p.user_id) !== String(user?.id)) || null;
-                console.log('[DEBUG other usuario header]', other, selectedConv.participants, user?.id);
+                const myId = String(user?.id ?? user?.user_id);
+                let other = null;
+                if (selectedConv.participants.length === 2) {
+                  other = selectedConv.participants.find((p: any) => String(p.id ?? p.user_id) !== myId);
+                } else if (selectedConv.participants.length === 1) {
+                  const only = selectedConv.participants[0];
+                  if (String(only.id ?? only.user_id) !== myId) {
+                    other = only;
+                  } else {
+                    other = null;
+                  }
+                }
                 return (
                   <div className="flex items-center gap-3 border-b border-border px-6 py-4 bg-card rounded-tr-2xl">
                     <img src={other?.avatar || '/default-avatar.png'} alt={other?.name || 'Usuario'} className="w-10 h-10 rounded-full border border-primary/30" />
