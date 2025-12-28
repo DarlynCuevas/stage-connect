@@ -174,4 +174,5 @@ export interface SearchFilters {
   priceMax?: number;
   managerId?: string;
   availability?: string;
+  date?: string;
 }

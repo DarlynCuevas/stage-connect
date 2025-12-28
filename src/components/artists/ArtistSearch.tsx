@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,6 @@ import { PriceRangeSlider } from '@/components/ui/PriceRangeSlider';
 import { Search, X, SlidersHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
 import { genres, countries, cities } from '@/data/mockData';
 import { SearchFilters } from '@/types';
-import { useContext } from 'react';
 import { useVenue } from '@/hooks/useVenue';
 import { AuthContext } from '@/contexts/AuthContext';
 import { notifyAvailableDate } from '@/lib/notifications';
@@ -60,16 +59,30 @@ export function ArtistSearch({ filters, onFiltersChange, filterConfig, type }: A
   const venueId = user?.id; // Si necesitas el id del local para notificar
   const goldButtonClass =
     'relative bg-gradient-to-br from-yellow-300 via-yellow-500 to-yellow-700 border-2 border-yellow-400 shadow-gold text-yellow-950 font-semibold hover:from-yellow-400 hover:to-yellow-800 active:scale-[0.98]';
-  const handleNotifyWithPrice = async (date: Date, price: string) => {
-    if (isFeatured && date && user && price && Number(price) > 0) {
+  // El botón se habilita si hay al menos un filtro relevante seleccionado
+  const hasActiveFilters =
+    !!filters.genre?.length ||
+    !!filters.country ||
+    !!filters.city ||
+    (filters.priceMin && filters.priceMin > 0) ||
+    (filters.priceMax && filters.priceMax < 50000) ||
+    !!filters.date;
+
+  // Nueva función de notificación con todos los filtros
+  const handleNotifyWithFilters = async () => {
+    if (isFeatured && offeredPrice && Number(offeredPrice) > 0 && hasActiveFilters) {
       try {
-        await notifyAvailableDate(venueId, date.toISOString().slice(0, 10), token || undefined, Number(price));
+        await notifyAvailableDate({
+          venueId,
+          filters, // se envían todos los filtros activos
+          token,
+          price: Number(offeredPrice),
+        });
         toast({
           title: 'Notificación enviada',
-          description: `Notificación enviada a artistas y managers para el día ${date.toLocaleDateString()}\nOferta: ${Number(price).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}`,
+          description: 'Notificación enviada a los artistas que cumplen los filtros seleccionados.',
           duration: 4000,
         });
-        setShowDate(false);
         setOfferedPrice('');
       } catch (err: any) {
         toast({
@@ -280,7 +293,12 @@ export function ArtistSearch({ filters, onFiltersChange, filterConfig, type }: A
                       <CalendarComponent
                         dates={[]}
                         selectedDate={selectedDate}
-                        onSelect={date => setSelectedDate(date)}
+                        onSelect={date => {
+                          setSelectedDate(date);
+                          if (date) {
+                            onFiltersChange({ ...filters, date: date.toISOString().slice(0, 10) });
+                          }
+                        }}
                       />
                     </div>
                     <div className="flex flex-col gap-4 min-w-[260px] items-end justify-start w-full md:items-end">
@@ -302,77 +320,13 @@ export function ArtistSearch({ filters, onFiltersChange, filterConfig, type }: A
                         </span>
                       </Button>
                       <span className="text-xs text-muted-foreground mb-2">Filtra la lista y muestra solo artistas que tienen libre el día seleccionado.</span>
-                      <div className="w-full border-t border-zinc-100 dark:border-zinc-800 my-2" />
-                      <div className="flex flex-col gap-2 w-full items-end justify-end">
-                        {isFeatured ? (
-                          <>
-                            <div className="relative w-full flex items-center">
-                              <input
-                                type="number"
-                                min={0}
-                                placeholder="Precio ofrecido"
-                                className="no-spinner border-0 border-b-2 border-zinc-200 dark:border-zinc-700 focus:border-primary focus:ring-0 bg-transparent pr-8 py-2 mb-1 text-base text-center w-full transition-all outline-none"
-                                value={offeredPrice}
-                                onChange={e => {
-                                  const value = e.target.value;
-                                  // Permite solo números y vacío
-                                  if (/^\d*$/.test(value)) {
-                                    setOfferedPrice(value);
-                                  }
-                                }}
-                                style={{ MozAppearance: 'textfield', appearance: 'textfield' }}
-                              />
-                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">€</span>
-                            </div>
-                            <Button
-                              variant="default"
-                              size="sm"
-                              className="w-full rounded-lg font-medium text-base mt-1"
-                              disabled={!selectedDate || !offeredPrice || Number(offeredPrice) <= 0}
-                              onClick={async () => {
-                                if (selectedDate && offeredPrice && Number(offeredPrice) > 0) {
-                                  await handleNotifyWithPrice(selectedDate, offeredPrice);
-                                }
-                              }}
-                            >
-                              <span className="flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-primary"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2-2z" /></svg>
-                                Notificar a artistas
-                              </span>
-                            </Button>
-                            <span className="text-xs text-muted-foreground mt-1 block">Envía una notificación a todos los artistas y managers informando que tienes disponible este día y el caché ofertado.</span>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              type="button"
-                              disabled={!isFeatured || !selectedDate}
-                              className={
-                                'px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ' +
-                                goldButtonClass +
-                                (!isFeatured ? ' opacity-70 cursor-not-allowed' : '')
-                              }
-                              title="Solo para cuentas destacadas"
-                            >
-                              <span className="flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-yellow-900"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2-2z" /></svg>
-                                Notificar a artistas
-                                <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-950 border border-yellow-300 shadow-gold">Premium</span>
-                              </span>
-                              <span className="absolute inset-0 rounded-lg pointer-events-none animate-gold-shine" />
-                            </button>
-                            <span className="text-xs text-yellow-900 flex items-center gap-1 mt-1">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="inline align-middle text-yellow-900"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2-2z" /></svg>
-                              Solo para cuentas destacadas
-                            </span>
-                          </>
-                        )}
-                      </div>
                     </div>
                   </div>
                 )}
               </div>
             )}
+
+            
             {type === 'artists' && (
               <div>
                 <button
@@ -390,7 +344,6 @@ export function ArtistSearch({ filters, onFiltersChange, filterConfig, type }: A
                       onChange={(vals) => handlePriceChange(vals)}
                       min={0}
                       max={50000}
-                      className="flex-1 mx-2"
                     />
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col items-start">
@@ -423,6 +376,71 @@ export function ArtistSearch({ filters, onFiltersChange, filterConfig, type }: A
                       </div>
                     </div>
                   </div>
+                )}
+              </div>
+            )}
+
+            {/* Input precio ofrecido y botón notificar a artistas */}
+            {type === 'artists' && (
+              <div className="flex flex-col gap-2 w-full items-end justify-end mt-4">
+                {isFeatured ? (
+                  <>
+                    <div className="relative w-full flex items-center">
+                      <input
+                        type="number"
+                        min={0}
+                        placeholder="Precio ofrecido"
+                        className="no-spinner border-0 border-b-2 border-zinc-200 dark:border-zinc-700 focus:border-primary focus:ring-0 bg-transparent pr-8 py-2 mb-1 text-base text-center w-full transition-all outline-none"
+                        value={offeredPrice}
+                        onChange={e => {
+                          const value = e.target.value;
+                          // Permite solo números y vacío
+                          if (/^\d*$/.test(value)) {
+                            setOfferedPrice(value);
+                          }
+                        }}
+                        style={{ MozAppearance: 'textfield', appearance: 'textfield' }}
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">€</span>
+                    </div>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="w-full rounded-lg font-medium text-base mt-1"
+                      disabled={!isFeatured || !offeredPrice || Number(offeredPrice) <= 0 || !hasActiveFilters}
+                      onClick={handleNotifyWithFilters}
+                    >
+                      <span className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-primary"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2-2z" /></svg>
+                        Notificar a artistas
+                      </span>
+                    </Button>
+                    <span className="text-xs text-muted-foreground mt-1 block">Envía una notificación a todos los artistas y managers informando que tienes disponible este día y el caché ofertado.</span>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      disabled={!isFeatured || !selectedDate}
+                      className={
+                        'px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ' +
+                        goldButtonClass +
+                        (!isFeatured ? ' opacity-70 cursor-not-allowed' : '')
+                      }
+                      title="Solo para cuentas destacadas"
+                    >
+                      <span className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-yellow-900"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2-2z" /></svg>
+                        Notificar a artistas
+                        <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-950 border border-yellow-300 shadow-gold">Premium</span>
+                      </span>
+                      <span className="absolute inset-0 rounded-lg pointer-events-none animate-gold-shine" />
+                    </button>
+                    <span className="text-xs text-yellow-900 flex items-center gap-1 mt-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="inline align-middle text-yellow-900"><path strokeLinecap="round" strokeLinejoin="round" d="M17 11V7a5 5 0 10-10 0v4M5 11h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2-2z" /></svg>
+                      Solo para cuentas destacadas
+                    </span>
+                  </>
                 )}
               </div>
             )}
