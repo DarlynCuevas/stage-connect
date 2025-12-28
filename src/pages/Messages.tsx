@@ -50,7 +50,7 @@ function ConversationList({ conversations, selectedId, onSelect }: { conversatio
             />
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-center mb-1">
-                <span className="font-display font-semibold text-lg text-primary truncate group-hover:underline">{other?.name || 'Usuario'}</span>
+                <span className="font-display font-semibold text-lg text-primary truncate group-hover:underline">{other?.nickName || other?.nick_name || other?.name || 'Usuario'}</span>
                 <span className="text-xs text-muted-foreground ml-2 font-mono">{conv.lastMessage?.createdAt ? new Date(conv.lastMessage.createdAt).toLocaleTimeString() : ''}</span>
               </div>
               <div className="flex justify-between items-center">
@@ -179,8 +179,8 @@ const Messages = () => {
                   <div className="flex items-center gap-3 border-b border-border px-6 py-4 bg-card rounded-tr-2xl">
                     <img src={other?.avatar || '/default-avatar.png'} alt={other?.name || 'Usuario'} className="w-10 h-10 rounded-full border border-primary/30" />
                     <div className="flex flex-col">
-                      <span className="font-semibold text-lg text-primary">{other?.name || 'Usuario'}</span>
-                      <span className="text-xs text-muted-foreground">@{(other?.name || 'usuario').toLowerCase().replace(/ /g, '_')}</span>
+                      <span className="font-semibold text-lg text-primary">{other?.nickName || other?.nick_name || other?.name || 'Usuario'}</span>
+                      <span className="text-xs text-muted-foreground">@{(other?.nickName || other?.nick_name || other?.name || 'usuario').toLowerCase().replace(/ /g, '_')}</span>
                     </div>
                   </div>
                 );
