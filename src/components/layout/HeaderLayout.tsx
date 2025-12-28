@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Music, Bell, Sun, Moon,  User,Settings, LogOut, MessageCircle, BarChart } from 'lucide-react';
+import artimeLogo from '../../images/artime_logo.png';
 import { BottomNav } from './BottomNav';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
@@ -252,7 +253,11 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
               className="flex items-center gap-2 ml-1 sm:ml-3 mr-8 sm:mr-16 select-none"
             >
               <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shadow-sm">
-                <Music className="w-5 h-5 text-primary" />
+                <img
+                  src={artimeLogo}
+                  alt="Artime Logo"
+                  className=""
+                />
               </div>
               <span className="font-display font-bold text-xl tracking-tight">Artime</span>
             </Link>

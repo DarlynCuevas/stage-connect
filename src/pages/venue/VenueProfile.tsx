@@ -1,6 +1,7 @@
 import { FollowersModal } from '@/components/ui/FollowersModal';
 import { FollowButton } from '@/components/ui/FollowButton';
 import { useState, useEffect } from 'react';
+import { useIsFollowing } from '@/hooks/useIsFollowing';
 import { useParams } from 'react-router-dom';
 import { HeaderLayout } from '@/components/layout/HeaderLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateProfile, useUser } from '@/lib/users';
+import apiFetch from '@/lib/api';
 import { 
   Edit, 
   Save, 
@@ -47,42 +49,61 @@ import useUploadImage from '@/hooks/useUploadImage';
 
 
 export default function VenueProfile() {
+  const { user: authUser, token, setUser } = useAuth();
+  const params = useParams();
+  const venueIdParam = params.venueId || params.id;
+  const venueId = venueIdParam ? Number(venueIdParam) : undefined;
   // Estado para mostrar el modal de seguidores
   const [followersOpen, setFollowersOpen] = useState(false);
-  // Mock de seguidores
-  const followersMock = [
-    { id: 1, name: 'Usuario 1' },
-    { id: 2, name: 'Usuario 2' },
-    { id: 3, name: 'Usuario 3' },
-  ];
-  // Estado de seguimiento (mock, reemplazar por lógica real de backend)
-  const [isFollowing, setIsFollowing] = useState(false);
+  // Seguidores reales
+  const [followers, setFollowers] = useState([]);
+  useEffect(() => {
+    if (followersOpen && venueId && token) {
+      apiFetch(`/followers/followers-of/${venueId}`, { token })
+        .then((data) => setFollowers(data || []))
+        .catch(() => setFollowers([]));
+    }
+  }, [followersOpen, venueId, token]);
+  const [isFollowing, setIsFollowing] = useIsFollowing(venueId, token, Number(authUser?.id));
   const [followLoading, setFollowLoading] = useState(false);
 
   const handleFollow = async () => {
+    if (!token || !venueId) return;
     setFollowLoading(true);
-    setTimeout(() => {
+    try {
+      await apiFetch(`/followers/${venueId}`, {
+        method: 'POST',
+        token,
+      });
       setIsFollowing(true);
+    } catch (e) {
+      // Puedes mostrar un toast de error aquí
+    } finally {
       setFollowLoading(false);
-    }, 500);
+    }
   };
 
   const handleUnfollow = async () => {
+    if (!token || !venueId) return;
     setFollowLoading(true);
-    setTimeout(() => {
+    try {
+      await apiFetch(`/followers/${venueId}`, {
+        method: 'DELETE',
+        token,
+      });
       setIsFollowing(false);
+    } catch (e) {
+      // Puedes mostrar un toast de error aquí
+    } finally {
       setFollowLoading(false);
-    }, 500);
+    }
   };
   const [tabValue, setTabValue] = useState('info');
-   const { user: authUser, token, setUser } = useAuth();
+  // ...existing code...
   // Hook para subir imágenes
   const uploadImage = useUploadImage(token);
   const [eventsToShow, setEventsToShow] = useState(3);
   // Próximos eventos reales desde el backend
-  const params = useParams();
-  const venueIdParam = params.venueId || params.id;
-  const venueId = venueIdParam ? Number(venueIdParam) : undefined;
   const { data: confirmedEvents = [] } = useConfirmedRequestsByVenue(venueId);
   // Filtrar solo eventos futuros y ordenarlos por fecha ascendente
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -401,7 +422,7 @@ export default function VenueProfile() {
                       <FollowersModal
                         open={followersOpen}
                         setOpen={setFollowersOpen}
-                        followers={followersMock}
+                        followers={followers.map(f => ({ id: f.user_id, name: f.nickName || f.name, avatar: f.avatar }))}
                         trigger={
                           <button
                             className="px-3 py-1.5 text-sm rounded-full font-semibold border border-primary text-primary bg-white hover:bg-primary/10 transition min-w-[80px]"

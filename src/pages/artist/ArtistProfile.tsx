@@ -61,19 +61,8 @@ export default function ArtistProfile() {
   const navigate = useNavigate();
   // Estado para mostrar el modal de seguidores
   const [followersOpen, setFollowersOpen] = useState(false);
-  // Mock de seguidores
-  const followersMock = [
-    { id: 1, name: 'Usuario 1' },
-    { id: 2, name: 'Usuario 2' },
-    { id: 3, name: 'Usuario 3' },
-  ];
-    // Estado para el tab activo
-    const [activeTab, setActiveTab] = useState('perfil');
-  const params = useParams();
-  const { user: authUser, token, setUser } = useAuth();
-  const uploadImage = useUploadImage(token);
-
   // --- Detección robusta de contexto y mainContext igual que VenueProfile ---
+  const params = useParams();
   let mainContext: 'artist' | 'venue' = 'artist';
   let path = '';
   if (typeof window !== 'undefined') {
@@ -90,6 +79,43 @@ export default function ArtistProfile() {
     const match = path.match(/artist\/(\d+)/);
     if (match) artistId = match[1];
   }
+  // prefer server data when available, memoizado para evitar renders innecesarios
+  // Normaliza el id para que siempre sea number y se llame id
+  const { user: authUser, token, setUser } = useAuth();
+  const { data: freshArtist } = useArtist(artistId);
+  const currentArtist = useMemo(() => {
+    const base = freshArtist || authUser;
+    if (!base) return undefined;
+    let id = base.id ?? base.user_id;
+    if (typeof id === 'string') id = Number(id);
+    return { ...base, id };
+  }, [freshArtist, authUser]);
+  // Estado para seguidores reales
+  const [followers, setFollowers] = useState<{ id: number; name: string; avatar?: string }[]>([]);
+  useEffect(() => {
+    if (!followersOpen || !currentArtist?.id || !token) return;
+    (async () => {
+      try {
+        const data = await apiFetch(`/followers/followers-of/${currentArtist.id}`, { token });
+        setFollowers(
+          Array.isArray(data)
+            ? data.map((u: any) => ({
+                id: u.id || u.user_id,
+                name: u.nickName || u.name || 'Sin nombre',
+                avatar: u.avatar || undefined,
+              }))
+            : []
+        );
+      } catch (e) {
+        setFollowers([]);
+      }
+    })();
+  }, [followersOpen, currentArtist?.id, token]);
+    // Estado para el tab activo
+    const [activeTab, setActiveTab] = useState('perfil');
+  const uploadImage = useUploadImage(token);
+
+
 
 
   function renderEditButton() {
@@ -121,28 +147,41 @@ export default function ArtistProfile() {
   const [followLoading, setFollowLoading] = useState(false);
 
   const handleFollow = async () => {
+    if (!token || !currentArtist?.id) return;
     setFollowLoading(true);
-    // Aquí iría la llamada real al backend
-    setTimeout(() => {
+    try {
+      await apiFetch(`/followers/${currentArtist.id}`, {
+        method: 'POST',
+        token,
+      });
       setIsFollowing(true);
+    } catch (e) {
+      // Puedes mostrar un toast de error aquí
+    } finally {
       setFollowLoading(false);
-    }, 500);
+    }
   };
 
   const handleUnfollow = async () => {
+    if (!token || !currentArtist?.id) return;
     setFollowLoading(true);
-    // Aquí iría la llamada real al backend
-    setTimeout(() => {
+    try {
+      await apiFetch(`/followers/${currentArtist.id}`, {
+        method: 'DELETE',
+        token,
+      });
       setIsFollowing(false);
+    } catch (e) {
+      // Puedes mostrar un toast de error aquí
+    } finally {
       setFollowLoading(false);
-    }, 500);
+    }
   };
 
   // Only Promoter and Venue can send artist requests
   const canSendRequest = authUser?.role === 'Promotor' || authUser?.role === 'Local';
   const { toast } = useToast();
   const updateProfileMutation = useUpdateProfile();
-  const { data: freshArtist } = useArtist(artistId);
   const { data: confirmedRequests = [] } = useConfirmedRequests(Number(artistId));
   const createBookingRequestMutation = useCreateBookingRequest();
   const createManagerRequestMutation = useCreateManagerRequest();
@@ -152,18 +191,7 @@ export default function ArtistProfile() {
 
   // prefer server data when available, memoizado para evitar renders innecesarios
   // Normaliza el id para que siempre sea number y se llame id
-  const currentArtist = useMemo(() => {
-    const base = freshArtist || authUser;
-    console.log('freshArtist , ', freshArtist);
-     console.log('authUser , ', authUser);
-    
-    if (!base) return undefined;
-    // Si viene como user_id, lo mapeamos a id
-    let id = base.id ?? base.user_id;
-    // Si es string, lo convertimos a number
-    if (typeof id === 'string') id = Number(id);
-    return { ...base, id };
-  }, [freshArtist, authUser]);
+ 
   const cacheBase = currentArtist?.basePrice ?? 0;
   // Obtener rating y totalReviews con el custom hook
   const { averageRating, totalReviews, loading: ratingLoading } = useArtistRating(currentArtist?.id);
@@ -401,7 +429,7 @@ export default function ArtistProfile() {
                     <FollowersModal
                       open={followersOpen}
                       setOpen={setFollowersOpen}
-                      followers={followersMock}
+                      followers={followers}
                       trigger={
                         <button
                           className="px-3 py-1.5 text-sm rounded-full font-semibold border border-primary text-primary bg-white hover:bg-primary/10 transition min-w-[80px]"

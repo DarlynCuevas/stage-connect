@@ -1,0 +1,4 @@
+// Importa este archivo en HeaderLayout.tsx como:
+// import artimeLogo from '../../images/artime_logo.png';
+//
+// Asegúrate de que el archivo se llame exactamente artime_logo.png
