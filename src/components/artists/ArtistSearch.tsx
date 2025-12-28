@@ -301,26 +301,8 @@ export function ArtistSearch({ filters, onFiltersChange, filterConfig, type }: A
                         }}
                       />
                     </div>
-                    <div className="flex flex-col gap-4 min-w-[260px] items-end justify-start w-full md:items-end">
-                      <Button
-                        variant="default"
-                        size="sm"
-                        disabled={!selectedDate}
-                        className="w-full mt-2 mb-1 rounded-lg font-medium text-base transition-all"
-                        onClick={() => {
-                          if (selectedDate) {
-                            onFiltersChange({ ...filters, date: selectedDate.toISOString().slice(0, 10) });
-                            setShowDate(false);
-                          }
-                        }}
-                      >
-                        <span className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-primary"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10m-7 4h4" /></svg>
-                          Buscar artistas disponibles
-                        </span>
-                      </Button>
-                      <span className="text-xs text-muted-foreground mb-2">Filtra la lista y muestra solo artistas que tienen libre el día seleccionado.</span>
-                    </div>
+                    {/* El botón de buscar artistas disponibles ha sido eliminado porque la búsqueda es automática al seleccionar la fecha */}
+                    <span className="text-xs text-muted-foreground mb-2">Filtra la lista y muestra solo artistas que tienen libre el día seleccionado.</span>
                   </div>
                 )}
               </div>
@@ -389,7 +371,7 @@ export function ArtistSearch({ filters, onFiltersChange, filterConfig, type }: A
                       <input
                         type="number"
                         min={0}
-                        placeholder="Precio ofrecido"
+                        placeholder={offeredPrice === '' && !document.activeElement?.classList?.contains('no-spinner') ? 'Precio ofrecido' : ''}
                         className="no-spinner border-0 border-b-2 border-zinc-200 dark:border-zinc-700 focus:border-primary focus:ring-0 bg-transparent pr-8 py-2 mb-1 text-base text-center w-full transition-all outline-none"
                         value={offeredPrice}
                         onChange={e => {
