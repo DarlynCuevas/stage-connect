@@ -106,7 +106,7 @@ export default function Login() {
             </div>
             <CardTitle className="text-xl">Iniciar Sesión</CardTitle>
             <CardDescription className="text-sm">
-              Accede a tu cuenta de Stagebook
+              Accede a tu cuenta de Artime
             </CardDescription>
           </CardHeader>
 

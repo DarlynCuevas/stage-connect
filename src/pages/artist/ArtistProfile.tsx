@@ -28,7 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 // Detect base path for routing
-const BASE_PATH = (import.meta as any).env?.BASE_URL || '/stage-connect/';
+const BASE_PATH = (import.meta as any).env?.BASE_URL || '/artime/';
 import { useUpdateProfile, useArtist, useUser } from '@/lib/users';
 import useUploadImage from '@/hooks/useUploadImage';
 import { useConfirmedRequests } from '@/lib/requests';

@@ -16,7 +16,7 @@ export const API_BASE_URL: string =
 	(import.meta as any).env?.VITE_API_BASE_URL ||
 	(isLocalhost
 		? 'http://localhost:4000/api' // Puerto correcto para backend local
-		: 'https://stage-connect-back-6unq.onrender.com/api');
+		: 'https://artime-back-6unq.onrender.com/api');
 
 // 2. Otros parámetros de entorno pueden ir aquí (ej: claves de Stripe, etc.)
 

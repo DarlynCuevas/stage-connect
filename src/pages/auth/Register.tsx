@@ -47,7 +47,7 @@ export default function Register() {
       if (success) {
         toast({
           title: '¡Cuenta creada!',
-          description: 'Bienvenido a Stagebook.',
+          description: 'Bienvenido a Artime.',
           duration: 4000,
         });
         // Redirigir al login después del registro
@@ -89,7 +89,7 @@ export default function Register() {
             </div>
             <CardTitle className="text-xl">Crear Cuenta</CardTitle>
             <CardDescription className="text-sm">
-              Únete a la comunidad de Stagebook
+              Únete a la comunidad de Artime
             </CardDescription>
           </CardHeader>
 

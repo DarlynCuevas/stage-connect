@@ -137,7 +137,7 @@ export default function ArtistDiscover() {
   const titles = {
     venues: {
       title: 'Encuentra tu próximo escenario',
-      subtitle: 'Descubre y contacta artistas disponibles',
+      subtitle: 'Descubre y contacta salas disponibles',
     },
     managers: {
       title: 'Encuentra managers para tu evento',
