@@ -12,6 +12,7 @@ export interface Message {
   read: boolean;
 }
 
+
 export interface Conversation {
   id: number;
   participants: Array<{
@@ -22,6 +23,7 @@ export interface Conversation {
   }>;
   lastMessage?: Message;
   updatedAt: string;
+  status?: 'pending' | 'accepted';
 }
 
 export function useConversations() {

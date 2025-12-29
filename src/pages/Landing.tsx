@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-  Music,
   Users,
   Building2,
   Megaphone,
@@ -15,10 +14,11 @@ import {
   CheckCircle,
   Sparkles,
 } from 'lucide-react';
+import artimeLogo from '../images/artime_logo.png';
 
 const roles = [
   {
-    icon: Music,
+    icon: () => <img src={artimeLogo} alt="Artime Logo" className="w-5 h-5 object-contain" />,
     title: 'Artistas',
     description: 'Gestiona tu perfil, precios y disponibilidad. Recibe y negocia solicitudes de contratación.',
     color: 'text-role-artist',
@@ -77,7 +77,7 @@ export default function Landing() {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
-              <Music className="w-4.5 h-4.5 text-primary-foreground" />
+              <img src={artimeLogo} alt="Artime Logo" className="w-7 h-7 object-contain" />
             </div>
             <span className="font-display font-bold text-xl">Artime</span>
           </div>
@@ -114,7 +114,7 @@ export default function Landing() {
             </h1>
             
             <p className="text-base md:text-lg text-muted-foreground mb-8 max-w-xl mx-auto animate-fade-in-up leading-relaxed" style={{ animationDelay: '0.2s' }}>
-              Stagebook es la plataforma definitiva para artistas, managers, locales y promotores. 
+              Artime es la plataforma definitiva para artistas, managers, locales y promotores. 
               Gestiona perfiles, negocia contratos y cierra actuaciones de forma profesional.
             </p>
             
@@ -227,7 +227,7 @@ export default function Landing() {
               <span className="gradient-text">siguiente nivel</span>?
             </h2>
             <p className="text-muted-foreground text-base mb-8">
-              Únete a Stagebook hoy y comienza a conectar con oportunidades reales.
+              Únete a Artime hoy y comienza a conectar con oportunidades reales.
             </p>
             <Button size="xl" variant="hero" asChild>
               <Link to="/register">
@@ -244,11 +244,11 @@ export default function Landing() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Music className="w-4 h-4 text-primary" />
-              <span className="font-display font-semibold text-sm">STAGEBOOK</span>
+               <img src={artimeLogo} alt="Artime Logo" className="w-5 h-5 object-contain" />
+              <span className="font-display font-semibold text-sm">Artime</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              © 2025 Stagebook. Todos los derechos reservados.
+              © 2026 Artime. Todos los derechos reservados.
             </p>
           </div>
         </div>

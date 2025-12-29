@@ -1,3 +1,6 @@
+import { getMessageRoute } from '../artist/ArtistProfile';
+import { useNavigate } from 'react-router-dom';
+
 import { FollowersModal } from '@/components/ui/FollowersModal';
 import { FollowButton } from '@/components/ui/FollowButton';
 import { useState, useEffect } from 'react';
@@ -49,6 +52,7 @@ import useUploadImage from '@/hooks/useUploadImage';
 
 
 export default function VenueProfile() {
+  const navigate = useNavigate();
   const { user: authUser, token, setUser } = useAuth();
   const params = useParams();
   const venueIdParam = params.venueId || params.id;
@@ -409,14 +413,23 @@ export default function VenueProfile() {
                   {/* Botón de seguir solo si no es tu propio perfil */}
                   {/* Mostrar solo el botón de seguir en perfiles ajenos y solo el de seguidores en el propio perfil */}
                   {authUser && venueIdParam && String(authUser.id) !== String(venueIdParam) ? (
-                    <span className="ml-4">
-                      <FollowButton
-                        isFollowing={isFollowing}
-                        onFollow={handleFollow}
-                        onUnfollow={handleUnfollow}
-                        loading={followLoading}
-                      />
-                    </span>
+                    <>
+                      <span className="ml-4">
+                        <FollowButton
+                          isFollowing={isFollowing}
+                          onFollow={handleFollow}
+                          onUnfollow={handleUnfollow}
+                          loading={followLoading}
+                        />
+                      </span>
+                      <button
+                        className="ml-2 px-3 py-1.5 text-sm rounded-full font-semibold border border-primary text-primary bg-white hover:bg-primary/10 transition min-w-[80px]"
+                        type="button"
+                        onClick={() => navigate(getMessageRoute(authUser, Number(venueIdParam)))}
+                      >
+                        Enviar mensaje
+                      </button>
+                    </>
                   ) : (
                     <span className="ml-2">
                       <FollowersModal

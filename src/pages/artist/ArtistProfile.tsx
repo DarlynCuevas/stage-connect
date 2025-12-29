@@ -1,3 +1,13 @@
+// Utilidad para generar la ruta de mensajes según el rol
+export function getMessageRoute(authUser: any, targetId: number) {
+  const uid = authUser?.id;
+  const role = authUser?.role;
+  if (role === 'Artista') return `/artist/${uid}/pages?userId=${targetId}`;
+  if (role === 'Local') return `/venue/${uid}/pages?userId=${targetId}`;
+  if (role === 'Manager') return `/manager/${uid}/pages?userId=${targetId}`;
+  if (role === 'Promotor') return `/promoter/${uid}/pages?userId=${targetId}`;
+  return `/artist/${uid}/pages?userId=${targetId}`;
+}
 import { FollowersModal } from '@/components/ui/FollowersModal';
 
 import ArtistGallery from '@/components/artist/ArtistGallery';
@@ -408,17 +418,7 @@ export default function ArtistProfile() {
                     <button
                       className="ml-2 px-3 py-1.5 text-sm rounded-full font-semibold border border-primary text-primary bg-white hover:bg-primary/10 transition min-w-[80px]"
                       type="button"
-                      onClick={() => {
-                        let path = '';
-                        const uid = authUser?.id;
-                        const role = authUser?.role;
-                        if (role === 'Artista') path = `/artist/${uid}/pages?userId=${currentArtist.id}`;
-                        else if (role === 'Local') path = `/venue/${uid}/pages?userId=${currentArtist.id}`;
-                        else if (role === 'Manager') path = `/manager/${uid}/pages?userId=${currentArtist.id}`;
-                        else if (role === 'Promotor') path = `/promoter/${uid}/pages?userId=${currentArtist.id}`;
-                        else path = `/artist/${uid}/pages?userId=${currentArtist.id}`;
-                        navigate(path);
-                      }}
+                      onClick={() => navigate(getMessageRoute(authUser, currentArtist.id))}
                     >
                       Enviar mensaje
                     </button>

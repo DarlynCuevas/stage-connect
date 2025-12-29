@@ -15,9 +15,10 @@ import { useArtistRequests as useArtistReqFromRequestsLib } from '@/lib/requests
 export interface HeaderLayoutProps {
   children: ReactNode;
   profileTabs?: Array<{ to: string; label: string; icon?: React.ReactNode }>;
+  newMessageBadge?: 'artist' | 'manager' | 'venue' | 'promoter' | null;
 }
 
-export function HeaderLayout({ children }: HeaderLayoutProps) {
+export function HeaderLayout({ children, profileTabs, newMessageBadge }: HeaderLayoutProps) {
   const getSettingsPath = () => {
     if (!user) return '/';
     const role = String(user.role).toLowerCase();
@@ -378,10 +379,20 @@ export function HeaderLayout({ children }: HeaderLayoutProps) {
                       ? `/venue/${venueIdFromUrl}/pages`
                       : "/messages"
                 }
-                className="w-9 h-9 rounded-full border flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+                className="w-9 h-9 rounded-full border flex items-center justify-center text-muted-foreground hover:text-primary transition-colors relative"
                 title="Mensajes"
               >
                 <MessageCircle className="w-5 h-5" />
+                {newMessageBadge && (
+                  <span
+                    className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white animate-pulse
+                      ${newMessageBadge === 'artist' ? 'bg-role-artist' : ''}
+                      ${newMessageBadge === 'manager' ? 'bg-role-manager' : ''}
+                      ${newMessageBadge === 'venue' ? 'bg-role-venue' : ''}
+                      ${newMessageBadge === 'promoter' ? 'bg-role-promoter' : ''}
+                    `}
+                  />
+                )}
               </Link>
 
               {user && (
