@@ -23,6 +23,7 @@ export interface User {
   socialLinks?: SocialLinks;
   gallery?: string[];
   priceVariants?: PriceVariant[];
+  
 
   totalReviews?: number;
 
